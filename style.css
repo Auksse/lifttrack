@@ -340,7 +340,7 @@ body:before{
   box-shadow: var(--shadowCard);
   position:relative;
 }
-.session-card.gold-dust{} /* allow optional helper */
+/*.session-card.gold-dust{} /* allow optional helper */
 .session-card.open{border-color:rgba(232,184,75,.22);}
 
 .s-top{display:flex;align-items:stretch;cursor:pointer;position:relative;}
