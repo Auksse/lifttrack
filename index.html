@@ -12,7 +12,6 @@
   <title>LiftTrack</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <style>
     :root {
@@ -225,21 +224,6 @@
     .save-btn{width:100%;background:linear-gradient(135deg,var(--gold) 0%,var(--gold3) 100%);border:none;border-radius:11px;color:#0e0d0b;padding:13px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-top:4px;box-shadow:0 4px 14px rgba(232,184,75,0.2);}
     .save-btn:disabled{opacity:0.3;cursor:not-allowed;}
 
-    /* Setup */
-    .setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:32px 20px;text-align:center;}
-    .setup-logo{font-family:'Bebas Neue',cursive;font-size:52px;letter-spacing:0.06em;margin-bottom:6px;}
-    .setup-logo em{color:var(--gold);font-style:normal;}
-    .setup-sub{color:var(--muted);font-size:13px;margin-bottom:28px;line-height:1.5;}
-    .setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:400px;text-align:left;}
-    .setup-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
-    .step-num{font-family:'Bebas Neue',cursive;font-size:26px;color:var(--gold);line-height:1;flex-shrink:0;width:22px;}
-    .step-text{font-size:12px;color:#888;line-height:1.6;}
-    .step-text a{color:var(--gold);text-decoration:none;}
-    .step-text code{background:#181410;padding:2px 5px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#ccc;word-break:break-all;}
-    .setup-hr{border:none;border-top:1px solid var(--border);margin:18px 0;}
-    .setup-lbl{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
-    .setup-connect{width:100%;background:linear-gradient(135deg,var(--gold) 0%,var(--gold3) 100%);border:none;border-radius:10px;color:#0e0d0b;padding:13px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;}
-
     /* Loading / Toast */
     .loading-overlay{position:fixed;inset:0;background:rgba(14,13,11,0.88);display:flex;align-items:center;justify-content:center;z-index:200;}
     .spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;}
@@ -257,11 +241,6 @@
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script>
-// ═══════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════
-let SUPABASE_URL=localStorage.getItem('lt_url')||'';
-let SUPABASE_KEY=localStorage.getItem('lt_key')||'';
 let db=null;
 
 // ═══════════════════════════════════════════════
@@ -422,14 +401,15 @@ function getMuscleStats(){
 }
 
 // ═══════════════════════════════════════════════
-// SUPABASE
+// INDEXEDDB
 // ═══════════════════════════════════════════════
-async function initDb(){db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const{error}=await db.from('sessions').select('id').limit(1);if(error)throw error;}
-async function loadSessions(){const{data,error}=await db.from('sessions').select('*').order('date',{ascending:true});if(error)throw error;sessions=(data||[]).map(r=>({...r,exercises:r.exercises||[]}));if(!sessions.length)await seedData();}
-async function seedData(){const{data,error}=await db.from('sessions').insert(SEED).select();if(error)throw error;sessions=data.map(r=>({...r,exercises:r.exercises||[]}));}
-async function addSession(s){const{data,error}=await db.from('sessions').insert([s]).select();if(error)throw error;sessions=[...sessions,...data].sort((a,b)=>a.date.localeCompare(b.date));}
-async function updateSession(id,s){const{error}=await db.from('sessions').update(s).eq('id',id);if(error)throw error;sessions=sessions.map(x=>x.id===id?{...x,...s}:x);}
-async function deleteSession(id){const{error}=await db.from('sessions').delete().eq('id',id);if(error)throw error;sessions=sessions.filter(s=>s.id!==id);}
+function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('lifttrack',1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('sessions')){const store=d.createObjectStore('sessions',{keyPath:'id'});store.createIndex('date','date',{unique:false});}};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
+async function initDb(){db=await openDb();}
+async function loadSessions(){return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readonly');const req=tx.objectStore('sessions').getAll();req.onsuccess=e=>{sessions=(e.target.result||[]).map(r=>({...r,exercises:r.exercises||[]})).sort((a,b)=>a.date.localeCompare(b.date));if(!sessions.length)seedData().then(resolve).catch(reject);else resolve();};req.onerror=e=>reject(e.target.error);});}
+async function seedData(){const withIds=SEED.map(s=>({...s,id:crypto.randomUUID()}));return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');const store=tx.objectStore('sessions');withIds.forEach(s=>store.put(s));tx.oncomplete=()=>{sessions=withIds;resolve();};tx.onerror=e=>reject(e.target.error);});}
+async function addSession(s){const session={...s,id:crypto.randomUUID()};return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');tx.objectStore('sessions').put(session);tx.oncomplete=()=>{sessions=[...sessions,session].sort((a,b)=>a.date.localeCompare(b.date));resolve();};tx.onerror=e=>reject(e.target.error);});}
+async function updateSession(id,s){const updated={...sessions.find(x=>x.id===id),...s,id};return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');tx.objectStore('sessions').put(updated);tx.oncomplete=()=>{sessions=sessions.map(x=>x.id===id?updated:x);resolve();};tx.onerror=e=>reject(e.target.error);});}
+async function deleteSession(id){return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');tx.objectStore('sessions').delete(id);tx.oncomplete=()=>{sessions=sessions.filter(s=>s.id!==id);resolve();};tx.onerror=e=>reject(e.target.error);});}
 
 // ═══════════════════════════════════════════════
 // TOAST / UPDATE
@@ -442,7 +422,6 @@ if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('messa
 // RENDER MASTER
 // ═══════════════════════════════════════════════
 function render(){
-  if(!SUPABASE_URL||!SUPABASE_KEY){renderSetup();return;}
   const totalVol=Math.round(sessions.reduce((t,s)=>t+sVol(s),0));
   const last=sessions[sessions.length-1];
   const da=last?daysSince(last.date):0;
@@ -805,21 +784,6 @@ function renderAdd(){
     </div>`;
 }
 
-function renderSetup(){
-  document.getElementById('app').innerHTML=`
-    <div class="setup-screen">
-      <div class="setup-logo">LIFT<em>TRACK</em></div>
-      <div class="setup-sub">Connect your Supabase database to get started.<br>Your data stays in your own account.</div>
-      <div class="setup-card">
-        <div class="setup-step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → New project → SQL Editor and run:<br><br><code>create table sessions (id uuid default gen_random_uuid() primary key, date date not null, focus text not null, exercises jsonb not null default '[]'::jsonb, created_at timestamptz default now());</code><br><br><code>alter table sessions enable row level security; create policy "Allow all" on sessions for all using (true) with check (true);</code></div></div>
-        <div class="setup-step"><div class="step-num">2</div><div class="step-text">Settings → API → copy <strong>Project URL</strong> and <strong>anon public key</strong></div></div>
-        <hr class="setup-hr">
-        <label class="setup-lbl">Project URL</label><input class="form-input" id="su-url" placeholder="https://xxxx.supabase.co" style="margin-bottom:10px">
-        <label class="setup-lbl">Anon Key</label><input class="form-input" id="su-key" placeholder="eyJhbGci…">
-        <button class="setup-connect" onclick="connect()">Connect →</button>
-        <div id="setup-err" style="color:var(--red);font-size:11px;margin-top:10px;text-align:center"></div>
-      </div>
-    </div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -858,14 +822,11 @@ function addAlt(name,afterIdx){const ls=[...sessions].reverse().find(s=>s.exerci
 
 async function saveSession(){const btn=document.getElementById('save-btn');if(btn)btn.disabled=true;const exs=addForm.exercises.filter(e=>e.name.trim()).map(e=>({name:e.name.trim(),sets:e.sets.filter(s=>s.r&&s.w).map(s=>({r:+s.r,w:+s.w}))})).filter(e=>e.sets.length);if(!exs.length){toast('Add at least one exercise',true);if(btn)btn.disabled=false;return;}loading=true;render();try{await addSession({date:addForm.date,focus:addForm.focus,exercises:exs});toast('Session saved ✓');tab='sessions';addForm=defaultForm();}catch(e){toast('Error: '+e.message,true);}loading=false;render();}
 async function confirmDelete(id){if(!confirm('Delete this session?'))return;loading=true;render();try{await deleteSession(id);toast('Deleted');}catch(e){toast('Error: '+e.message,true);}loading=false;render();}
-async function connect(){const url=document.getElementById('su-url').value.trim();const key=document.getElementById('su-key').value.trim();const errEl=document.getElementById('setup-err');if(!url||!key){errEl.textContent='Both fields required.';return;}errEl.textContent='Connecting…';SUPABASE_URL=url;SUPABASE_KEY=key;try{await initDb();localStorage.setItem('lt_url',url);localStorage.setItem('lt_key',key);loading=true;render();await loadSessions();toast('Connected ✓');}catch(e){errEl.textContent='Failed: '+e.message;SUPABASE_URL='';SUPABASE_KEY='';return;}loading=false;render();}
-
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  if(SUPABASE_URL&&SUPABASE_KEY){loading=true;render();try{await initDb();await loadSessions();}catch(e){localStorage.removeItem('lt_url');localStorage.removeItem('lt_key');SUPABASE_URL='';SUPABASE_KEY='';toast('DB connection failed',true);}loading=false;}
-  render();
+  loading=true;render();try{await initDb();await loadSessions();}catch(e){toast('Failed to load data',true);}loading=false;render();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).catch(()=>{});
 }
 init();
