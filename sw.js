@@ -1,6 +1,6 @@
-const CACHE = 'lifttrack-v3';
+const CACHE = 'lifttrack-v4';
 const BASE = '/lifttrack';
-const ASSETS = [BASE + '/', BASE + '/index.html', BASE + '/manifest.json', BASE + '/icon-192.png', BASE + '/icon-512.png'];
+const ASSETS = [BASE + '/', BASE + '/index.html', BASE + '/style.css', BASE + '/app.js', BASE + '/manifest.json', BASE + '/icon-192.png', BASE + '/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -21,7 +21,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  if (url.hostname.includes('supabase') || url.hostname.includes('cdn.jsdelivr') || url.hostname.includes('fonts.')) {
+  if (url.hostname.includes('cdn.jsdelivr') || url.hostname.includes('fonts.')) {
     e.respondWith(fetch(e.request).catch(() => new Response('offline', { status: 503 })));
     return;
   }
