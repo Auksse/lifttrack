@@ -49,6 +49,10 @@ const MUSCLE_COLORS={
   Quads:'#5a9e62',Hamstrings:'#8a9e40',Glutes:'#c09040',Calves:'#7a8060',
 };
 
+// Returns a {muscle:score} map for an exercise name.
+// Checks MUSCLE_MAP first; falls back to exerciseDatabase for new canonical names.
+function getMuscleMap(name){return MUSCLE_MAP[name]||getDbMuscleMap(name)||null;}
+
 // ═══════════════════════════════════════════════
 // MOVEMENT PATTERNS
 // ═══════════════════════════════════════════════
@@ -142,7 +146,7 @@ function groupByMonth(ss){const g={};ss.forEach(s=>{const k=fmtMonth(s.date);if(
 function getMuscleStats(){
   const stats={};
   sessions.forEach(s=>s.exercises.forEach(ex=>{
-    const map=MUSCLE_MAP[ex.name];if(!map)return;
+    const map=getMuscleMap(ex.name);if(!map)return;
     const vol=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
     const maxW=Math.max(...ex.sets.map(set=>set.w));
     Object.entries(map).forEach(([muscle,score])=>{
@@ -568,6 +572,7 @@ function renderAdd(){
   const lastByEx={};
   if(last)last.exercises.forEach(ex=>{lastByEx[ex.name]=ex.sets;});
   const existingNames=sessions.flatMap(s=>s.exercises.map(e=>e.name)).filter((n,i,a)=>a.indexOf(n)===i);
+  const allCandidates=[...new Set([...existingNames,...getDbExerciseNames()])];
   const currentNames=f.exercises.map(e=>e.name).filter(Boolean);
 
   return`
@@ -601,7 +606,7 @@ function renderAdd(){
           const lastSets=lastByEx[ex.name]||null;
           const sugg=ex.name?getProgSugg(ex.name,lastSets):null;
           const alts=ex.name?getAlts(ex.name,currentNames):[];
-          const fuzzy=ex.name?fuzzyMatch(ex.name,existingNames,0.5):[];
+          const fuzzy=ex.name?fuzzyMatch(ex.name,allCandidates,0.5):[];
           const isAcOpen=acActive===ei&&fuzzy.length>0;
           return`
             <div class="ex-card">
