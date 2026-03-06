@@ -745,6 +745,95 @@ body:before{
 .save-btn:disabled{opacity:.35;cursor:not-allowed;}
 
 /* ============================================================
+   Exercise Library Browser
+   ============================================================ */
+.db-browser{
+  margin-bottom:12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  overflow:hidden;
+  background:
+    radial-gradient(320px 140px at 30% 0%, rgba(232,184,75,.07), transparent 60%),
+    rgba(14,12,10,.60);
+  box-shadow: var(--shadowCard);
+}
+.db-browser-header{
+  padding:10px 14px 8px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.db-browser-title{
+  font-size:8px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.db-eq-bar{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding-bottom:2px;
+}
+.db-eq-bar::-webkit-scrollbar{display:none;}
+.db-eq-tab{
+  flex-shrink:0;
+  padding:7px 13px;
+  border-radius:var(--r999);
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(18,16,14,.55);
+  color:var(--muted);
+  font-size:11px;
+  font-weight:950;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  box-shadow:var(--shadowInset);
+  white-space:nowrap;
+  transition:all .12s;
+}
+.db-eq-tab.active{
+  background:rgba(42,32,11,.62);
+  color:var(--gold2);
+  border-color:rgba(232,184,75,.25);
+}
+.db-exercise-list{
+  padding:10px 14px 14px;
+  max-height:240px;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+.db-exercise-list::-webkit-scrollbar{display:none;}
+.db-cat-group{margin-bottom:12px;}
+.db-cat-group:last-child{margin-bottom:0;}
+.db-cat-label{
+  font-family:'Bebas Neue',cursive;
+  font-size:12px;
+  letter-spacing:.14em;
+  margin-bottom:7px;
+  opacity:.80;
+}
+.db-cat-exercises{display:flex;flex-wrap:wrap;gap:6px;}
+.db-ex-btn{
+  padding:7px 12px;
+  border-radius:var(--r999);
+  border:1px solid rgba(255,255,255,.09);
+  background:rgba(18,16,14,.50);
+  color:var(--text2);
+  font-size:11px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:var(--shadowInset);
+  transition:all .10s;
+}
+.db-ex-btn:active{
+  transform:translateY(1px);
+  background:rgba(42,32,11,.55);
+  color:var(--gold2);
+  border-color:rgba(232,184,75,.20);
+}
+
+/* ============================================================
    Autocomplete
    ============================================================ */
 .autocomplete{

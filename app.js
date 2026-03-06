@@ -53,6 +53,16 @@ const MUSCLE_COLORS={
 // Checks MUSCLE_MAP first; falls back to exerciseDatabase for new canonical names.
 function getMuscleMap(name){return MUSCLE_MAP[name]||getDbMuscleMap(name)||null;}
 
+// Returns all ExerciseFamily entries that target a given muscle name.
+// Handles legacy aggregate MUSCLE_MAP names (Chest, Shoulders, Back, Calves)
+// by falling back to database category; granular names use exact/prefix match.
+function getDbFamiliesForMuscle(muscle){
+  const catMap={Chest:'chest',Shoulders:'shoulders',Back:'back'};
+  if(catMap[muscle])return exerciseDatabase.filter(f=>f.category===catMap[muscle]);
+  if(muscle==='Calves')return exerciseDatabase.filter(f=>f.muscles.some(m=>m.name==='Gastrocnemius'||m.name==='Soleus'));
+  return exerciseDatabase.filter(f=>f.muscles.some(m=>m.name===muscle||m.name.startsWith(muscle+' ')));
+}
+
 // ═══════════════════════════════════════════════
 // MOVEMENT PATTERNS
 // ═══════════════════════════════════════════════
@@ -124,6 +134,7 @@ const SEED=[
 // ═══════════════════════════════════════════════
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,charts={};
+let dbEquipment='dumbbells';
 
 function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[{name:'',sets:[{r:'',w:''}]}],templateFrom:null};}
 
@@ -495,31 +506,42 @@ function renderMusclesTab(){
 
 function renderMuscleDetail(muscle,stat){
   const c=MUSCLE_COLORS[muscle]||'#888';
-  const exercises=Object.entries(stat.exercises).sort((a,b)=>b[1].vol-a[1].vol);
+  const loggedData=stat?stat.exercises:{};
+  const families=getDbFamiliesForMuscle(muscle);
+  const matches=families.map(f=>{const exName=f[dbEquipment];return exName?{name:exName,family:f}:null;}).filter(Boolean);
   return`
     <div class="muscle-detail-header">
       <button class="back-btn" onclick="selMuscle=null;render()">←</button>
       <div>
         <div class="section-title" style="color:${c};margin-bottom:0">${muscle.toUpperCase()}</div>
-        <div style="font-size:11px;color:var(--muted)">${exercises.length} exercise${exercises.length!==1?'s':''} tracked</div>
+        <div style="font-size:11px;color:var(--muted)">${Object.keys(loggedData).length} logged · ${families.length} in library</div>
       </div>
     </div>
-    <div style="padding:12px">
-      ${exercises.map(([name,data])=>{
-        const isPrimary=data.score>=4;
-        const dots=Array.from({length:5},(_,i)=>`<span class="score-dot ${i<data.score?'on'+(isPrimary?'':' sec'):''}"></span>`).join('');
-        const lastSession=[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name));
-        const lastDate=lastSession?fmtDate(lastSession.date):'—';
+    <div style="padding:10px 14px 6px">
+      <div class="db-eq-bar">
+        ${Object.entries(DB_EQ_LABELS).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
+      </div>
+    </div>
+    <div style="padding:8px 14px 12px">
+      ${matches.length?matches.map(({name,family})=>{
+        const targetM=family.muscles.find(m=>m.name===muscle||m.name.startsWith(muscle+' '));
+        const displayM=targetM||family.muscles.find(m=>m.role==='primary');
+        const isPrimary=displayM?.role==='primary';
+        const score=displayM?.score||3;
+        const dots=Array.from({length:5},(_,i)=>`<span class="score-dot ${i<score?'on'+(isPrimary?'':' sec'):''}"></span>`).join('');
+        const data=loggedData[name];
+        const lastSession=data?[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name)):null;
         return`
           <div class="muscle-ex-card">
             <div class="muscle-ex-name">${name}</div>
+            <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">${family.familyName}</div>
             <div class="score-row">
-              <span class="score-label">${isPrimary?'Primary':'Secondary'}</span>
+              <span class="score-label">${displayM?.name||'—'}</span>
               <div class="score-dots">${dots}</div>
             </div>
-            <div class="muscle-ex-stats">${data.sessions} sessions · max ${data.maxW}kg · last ${lastDate}</div>
+            <div class="muscle-ex-stats">${data?`${data.sessions} sessions · max ${data.maxW}kg · last ${lastSession?fmtDate(lastSession.date):'—'}`:'Not logged yet'}</div>
           </div>`;
-      }).join('')}
+      }).join(''):`<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:12px">No ${DB_EQ_LABELS[dbEquipment].toLowerCase()} option for ${muscle}.</div>`}
     </div>`;
 }
 
@@ -564,6 +586,47 @@ function renderOverview(){
 }
 
 // ═══════════════════════════════════════════════
+// EXERCISE LIBRARY BROWSER
+// ═══════════════════════════════════════════════
+const DB_EQ_LABELS={bodyweight:'Body',dumbbells:'DBs',barbell:'Barbell',cable:'Cable',machine:'Machine',plateLoaded:'Plate'};
+const DB_CAT_LABELS={chest:'Chest',shoulders:'Shoulders',back:'Back',legs_glutes:'Legs & Glutes',arms:'Arms',core:'Core'};
+const DB_CAT_COLORS={chest:'#c96b4a',shoulders:'#b85a90',back:'#4a90b8',legs_glutes:'#5a9e62',arms:'#4aabab',core:'#8860b8'};
+const DB_CAT_ORDER=['chest','shoulders','back','legs_glutes','arms','core'];
+
+function renderExerciseBrowser(){
+  const byCategory={};
+  for(const family of exerciseDatabase){
+    const name=family[dbEquipment];
+    if(!name)continue;
+    if(!byCategory[family.category])byCategory[family.category]=[];
+    byCategory[family.category].push(name);
+  }
+  return`
+    <div class="db-browser">
+      <div class="db-browser-header">
+        <div class="db-browser-title">Library</div>
+        <div class="db-eq-bar">
+          ${Object.entries(DB_EQ_LABELS).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
+        </div>
+      </div>
+      <div class="db-exercise-list">
+        ${DB_CAT_ORDER.map(cat=>{
+          const exs=byCategory[cat];
+          if(!exs||!exs.length)return'';
+          const c=DB_CAT_COLORS[cat];
+          return`
+            <div class="db-cat-group">
+              <div class="db-cat-label" style="color:${c}">${DB_CAT_LABELS[cat].toUpperCase()}</div>
+              <div class="db-cat-exercises">
+                ${exs.map(name=>`<button class="db-ex-btn" onclick="addDbExercise('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
 // ADD FORM
 // ═══════════════════════════════════════════════
 function renderAdd(){
@@ -600,6 +663,8 @@ function renderAdd(){
           <button class="tmpl-clear" onclick="clearTemplate()">Clear</button>
         </div>`:`
         <div class="no-tmpl">No previous ${f.focus} session — starting fresh</div>`}
+
+      ${renderExerciseBrowser()}
 
       <div id="ex-list">
         ${f.exercises.map((ex,ei)=>{
@@ -723,6 +788,14 @@ function addAlt(name,afterIdx){
   const sets=ls?ls.exercises.find(e=>e.name===name).sets.map(s=>({r:String(s.r),w:String(s.w)})):[{r:'',w:''}];
   addForm.exercises.splice(afterIdx+1,0,{name,sets});
   render();
+}
+function addDbExercise(name){
+  const exs=addForm.exercises;
+  const last=exs[exs.length-1];
+  if(last&&!last.name)last.name=name;
+  else exs.push({name,sets:[{r:'',w:''}]});
+  acActive=null;render();
+  setTimeout(()=>{const el=document.getElementById('ex-list');if(el)el.scrollIntoView({behavior:'smooth',block:'end'});},60);
 }
 
 async function saveSession(){
