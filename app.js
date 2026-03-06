@@ -53,6 +53,39 @@ const MUSCLE_COLORS={
 // Checks MUSCLE_MAP first; falls back to exerciseDatabase for new canonical names.
 function getMuscleMap(name){return MUSCLE_MAP[name]||getDbMuscleMap(name)||null;}
 
+// Maps normalized legacy/abbreviated exercise names → database familyName.
+// Covers old IndexedDB data that predates canonical name standardisation.
+const LEGACY_FAMILY_MAP={
+  'bench press':'Flat Press','bench press dumbbell':'Flat Press','close grip bench':'Flat Press',
+  'inclined bench dumbbell':'Incline Press',
+  'overhead press dumbbell':'Vertical Press','overhead press barbell':'Vertical Press','arnold press':'Vertical Press',
+  'fly':'Chest Fly','fly dumbbell':'Chest Fly','fly machine':'Chest Fly',
+  'seated dips':'Chest Dip','dip assist':'Chest Dip',
+  'lateral raise cable':'Lateral Raise','lateral raise dumbbell':'Lateral Raise',
+  'triceps pushdown':'Triceps Pushdown',
+  'triceps overhead cable':'Overhead Triceps Extension','triceps overhead dumbbell':'Overhead Triceps Extension',
+  'lat pulldown':'Vertical Pull','pull up':'Vertical Pull',
+  'straight arm pulldown':'Pullover',
+  'seated row':'Horizontal Row','dumbbell row':'Horizontal Row',
+  'rear delt':'Rear Delt Fly',
+  'face pull':'Face Pull',
+  'curl bar':'Curl','arm curl machine':'Curl','inclined dumbbell curl':'Curl','dumbbell curl':'Curl',
+  'hammer curl':'Hammer Curl',
+  'leg press':'Leg Press',
+  'leg extension':'Leg Extension',
+  'leg curl':'Leg Curl',
+  'bulgarian split squat':'Split Squat',
+  'squat':'Squat',
+  'hip thrust':'Hip Thrust',
+  'calf press':'Standing Calf Raise','calf raise':'Standing Calf Raise',
+  'romanian deadlift':'Romanian Deadlift',
+};
+
+// Finds the ExerciseFamily for any exercise name — canonical or legacy.
+function getDbFamilyFor(name){
+  return getDbFamily(name)||(()=>{const fn=LEGACY_FAMILY_MAP[normName(name)];return fn?exerciseDatabase.find(f=>f.familyName===fn)||null:null;})();
+}
+
 // Returns all ExerciseFamily entries that target a given muscle name.
 // Handles legacy aggregate MUSCLE_MAP names (Chest, Shoulders, Back, Calves)
 // by falling back to database category; granular names use exact/prefix match.
@@ -109,7 +142,7 @@ function normName(n){return n.toLowerCase().replace(/\bdbs?\b/g,'dumbbell').repl
 function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i||j));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);return d[m][n];}
 function fuzzyMatch(input,names,thr=0.5){if(!input||input.length<2)return[];const ni=normName(input);return names.map(name=>{const nn=normName(name);const c=nn.includes(ni)||ni.includes(nn);const s=c?0.95:1-lev(ni,nn)/Math.max(ni.length,nn.length);return{name,s};}).filter(x=>x.s>=thr&&normName(x.name)!==normName(input)).sort((a,b)=>b.s-a.s).slice(0,4).map(x=>x.name);}
 function getAlts(name,current){
-  const family=getDbFamily(name);
+  const family=getDbFamilyFor(name);
   if(family){
     return DB_EQUIPMENT_KEYS.map(k=>family[k]).filter(n=>n&&n!==name&&!current.some(c=>normName(c)===normName(n)));
   }
@@ -173,7 +206,7 @@ function allFamilyChips(){
   const byFamily={},standalone={};
   for(const[exName,count]of Object.entries(counts)){
     if(count<2)continue;
-    const fam=getDbFamily(exName);
+    const fam=getDbFamilyFor(exName);
     if(fam){const fn=fam.familyName;if(!byFamily[fn])byFamily[fn]=[];byFamily[fn].push({exName,count});}
     else standalone[exName]=count;
   }
