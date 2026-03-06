@@ -135,8 +135,9 @@ const SEED=[
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,charts={};
 let dbEquipment='dumbbells';
+let showExerciseLibrary=false;
 
-function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[{name:'',sets:[{r:'',w:''}]}],templateFrom:null};}
+function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[],templateFrom:null};}
 
 // ═══════════════════════════════════════════════
 // UTILS
@@ -255,17 +256,17 @@ function render(){
 
     <div class="dock">
       <div class="dock-inner">
-        ${[
-          ['sessions','📋','Log'],
-          ['progress','📈','Gains'],
-          ['muscles','💪','Muscles'],
-          ['overview','◎','Stats'],
-          ['add','＋','Add']
-        ].map(([t,ic,lb])=>`
+        ${[['sessions','📋','Log'],['progress','📈','Gains']].map(([t,ic,lb])=>`
           <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
-            <span class="tab-icon">${ic}</span>${lb}<span class="tab-dot"></span>
-          </button>
-        `).join('')}
+            <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
+          </button>`).join('')}
+        <button class="tab tab-add ${tab==='add'?'active':''}" onclick="switchTab('add')">
+          <span class="tab-icon">＋</span>
+        </button>
+        ${[['muscles','💪','Muscles'],['overview','◎','Stats']].map(([t,ic,lb])=>`
+          <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
+            <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
+          </button>`).join('')}
       </div>
     </div>
   `;
@@ -508,7 +509,12 @@ function renderMuscleDetail(muscle,stat){
   const c=MUSCLE_COLORS[muscle]||'#888';
   const loggedData=stat?stat.exercises:{};
   const families=getDbFamiliesForMuscle(muscle);
-  const matches=families.map(f=>{const exName=f[dbEquipment];return exName?{name:exName,family:f}:null;}).filter(Boolean);
+  const matches=families.map(f=>{
+    const exName=f[dbEquipment];if(!exName)return null;
+    const targetM=f.muscles.find(m=>m.name===muscle||m.name.startsWith(muscle+' '));
+    const displayM=targetM||f.muscles.find(m=>m.role==='primary');
+    return{name:exName,family:f,targetM,displayM,score:displayM?.score||0};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
   return`
     <div class="muscle-detail-header">
       <button class="back-btn" onclick="selMuscle=null;render()">←</button>
@@ -523,11 +529,8 @@ function renderMuscleDetail(muscle,stat){
       </div>
     </div>
     <div style="padding:8px 14px 12px">
-      ${matches.length?matches.map(({name,family})=>{
-        const targetM=family.muscles.find(m=>m.name===muscle||m.name.startsWith(muscle+' '));
-        const displayM=targetM||family.muscles.find(m=>m.role==='primary');
+      ${matches.length?matches.map(({name,family,displayM,score})=>{
         const isPrimary=displayM?.role==='primary';
-        const score=displayM?.score||3;
         const dots=Array.from({length:5},(_,i)=>`<span class="score-dot ${i<score?'on'+(isPrimary?'':' sec'):''}"></span>`).join('');
         const data=loggedData[name];
         const lastSession=data?[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name)):null;
@@ -618,7 +621,7 @@ function renderExerciseBrowser(){
             <div class="db-cat-group">
               <div class="db-cat-label" style="color:${c}">${DB_CAT_LABELS[cat].toUpperCase()}</div>
               <div class="db-cat-exercises">
-                ${exs.map(name=>`<button class="db-ex-btn" onclick="addDbExercise('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
+                ${exs.map(name=>`<button class="db-ex-btn" onclick="addExerciseFromLibrary('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
               </div>
             </div>`;
         }).join('')}
@@ -664,7 +667,7 @@ function renderAdd(){
         </div>`:`
         <div class="no-tmpl">No previous ${f.focus} session — starting fresh</div>`}
 
-      ${renderExerciseBrowser()}
+      ${showExerciseLibrary?renderExerciseBrowser():''}
 
       <div id="ex-list">
         ${f.exercises.map((ex,ei)=>{
@@ -710,7 +713,9 @@ function renderAdd(){
         }).join('')}
       </div>
 
-      <button class="ghost-btn" onclick="addEx()">+ Exercise</button>
+      ${!f.exercises.length&&!showExerciseLibrary?`<div style="padding:20px 0 8px;text-align:center;color:var(--muted);font-size:12px">No exercises yet — tap + Exercise to open the library</div>`:''}
+      <button class="ghost-btn" onclick="addEx()">${showExerciseLibrary?'✕ Close library':'+ Exercise'}</button>
+      <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">+ Manual exercise</button>
       <button class="save-btn" id="save-btn" onclick="saveSession()">Save Session →</button>
       <div style="height:10px"></div>
     </div>`;
@@ -721,7 +726,7 @@ function renderAdd(){
 // ═══════════════════════════════════════════════
 function switchTab(t){
   tab=t; acActive=null;
-  if(t==='add'){addForm=defaultForm();loadTemplate(addForm.focus);return;}
+  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);return;}
   if(t!=='muscles')selMuscle=null;
   render();
 }
@@ -730,14 +735,14 @@ function toggleSession(id){if(editId===id){cancelEdit();return;}expandedId=expan
 function changeFocus(focus){addForm.focus=focus;loadTemplate(focus);}
 function loadTemplate(focus){
   const last=lastByFocus(focus);
-  if(!last){addForm.exercises=[{name:'',sets:[{r:'',w:''}]}];addForm.templateFrom=null;}
+  if(!last){addForm.exercises=[];addForm.templateFrom=null;showExerciseLibrary=false;}
   else{
     addForm.exercises=last.exercises.map(ex=>({name:ex.name,ss:ex.ss||false,sets:ex.sets.map(s=>({r:String(s.r),w:String(s.w)}))}));
     addForm.templateFrom={date:last.date,id:last.id};
   }
   acActive=null;render();
 }
-function clearTemplate(){addForm.exercises=[{name:'',sets:[{r:'',w:''}]}];addForm.templateFrom=null;render();}
+function clearTemplate(){addForm.exercises=[];addForm.templateFrom=null;showExerciseLibrary=false;render();}
 function useAsTemplate(id){
   const s=sessions.find(x=>x.id===id); if(!s)return;
   addForm={
@@ -778,7 +783,9 @@ function onExFocus(ei){if(addForm.exercises[ei].name.length>=2)acActive=ei;}
 function onExBlur(){setTimeout(()=>{acActive=null;render();},150);}
 function pickAc(ei,name){addForm.exercises[ei].name=name;acActive=null;render();}
 function moveEx(ei,dir){const exs=addForm.exercises;const t=ei+dir;if(t<0||t>=exs.length)return;[exs[ei],exs[t]]=[exs[t],exs[ei]];render();}
-function addEx(){addForm.exercises.push({name:'',sets:[{r:'',w:''}]});acActive=null;render();}
+function addEx(){showExerciseLibrary=!showExerciseLibrary;acActive=null;render();}
+function addExerciseFromLibrary(name){addForm.exercises.push({name,sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();}
+function addBlankExercise(){addForm.exercises.push({name:'',sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();}
 function removeEx(i){addForm.exercises.splice(i,1);acActive=null;render();}
 function addSet(ei){addForm.exercises[ei].sets.push({r:'',w:''});render();}
 function removeSet(ei,si){addForm.exercises[ei].sets.splice(si,1);render();}
