@@ -8,9 +8,14 @@
  *
  * @typedef {{ name: string, score: 1|2|3|4|5, role: MuscleRole }} ExerciseMuscle
  *
+ * @typedef {"heavy"|"compound"|"controlled"|"isolation_pump"} RepRangeCategory
+ *
+ * @typedef {{ key: RepRangeCategory, label: string, minReps: number, maxReps: number }} RepRangeConfig
+ *
  * @typedef {{
  *   familyName: string,
  *   category: "chest"|"shoulders"|"back"|"legs_glutes"|"arms"|"core",
+ *   repRangeCategory: RepRangeCategory,
  *   bodyweight: string|null,
  *   dumbbells: string|null,
  *   barbell: string|null,
@@ -21,11 +26,20 @@
  * }} ExerciseFamily
  */
 
+/** @type {RepRangeConfig[]} */
+const repRangeCategories = [
+  { key: 'heavy',          label: 'Heavy',           minReps: 5,  maxReps: 8  },
+  { key: 'compound',       label: 'Compound',        minReps: 6,  maxReps: 10 },
+  { key: 'controlled',     label: 'Controlled',      minReps: 8,  maxReps: 12 },
+  { key: 'isolation_pump', label: 'Isolation / Pump', minReps: 12, maxReps: 20 },
+];
+
 /** @type {ExerciseFamily[]} */
 const exerciseDatabase = [
   {
     familyName: "Flat Press",
     category: "chest",
+    repRangeCategory: "compound",
     bodyweight: "Push-Up",
     dumbbells: "Dumbbell Flat Press",
     barbell: "Barbell Bench Press",
@@ -41,6 +55,7 @@ const exerciseDatabase = [
   {
     familyName: "Incline Press",
     category: "chest",
+    repRangeCategory: "compound",
     bodyweight: "Feet-Elevated Push-Up",
     dumbbells: "Dumbbell Incline Press",
     barbell: "Barbell Incline Bench Press",
@@ -56,6 +71,7 @@ const exerciseDatabase = [
   {
     familyName: "Chest Fly",
     category: "chest",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Fly",
     barbell: null,
@@ -70,6 +86,7 @@ const exerciseDatabase = [
   {
     familyName: "Chest Dip",
     category: "chest",
+    repRangeCategory: "compound",
     bodyweight: "Chest Dip",
     dumbbells: "Weighted Dip",
     barbell: null,
@@ -85,6 +102,7 @@ const exerciseDatabase = [
   {
     familyName: "Pullover",
     category: "chest",
+    repRangeCategory: "controlled",
     bodyweight: null,
     dumbbells: "Dumbbell Pullover",
     barbell: "Barbell Pullover",
@@ -100,6 +118,7 @@ const exerciseDatabase = [
   {
     familyName: "Vertical Press",
     category: "shoulders",
+    repRangeCategory: "compound",
     bodyweight: "Pike Push-Up",
     dumbbells: "Dumbbell Overhead Press",
     barbell: "Barbell Overhead Press",
@@ -116,6 +135,7 @@ const exerciseDatabase = [
   {
     familyName: "Lateral Raise",
     category: "shoulders",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Lateral Raise",
     barbell: null,
@@ -130,6 +150,7 @@ const exerciseDatabase = [
   {
     familyName: "Front Raise",
     category: "shoulders",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Front Raise",
     barbell: "Barbell Front Raise",
@@ -144,6 +165,7 @@ const exerciseDatabase = [
   {
     familyName: "Rear Delt Fly",
     category: "shoulders",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Rear Delt Fly",
     barbell: null,
@@ -159,6 +181,7 @@ const exerciseDatabase = [
   {
     familyName: "Face Pull",
     category: "shoulders",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: null,
     barbell: null,
@@ -174,6 +197,7 @@ const exerciseDatabase = [
   {
     familyName: "Shrug",
     category: "shoulders",
+    repRangeCategory: "controlled",
     bodyweight: "Scapular Pull-Up",
     dumbbells: "Dumbbell Shrug",
     barbell: "Barbell Shrug",
@@ -188,6 +212,7 @@ const exerciseDatabase = [
   {
     familyName: "Vertical Pull",
     category: "back",
+    repRangeCategory: "compound",
     bodyweight: "Pull-Up",
     dumbbells: null,
     barbell: null,
@@ -203,6 +228,7 @@ const exerciseDatabase = [
   {
     familyName: "Chin-Up Pattern",
     category: "back",
+    repRangeCategory: "compound",
     bodyweight: "Chin-Up",
     dumbbells: null,
     barbell: null,
@@ -218,6 +244,7 @@ const exerciseDatabase = [
   {
     familyName: "Horizontal Row",
     category: "back",
+    repRangeCategory: "compound",
     bodyweight: "Inverted Row",
     dumbbells: "One-Arm Dumbbell Row",
     barbell: "Barbell Bent-Over Row",
@@ -234,6 +261,7 @@ const exerciseDatabase = [
   {
     familyName: "Chest-Supported Row",
     category: "back",
+    repRangeCategory: "controlled",
     bodyweight: null,
     dumbbells: "Chest-Supported Dumbbell Row",
     barbell: "Seal Row",
@@ -250,6 +278,7 @@ const exerciseDatabase = [
   {
     familyName: "Back Extension",
     category: "back",
+    repRangeCategory: "controlled",
     bodyweight: "Superman",
     dumbbells: "Dumbbell Back Extension",
     barbell: "Barbell Good Morning",
@@ -265,6 +294,7 @@ const exerciseDatabase = [
   {
     familyName: "Romanian Deadlift",
     category: "legs_glutes",
+    repRangeCategory: "compound",
     bodyweight: "Single-Leg Hip Hinge",
     dumbbells: "Dumbbell Romanian Deadlift",
     barbell: "Barbell Romanian Deadlift",
@@ -280,6 +310,7 @@ const exerciseDatabase = [
   {
     familyName: "Conventional Deadlift",
     category: "legs_glutes",
+    repRangeCategory: "heavy",
     bodyweight: null,
     dumbbells: "Dumbbell Deadlift",
     barbell: "Barbell Deadlift",
@@ -297,6 +328,7 @@ const exerciseDatabase = [
   {
     familyName: "Squat",
     category: "legs_glutes",
+    repRangeCategory: "compound",
     bodyweight: "Bodyweight Squat",
     dumbbells: "Goblet Squat",
     barbell: "Barbell Back Squat",
@@ -313,6 +345,7 @@ const exerciseDatabase = [
   {
     familyName: "Front Squat",
     category: "legs_glutes",
+    repRangeCategory: "compound",
     bodyweight: "Heels-Elevated Squat",
     dumbbells: "Dumbbell Front Squat",
     barbell: "Barbell Front Squat",
@@ -329,6 +362,7 @@ const exerciseDatabase = [
   {
     familyName: "Hack Squat Pattern",
     category: "legs_glutes",
+    repRangeCategory: "controlled",
     bodyweight: null,
     dumbbells: "Dumbbell Hack Squat",
     barbell: "Barbell Hack Squat",
@@ -343,6 +377,7 @@ const exerciseDatabase = [
   {
     familyName: "Split Squat",
     category: "legs_glutes",
+    repRangeCategory: "controlled",
     bodyweight: "Split Squat",
     dumbbells: "Dumbbell Bulgarian Split Squat",
     barbell: "Barbell Bulgarian Split Squat",
@@ -358,6 +393,7 @@ const exerciseDatabase = [
   {
     familyName: "Walking Lunge",
     category: "legs_glutes",
+    repRangeCategory: "controlled",
     bodyweight: "Walking Lunge",
     dumbbells: "Dumbbell Walking Lunge",
     barbell: "Barbell Walking Lunge",
@@ -374,6 +410,7 @@ const exerciseDatabase = [
   {
     familyName: "Step-Up",
     category: "legs_glutes",
+    repRangeCategory: "controlled",
     bodyweight: "Step-Up",
     dumbbells: "Dumbbell Step-Up",
     barbell: "Barbell Step-Up",
@@ -389,6 +426,7 @@ const exerciseDatabase = [
   {
     familyName: "Hip Thrust",
     category: "legs_glutes",
+    repRangeCategory: "controlled",
     bodyweight: "Glute Bridge",
     dumbbells: "Dumbbell Hip Thrust",
     barbell: "Barbell Hip Thrust",
@@ -404,6 +442,7 @@ const exerciseDatabase = [
   {
     familyName: "Glute Kickback",
     category: "legs_glutes",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Donkey Kick",
     dumbbells: "Dumbbell Glute Kickback",
     barbell: null,
@@ -418,6 +457,7 @@ const exerciseDatabase = [
   {
     familyName: "Leg Curl",
     category: "legs_glutes",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Nordic Curl",
     dumbbells: "Dumbbell Leg Curl",
     barbell: null,
@@ -432,6 +472,7 @@ const exerciseDatabase = [
   {
     familyName: "Leg Extension",
     category: "legs_glutes",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Sissy Squat",
     dumbbells: null,
     barbell: null,
@@ -445,6 +486,7 @@ const exerciseDatabase = [
   {
     familyName: "Standing Calf Raise",
     category: "legs_glutes",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Standing Calf Raise",
     dumbbells: "Dumbbell Standing Calf Raise",
     barbell: "Barbell Standing Calf Raise",
@@ -459,6 +501,7 @@ const exerciseDatabase = [
   {
     familyName: "Seated Calf Raise",
     category: "legs_glutes",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Seated Calf Raise",
     dumbbells: "Dumbbell Seated Calf Raise",
     barbell: "Barbell Seated Calf Raise",
@@ -473,6 +516,7 @@ const exerciseDatabase = [
   {
     familyName: "Curl",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Curl",
     barbell: "Barbell Curl",
@@ -487,6 +531,7 @@ const exerciseDatabase = [
   {
     familyName: "Hammer Curl",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Hammer Curl",
     barbell: null,
@@ -502,6 +547,7 @@ const exerciseDatabase = [
   {
     familyName: "Preacher Curl",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Preacher Curl",
     barbell: "EZ-Bar Preacher Curl",
@@ -516,6 +562,7 @@ const exerciseDatabase = [
   {
     familyName: "Triceps Pushdown",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: null,
     barbell: null,
@@ -529,6 +576,7 @@ const exerciseDatabase = [
   {
     familyName: "Overhead Triceps Extension",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Bodyweight Triceps Extension",
     dumbbells: "Dumbbell Overhead Triceps Extension",
     barbell: "Barbell Overhead Triceps Extension",
@@ -543,6 +591,7 @@ const exerciseDatabase = [
   {
     familyName: "Skull Crusher",
     category: "arms",
+    repRangeCategory: "isolation_pump",
     bodyweight: null,
     dumbbells: "Dumbbell Skull Crusher",
     barbell: "Barbell Skull Crusher",
@@ -556,6 +605,7 @@ const exerciseDatabase = [
   {
     familyName: "Crunch",
     category: "core",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Crunch",
     dumbbells: "Dumbbell Crunch",
     barbell: "Barbell Crunch",
@@ -570,6 +620,7 @@ const exerciseDatabase = [
   {
     familyName: "Leg Raise",
     category: "core",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Hanging Leg Raise",
     dumbbells: null,
     barbell: null,
@@ -584,6 +635,7 @@ const exerciseDatabase = [
   {
     familyName: "Rotation Core",
     category: "core",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Side Plank Rotation",
     dumbbells: "Dumbbell Russian Twist",
     barbell: "Landmine Rotation",
@@ -599,6 +651,7 @@ const exerciseDatabase = [
   {
     familyName: "Plank",
     category: "core",
+    repRangeCategory: "isolation_pump",
     bodyweight: "Plank",
     dumbbells: "Dumbbell Plank Drag",
     barbell: "Barbell Rollout",
@@ -610,6 +663,22 @@ const exerciseDatabase = [
       { name: "Abs", score: 4, role: "secondary" },
       { name: "Glutes", score: 2, role: "secondary" },
       { name: "Serratus", score: 2, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Leg Press",
+    category: "legs_glutes",
+    repRangeCategory: "compound",
+    bodyweight: null,
+    dumbbells: null,
+    barbell: null,
+    cable: null,
+    machine: "Leg Press Machine",
+    plateLoaded: "Plate-Loaded Leg Press",
+    muscles: [
+      { name: "Quads", score: 5, role: "primary" },
+      { name: "Glutes", score: 4, role: "secondary" },
+      { name: "Hamstrings", score: 2, role: "secondary" }
     ]
   }
 ];
@@ -657,4 +726,13 @@ function getDbMuscleMap(name) {
   const family = getDbFamily(name);
   if (!family) return null;
   return family.muscles.reduce((acc, m) => { acc[m.name] = m.score; return acc; }, {});
+}
+
+/**
+ * Returns the RepRangeConfig for a given RepRangeCategory key, or null.
+ * @param {RepRangeCategory|undefined} key
+ * @returns {RepRangeConfig|null}
+ */
+function getRepRangeConfig(key) {
+  return repRangeCategories.find(r => r.key === key) || null;
 }

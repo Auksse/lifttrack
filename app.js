@@ -83,20 +83,22 @@ const MOVEMENT_PATTERNS={
 // PROGRESSION PROFILES
 // ═══════════════════════════════════════════════
 const EX_PROFILES={
-  'bench press':{min:5,max:8,inc:2.5,sets:4},'bench press db':{min:8,max:12,inc:2,sets:4},
-  'inclined bench db':{min:8,max:12,inc:2,sets:3},'overhead press db':{min:6,max:10,inc:2,sets:3},
-  'lat pulldown':{min:8,max:12,inc:2.5,sets:4},'seated row':{min:8,max:12,inc:2.5,sets:4},
-  'seated dips':{min:10,max:15,inc:5,sets:3},'dip assist':{min:8,max:12,inc:2.5,sets:3},
-  'leg press':{min:10,max:15,inc:5,sets:4},'leg curl':{min:10,max:15,inc:2.5,sets:3},
-  'leg extension':{min:10,max:15,inc:2.5,sets:3},'bulgarian split squat':{min:8,max:12,inc:2,sets:3},
-  'hip thrust':{min:12,max:20,inc:5,sets:3},'curl bar':{min:10,max:15,inc:1.25,sets:3},
-  'arm curl machine':{min:10,max:15,inc:2.5,sets:3},'inclined db curl':{min:10,max:15,inc:1,sets:3},
-  'triceps pushdown':{min:12,max:15,inc:1,sets:3},'triceps overhead cable':{min:12,max:15,inc:1,sets:3},
-  'triceps overhead db':{min:12,max:15,inc:1,sets:3},'lateral raise cable':{min:12,max:20,inc:0.5,sets:3},
-  'lateral raise db':{min:12,max:20,inc:0.5,sets:3},'rear delt':{min:15,max:20,inc:2.5,sets:3},
-  'face pull':{min:15,max:20,inc:1,sets:3},'fly':{min:10,max:14,inc:2,sets:3},
-  'fly db':{min:10,max:14,inc:2,sets:3},'fly machine':{min:10,max:14,inc:3.5,sets:3},
-  'straight arm pulldown':{min:10,max:15,inc:1,sets:3},'calf press':{min:15,max:25,inc:5,sets:3},
+  'barbell bench press':{min:5,max:8,inc:2.5,sets:4},'dumbbell flat press':{min:8,max:12,inc:2,sets:4},
+  'dumbbell incline press':{min:8,max:12,inc:2,sets:3},'dumbbell overhead press':{min:6,max:10,inc:2,sets:3},
+  'barbell overhead press':{min:6,max:10,inc:2.5,sets:3},'lat pulldown machine':{min:8,max:12,inc:2.5,sets:4},
+  'seated row machine':{min:8,max:12,inc:2.5,sets:4},'assisted dip machine':{min:10,max:15,inc:5,sets:3},
+  'leg press machine':{min:10,max:15,inc:5,sets:4},'plate-loaded leg press':{min:10,max:15,inc:5,sets:4},
+  'leg curl machine':{min:10,max:15,inc:2.5,sets:3},'leg extension machine':{min:10,max:15,inc:2.5,sets:3},
+  'dumbbell bulgarian split squat':{min:8,max:12,inc:2,sets:3},'barbell back squat':{min:5,max:8,inc:2.5,sets:4},
+  'plate-loaded hip thrust':{min:12,max:20,inc:5,sets:3},'barbell romanian deadlift':{min:8,max:12,inc:2.5,sets:3},
+  'barbell curl':{min:10,max:15,inc:1.25,sets:3},'biceps curl machine':{min:10,max:15,inc:2.5,sets:3},
+  'dumbbell curl':{min:10,max:15,inc:1,sets:3},'dumbbell hammer curl':{min:10,max:15,inc:1,sets:3},
+  'cable triceps pushdown':{min:12,max:15,inc:1,sets:3},'cable overhead triceps extension':{min:12,max:15,inc:1,sets:3},
+  'dumbbell overhead triceps extension':{min:12,max:15,inc:1,sets:3},'cable lateral raise':{min:12,max:20,inc:0.5,sets:3},
+  'dumbbell lateral raise':{min:12,max:20,inc:0.5,sets:3},'rear delt machine':{min:15,max:20,inc:2.5,sets:3},
+  'cable face pull':{min:15,max:20,inc:1,sets:3},'pec deck':{min:10,max:14,inc:3.5,sets:3},
+  'dumbbell fly':{min:10,max:14,inc:2,sets:3},'cable straight-arm pulldown':{min:10,max:15,inc:1,sets:3},
+  'standing calf raise machine':{min:15,max:25,inc:5,sets:3},'standing calf raise':{min:15,max:25,inc:5,sets:3},
 };
 function getProfile(n){return EX_PROFILES[n.toLowerCase()]||{min:8,max:12,inc:2.5,sets:3};}
 
@@ -106,27 +108,36 @@ function getProfile(n){return EX_PROFILES[n.toLowerCase()]||{min:8,max:12,inc:2.
 function normName(n){return n.toLowerCase().replace(/\bdbs?\b/g,'dumbbell').replace(/\boh\b/g,'overhead').replace(/\bbb\b/g,'barbell').replace(/\bincl\.?\b/g,'inclined').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
 function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i||j));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);return d[m][n];}
 function fuzzyMatch(input,names,thr=0.5){if(!input||input.length<2)return[];const ni=normName(input);return names.map(name=>{const nn=normName(name);const c=nn.includes(ni)||ni.includes(nn);const s=c?0.95:1-lev(ni,nn)/Math.max(ni.length,nn.length);return{name,s};}).filter(x=>x.s>=thr&&normName(x.name)!==normName(input)).sort((a,b)=>b.s-a.s).slice(0,4).map(x=>x.name);}
-function getAlts(name,current){const nn=normName(name);for(const[,ms]of Object.entries(MOVEMENT_PATTERNS)){const f=ms.find(m=>normName(m)===nn||nn.includes(normName(m))||normName(m).includes(nn));if(f)return ms.filter(m=>normName(m)!==nn&&!current.some(c=>normName(c)===normName(m))).slice(0,4);}return[];}
+function getAlts(name,current){
+  const family=getDbFamily(name);
+  if(family){
+    return DB_EQUIPMENT_KEYS.map(k=>family[k]).filter(n=>n&&n!==name&&!current.some(c=>normName(c)===normName(n)));
+  }
+  // fallback for old exercise names not in the database
+  const nn=normName(name);
+  for(const[,ms]of Object.entries(MOVEMENT_PATTERNS)){const f=ms.find(m=>normName(m)===nn||nn.includes(normName(m))||normName(m).includes(nn));if(f)return ms.filter(m=>normName(m)!==nn&&!current.some(c=>normName(c)===normName(m))).slice(0,4);}
+  return[];
+}
 function getProgSugg(name,lastSets){if(!lastSets||!lastSets.length)return null;const p=getProfile(name);const vs=lastSets.filter(s=>s.r>0&&s.w>0);if(!vs.length)return null;const mw=Math.max(...vs.map(s=>s.w));const ar=vs.reduce((t,s)=>t+s.r,0)/vs.length;const allMax=vs.every(s=>s.r>=p.max);const allMin=vs.every(s=>s.r>=p.min);const n=vs.length;if(allMax)return{type:'increase',text:`Hit ${p.max}+ reps on all sets`,suggestion:`${n}×${p.min} @ ${+(mw+p.inc).toFixed(2)}kg`,sets:n,reps:p.min,weight:mw+p.inc};if(allMin){const tr=Math.min(Math.round(ar)+1,p.max);return{type:'progress',text:`Avg ${Math.round(ar)} reps`,suggestion:`Aim ${n}×${tr} @ ${mw}kg`,sets:n,reps:tr,weight:mw};}return{type:'consolidate',text:`Avg ${Math.round(ar)} reps (target ${p.min}+)`,suggestion:`Same ${mw}kg, aim ${n}×${p.min}`,sets:n,reps:p.min,weight:mw};}
 
 // ═══════════════════════════════════════════════
 // SEED DATA
 // ═══════════════════════════════════════════════
 const SEED=[
-  {date:"2025-12-23",focus:"Upper",exercises:[{name:"Bench press",sets:[{r:6,w:40},{r:6,w:40},{r:6,w:30},{r:6,w:30}]},{name:"Seated row",sets:[{r:8,w:39},{r:8,w:39},{r:8,w:39},{r:8,w:39}]},{name:"Overhead press DB",sets:[{r:10,w:10},{r:8,w:10},{r:6,w:10}]},{name:"Lat pulldown",sets:[{r:8,w:39},{r:8,w:39},{r:8,w:39}]},{name:"Inclined bench DB",sets:[{r:10,w:12},{r:8,w:12},{r:7,w:12}]},{name:"Curl bar",sets:[{r:15,w:10},{r:15,w:10},{r:15,w:10}]},{name:"Triceps pushdown",sets:[{r:15,w:9},{r:15,w:9},{r:15,w:9}]}]},
-  {date:"2025-12-28",focus:"Upper",exercises:[{name:"Bench press DB",sets:[{r:10,w:14},{r:10,w:14},{r:10,w:14},{r:10,w:14}]},{name:"Overhead press DB",sets:[{r:10,w:8},{r:10,w:9},{r:10,w:9}]},{name:"Inclined bench DB",sets:[{r:12,w:10},{r:12,w:10},{r:12,w:10}]},{name:"Seated row",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:39},{r:10,w:39}]},{name:"Lat pulldown",sets:[{r:10,w:32},{r:10,w:32},{r:8,w:39}]},{name:"Curl bar",sets:[{r:10,w:15},{r:10,w:15},{r:10,w:15}]},{name:"Triceps overhead DB",sets:[{r:10,w:12},{r:10,w:12},{r:8,w:12}]}]},
-  {date:"2026-01-13",focus:"Upper",exercises:[{name:"Lat pulldown",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:42.5}]},{name:"Bench press",sets:[{r:8,w:42.5},{r:10,w:40},{r:7,w:35}]},{name:"Overhead press DB",sets:[{r:10,w:10},{r:10,w:10},{r:12,w:10}]},{name:"Seated row",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:10,w:45}]},{name:"Dip assist",sets:[{r:10,w:-9},{r:10,w:-9},{r:8,w:-14}]},{name:"Inclined bench DB",sets:[{r:10,w:12},{r:8,w:12},{r:6,w:12}]},{name:"Curl bar",sets:[{r:12,w:15},{r:12,w:15},{r:12,w:15}]}]},
-  {date:"2026-01-31",focus:"Push",exercises:[{name:"Bench press DB",sets:[{r:10,w:16},{r:10,w:18},{r:10,w:20},{r:6,w:20}]},{name:"Inclined bench DB",sets:[{r:12,w:12},{r:12,w:14},{r:10,w:16}]},{name:"Overhead press DB",sets:[{r:12,w:14},{r:12,w:14},{r:8,w:16}]},{name:"Triceps overhead cable",sets:[{r:12,w:10},{r:12,w:12},{r:10,w:12}],ss:true},{name:"Lateral raise cable",sets:[{r:10,w:3},{r:8,w:3},{r:8,w:3}],ss:true},{name:"Fly",sets:[{r:10,w:45},{r:10,w:66},{r:6,w:73}]}]},
-  {date:"2026-02-01",focus:"Pull",exercises:[{name:"Lat pulldown",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:39},{r:10,w:39}]},{name:"Seated row",sets:[{r:10,w:45},{r:10,w:45},{r:12,w:45},{r:12,w:45}]},{name:"Rear delt",sets:[{r:20,w:39},{r:20,w:39},{r:20,w:39}]},{name:"Arm curl machine",sets:[{r:12,w:20},{r:10,w:25},{r:10,w:25}]},{name:"Straight arm pulldown",sets:[{r:10,w:11},{r:10,w:11},{r:10,w:11}]},{name:"Inclined DB curl",sets:[{r:10,w:9},{r:10,w:9},{r:10,w:9}]}]},
-  {date:"2026-02-03",focus:"Legs",exercises:[{name:"Leg press",sets:[{r:12,w:73},{r:12,w:79},{r:12,w:79},{r:12,w:79}]},{name:"Bulgarian split squat",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]},{name:"Leg curl",sets:[{r:10,w:32},{r:10,w:32},{r:10,w:32}]},{name:"Leg extension",sets:[{r:10,w:25},{r:10,w:25},{r:10,w:25}]}]},
-  {date:"2026-02-05",focus:"Push",exercises:[{name:"Bench press",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:6,w:45}]},{name:"Inclined bench DB",sets:[{r:12,w:14},{r:12,w:14},{r:10,w:14}]},{name:"Overhead press DB",sets:[{r:8,w:16},{r:10,w:14},{r:10,w:14}]},{name:"Triceps overhead cable",sets:[{r:12,w:14},{r:12,w:14},{r:12,w:14}],ss:true},{name:"Lateral raise cable",sets:[{r:10,w:4.5},{r:8,w:4.5},{r:8,w:4.5}],ss:true},{name:"Seated dips",sets:[{r:12,w:35},{r:15,w:41},{r:15,w:41}]},{name:"Fly DB",sets:[{r:10,w:10},{r:8,w:10},{r:8,w:10}]}]},
-  {date:"2026-02-08",focus:"Pull",exercises:[{name:"Lat pulldown",sets:[{r:12,w:39},{r:12,w:39},{r:12,w:39},{r:12,w:39}]},{name:"Seated row",sets:[{r:12,w:45},{r:12,w:45},{r:12,w:45},{r:12,w:45}]},{name:"Rear delt",sets:[{r:15,w:45},{r:15,w:45},{r:15,w:45}]},{name:"Arm curl machine",sets:[{r:12,w:25},{r:12,w:25},{r:12,w:25}]},{name:"Inclined DB curl",sets:[{r:12,w:9},{r:12,w:9},{r:12,w:9}]}]},
-  {date:"2026-02-17",focus:"Push",exercises:[{name:"Bench press DB",sets:[{r:8,w:22},{r:8,w:22},{r:6,w:22}]},{name:"Inclined bench DB",sets:[{r:8,w:16},{r:8,w:16},{r:8,w:16}]},{name:"Overhead press DB",sets:[{r:10,w:14},{r:8,w:14},{r:8,w:14}]},{name:"Triceps overhead cable",sets:[{r:10,w:11},{r:10,w:11},{r:10,w:11}],ss:true},{name:"Lateral raise cable",sets:[{r:10,w:2.3},{r:10,w:2.3},{r:10,w:2.3}],ss:true},{name:"Fly machine",sets:[{r:10,w:73},{r:10,w:66},{r:10,w:66}]},{name:"Seated dips",sets:[{r:10,w:45},{r:10,w:50},{r:10,w:50}]}]},
-  {date:"2026-02-19",focus:"Pull",exercises:[{name:"Lat pulldown",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:8,w:45}]},{name:"Seated row",sets:[{r:8,w:52},{r:8,w:52},{r:8,w:52},{r:8,w:52}]},{name:"Rear delt",sets:[{r:15,w:45},{r:12,w:45},{r:10,w:45}]},{name:"Face pull",sets:[{r:15,w:9},{r:15,w:9},{r:15,w:9}]},{name:"Arm curl machine",sets:[{r:8,w:28},{r:8,w:28},{r:8,w:28}]},{name:"Inclined DB curl",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]}]},
-  {date:"2026-02-23",focus:"Legs",exercises:[{name:"Hip thrust",sets:[{r:15,w:10},{r:15,w:10},{r:15,w:10}]},{name:"Calf press",sets:[{r:20,w:79},{r:20,w:79},{r:20,w:79}]},{name:"Leg press",sets:[{r:15,w:86},{r:12,w:93},{r:12,w:93},{r:12,w:93}]},{name:"Leg extension",sets:[{r:12,w:32},{r:12,w:32},{r:12,w:32}]},{name:"Leg curl",sets:[{r:12,w:39},{r:12,w:39},{r:12,w:39}]}]},
-  {date:"2026-02-24",focus:"Push",exercises:[{name:"Bench press",sets:[{r:10,w:45},{r:10,w:45},{r:10,w:45},{r:10,w:45}]},{name:"Inclined bench DB",sets:[{r:10,w:16},{r:10,w:16},{r:10,w:16}]},{name:"Overhead press DB",sets:[{r:10,w:14},{r:10,w:14},{r:10,w:14}]},{name:"Triceps overhead DB",sets:[{r:12,w:14},{r:12,w:14},{r:12,w:14}],ss:true},{name:"Lateral raise DB",sets:[{r:10,w:5},{r:10,w:5},{r:10,w:5}],ss:true},{name:"Seated dips",sets:[{r:12,w:50},{r:12,w:50},{r:12,w:50}]}]},
-  {date:"2026-02-26",focus:"Pull",exercises:[{name:"Lat pulldown",sets:[{r:10,w:45},{r:10,w:45},{r:10,w:45},{r:10,w:45}]},{name:"Rear delt",sets:[{r:15,w:45},{r:15,w:45},{r:15,w:45}]},{name:"Seated row",sets:[{r:10,w:52},{r:10,w:52},{r:10,w:52},{r:10,w:52}]},{name:"Face pull",sets:[{r:20,w:9},{r:20,w:9},{r:20,w:9}]},{name:"Curl bar",sets:[{r:10,w:20},{r:10,w:20},{r:10,w:20}]},{name:"Inclined DB curl",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]}]},
-  {date:"2026-03-03",focus:"Push",exercises:[{name:"Bench press",sets:[{r:10,w:50},{r:6,w:50},{r:6,w:50},{r:6,w:50}]},{name:"Inclined bench DB",sets:[{r:10,w:18},{r:8,w:18},{r:7,w:18}]},{name:"Overhead press DB",sets:[{r:6,w:16},{r:8,w:14},{r:8,w:14}]},{name:"Triceps overhead cable",sets:[{r:15,w:11},{r:15,w:11},{r:15,w:11}],ss:true},{name:"Lateral raise cable",sets:[{r:15,w:2},{r:15,w:2},{r:15,w:2}],ss:true},{name:"Fly DB",sets:[{r:12,w:10},{r:12,w:10},{r:12,w:10}]},{name:"Triceps pushdown",sets:[{r:15,w:11},{r:15,w:11},{r:15,w:11}]}]},
+  {date:"2025-12-23",focus:"Upper",exercises:[{name:"Barbell Bench Press",sets:[{r:6,w:40},{r:6,w:40},{r:6,w:30},{r:6,w:30}]},{name:"Seated Row Machine",sets:[{r:8,w:39},{r:8,w:39},{r:8,w:39},{r:8,w:39}]},{name:"Dumbbell Overhead Press",sets:[{r:10,w:10},{r:8,w:10},{r:6,w:10}]},{name:"Lat Pulldown Machine",sets:[{r:8,w:39},{r:8,w:39},{r:8,w:39}]},{name:"Dumbbell Incline Press",sets:[{r:10,w:12},{r:8,w:12},{r:7,w:12}]},{name:"Barbell Curl",sets:[{r:15,w:10},{r:15,w:10},{r:15,w:10}]},{name:"Cable Triceps Pushdown",sets:[{r:15,w:9},{r:15,w:9},{r:15,w:9}]}]},
+  {date:"2025-12-28",focus:"Upper",exercises:[{name:"Dumbbell Flat Press",sets:[{r:10,w:14},{r:10,w:14},{r:10,w:14},{r:10,w:14}]},{name:"Dumbbell Overhead Press",sets:[{r:10,w:8},{r:10,w:9},{r:10,w:9}]},{name:"Dumbbell Incline Press",sets:[{r:12,w:10},{r:12,w:10},{r:12,w:10}]},{name:"Seated Row Machine",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:39},{r:10,w:39}]},{name:"Lat Pulldown Machine",sets:[{r:10,w:32},{r:10,w:32},{r:8,w:39}]},{name:"Barbell Curl",sets:[{r:10,w:15},{r:10,w:15},{r:10,w:15}]},{name:"Dumbbell Overhead Triceps Extension",sets:[{r:10,w:12},{r:10,w:12},{r:8,w:12}]}]},
+  {date:"2026-01-13",focus:"Upper",exercises:[{name:"Lat Pulldown Machine",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:42.5}]},{name:"Barbell Bench Press",sets:[{r:8,w:42.5},{r:10,w:40},{r:7,w:35}]},{name:"Dumbbell Overhead Press",sets:[{r:10,w:10},{r:10,w:10},{r:12,w:10}]},{name:"Seated Row Machine",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:10,w:45}]},{name:"Assisted Dip Machine",sets:[{r:10,w:-9},{r:10,w:-9},{r:8,w:-14}]},{name:"Dumbbell Incline Press",sets:[{r:10,w:12},{r:8,w:12},{r:6,w:12}]},{name:"Barbell Curl",sets:[{r:12,w:15},{r:12,w:15},{r:12,w:15}]}]},
+  {date:"2026-01-31",focus:"Push",exercises:[{name:"Dumbbell Flat Press",sets:[{r:10,w:16},{r:10,w:18},{r:10,w:20},{r:6,w:20}]},{name:"Dumbbell Incline Press",sets:[{r:12,w:12},{r:12,w:14},{r:10,w:16}]},{name:"Dumbbell Overhead Press",sets:[{r:12,w:14},{r:12,w:14},{r:8,w:16}]},{name:"Cable Overhead Triceps Extension",sets:[{r:12,w:10},{r:12,w:12},{r:10,w:12}],ss:true},{name:"Cable Lateral Raise",sets:[{r:10,w:3},{r:8,w:3},{r:8,w:3}],ss:true},{name:"Pec Deck",sets:[{r:10,w:45},{r:10,w:66},{r:6,w:73}]}]},
+  {date:"2026-02-01",focus:"Pull",exercises:[{name:"Lat Pulldown Machine",sets:[{r:10,w:39},{r:10,w:39},{r:10,w:39},{r:10,w:39}]},{name:"Seated Row Machine",sets:[{r:10,w:45},{r:10,w:45},{r:12,w:45},{r:12,w:45}]},{name:"Rear Delt Machine",sets:[{r:20,w:39},{r:20,w:39},{r:20,w:39}]},{name:"Biceps Curl Machine",sets:[{r:12,w:20},{r:10,w:25},{r:10,w:25}]},{name:"Cable Straight-Arm Pulldown",sets:[{r:10,w:11},{r:10,w:11},{r:10,w:11}]},{name:"Dumbbell Curl",sets:[{r:10,w:9},{r:10,w:9},{r:10,w:9}]}]},
+  {date:"2026-02-03",focus:"Legs",exercises:[{name:"Leg Press Machine",sets:[{r:12,w:73},{r:12,w:79},{r:12,w:79},{r:12,w:79}]},{name:"Dumbbell Bulgarian Split Squat",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]},{name:"Leg Curl Machine",sets:[{r:10,w:32},{r:10,w:32},{r:10,w:32}]},{name:"Leg Extension Machine",sets:[{r:10,w:25},{r:10,w:25},{r:10,w:25}]}]},
+  {date:"2026-02-05",focus:"Push",exercises:[{name:"Barbell Bench Press",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:6,w:45}]},{name:"Dumbbell Incline Press",sets:[{r:12,w:14},{r:12,w:14},{r:10,w:14}]},{name:"Dumbbell Overhead Press",sets:[{r:8,w:16},{r:10,w:14},{r:10,w:14}]},{name:"Cable Overhead Triceps Extension",sets:[{r:12,w:14},{r:12,w:14},{r:12,w:14}],ss:true},{name:"Cable Lateral Raise",sets:[{r:10,w:4.5},{r:8,w:4.5},{r:8,w:4.5}],ss:true},{name:"Assisted Dip Machine",sets:[{r:12,w:35},{r:15,w:41},{r:15,w:41}]},{name:"Dumbbell Fly",sets:[{r:10,w:10},{r:8,w:10},{r:8,w:10}]}]},
+  {date:"2026-02-08",focus:"Pull",exercises:[{name:"Lat Pulldown Machine",sets:[{r:12,w:39},{r:12,w:39},{r:12,w:39},{r:12,w:39}]},{name:"Seated Row Machine",sets:[{r:12,w:45},{r:12,w:45},{r:12,w:45},{r:12,w:45}]},{name:"Rear Delt Machine",sets:[{r:15,w:45},{r:15,w:45},{r:15,w:45}]},{name:"Biceps Curl Machine",sets:[{r:12,w:25},{r:12,w:25},{r:12,w:25}]},{name:"Dumbbell Curl",sets:[{r:12,w:9},{r:12,w:9},{r:12,w:9}]}]},
+  {date:"2026-02-17",focus:"Push",exercises:[{name:"Dumbbell Flat Press",sets:[{r:8,w:22},{r:8,w:22},{r:6,w:22}]},{name:"Dumbbell Incline Press",sets:[{r:8,w:16},{r:8,w:16},{r:8,w:16}]},{name:"Dumbbell Overhead Press",sets:[{r:10,w:14},{r:8,w:14},{r:8,w:14}]},{name:"Cable Overhead Triceps Extension",sets:[{r:10,w:11},{r:10,w:11},{r:10,w:11}],ss:true},{name:"Cable Lateral Raise",sets:[{r:10,w:2.3},{r:10,w:2.3},{r:10,w:2.3}],ss:true},{name:"Pec Deck",sets:[{r:10,w:73},{r:10,w:66},{r:10,w:66}]},{name:"Assisted Dip Machine",sets:[{r:10,w:45},{r:10,w:50},{r:10,w:50}]}]},
+  {date:"2026-02-19",focus:"Pull",exercises:[{name:"Lat Pulldown Machine",sets:[{r:8,w:45},{r:8,w:45},{r:8,w:45},{r:8,w:45}]},{name:"Seated Row Machine",sets:[{r:8,w:52},{r:8,w:52},{r:8,w:52},{r:8,w:52}]},{name:"Rear Delt Machine",sets:[{r:15,w:45},{r:12,w:45},{r:10,w:45}]},{name:"Cable Face Pull",sets:[{r:15,w:9},{r:15,w:9},{r:15,w:9}]},{name:"Biceps Curl Machine",sets:[{r:8,w:28},{r:8,w:28},{r:8,w:28}]},{name:"Dumbbell Curl",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]}]},
+  {date:"2026-02-23",focus:"Legs",exercises:[{name:"Plate-Loaded Hip Thrust",sets:[{r:15,w:10},{r:15,w:10},{r:15,w:10}]},{name:"Standing Calf Raise Machine",sets:[{r:20,w:79},{r:20,w:79},{r:20,w:79}]},{name:"Leg Press Machine",sets:[{r:15,w:86},{r:12,w:93},{r:12,w:93},{r:12,w:93}]},{name:"Leg Extension Machine",sets:[{r:12,w:32},{r:12,w:32},{r:12,w:32}]},{name:"Leg Curl Machine",sets:[{r:12,w:39},{r:12,w:39},{r:12,w:39}]}]},
+  {date:"2026-02-24",focus:"Push",exercises:[{name:"Barbell Bench Press",sets:[{r:10,w:45},{r:10,w:45},{r:10,w:45},{r:10,w:45}]},{name:"Dumbbell Incline Press",sets:[{r:10,w:16},{r:10,w:16},{r:10,w:16}]},{name:"Dumbbell Overhead Press",sets:[{r:10,w:14},{r:10,w:14},{r:10,w:14}]},{name:"Dumbbell Overhead Triceps Extension",sets:[{r:12,w:14},{r:12,w:14},{r:12,w:14}],ss:true},{name:"Dumbbell Lateral Raise",sets:[{r:10,w:5},{r:10,w:5},{r:10,w:5}],ss:true},{name:"Assisted Dip Machine",sets:[{r:12,w:50},{r:12,w:50},{r:12,w:50}]}]},
+  {date:"2026-02-26",focus:"Pull",exercises:[{name:"Lat Pulldown Machine",sets:[{r:10,w:45},{r:10,w:45},{r:10,w:45},{r:10,w:45}]},{name:"Rear Delt Machine",sets:[{r:15,w:45},{r:15,w:45},{r:15,w:45}]},{name:"Seated Row Machine",sets:[{r:10,w:52},{r:10,w:52},{r:10,w:52},{r:10,w:52}]},{name:"Cable Face Pull",sets:[{r:20,w:9},{r:20,w:9},{r:20,w:9}]},{name:"Barbell Curl",sets:[{r:10,w:20},{r:10,w:20},{r:10,w:20}]},{name:"Dumbbell Curl",sets:[{r:10,w:10},{r:10,w:10},{r:10,w:10}]}]},
+  {date:"2026-03-03",focus:"Push",exercises:[{name:"Barbell Bench Press",sets:[{r:10,w:50},{r:6,w:50},{r:6,w:50},{r:6,w:50}]},{name:"Dumbbell Incline Press",sets:[{r:10,w:18},{r:8,w:18},{r:7,w:18}]},{name:"Dumbbell Overhead Press",sets:[{r:6,w:16},{r:8,w:14},{r:8,w:14}]},{name:"Cable Overhead Triceps Extension",sets:[{r:15,w:11},{r:15,w:11},{r:15,w:11}],ss:true},{name:"Cable Lateral Raise",sets:[{r:15,w:2},{r:15,w:2},{r:15,w:2}],ss:true},{name:"Dumbbell Fly",sets:[{r:12,w:10},{r:12,w:10},{r:12,w:10}]},{name:"Cable Triceps Pushdown",sets:[{r:15,w:11},{r:15,w:11},{r:15,w:11}]}]},
 ];
 
 // ═══════════════════════════════════════════════
@@ -152,7 +163,30 @@ function nextSugg(){if(!sessions.length)return{focus:'Push',reason:'First sessio
 function lastByFocus(focus){return[...sessions].reverse().find(s=>s.focus===focus)||null;}
 function isNewPR(session,exName){const ex=session.exercises.find(e=>e.name===exName);if(!ex)return false;const mw=Math.max(...ex.sets.map(s=>s.w));const prev=sessions.filter(s=>s.date<session.date||(s.date===session.date&&s.id!==session.id)).flatMap(s=>s.exercises.filter(e=>e.name===exName)).flatMap(e=>e.sets.map(s=>s.w));if(!prev.length)return false;return mw>Math.max(...prev);}
 function countPRs(){let n=0;sessions.forEach(s=>s.exercises.forEach(ex=>{if(isNewPR(s,ex.name))n++;}));return n;}
-function progressFor(name){return sessions.filter(s=>s.exercises.some(e=>e.name===name)).map(s=>{const ex=s.exercises.find(e=>e.name===name);return{date:fmtDate(s.date),mw:Math.max(...ex.sets.map(s=>s.w)),vol:Math.round(ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0))};});}
+function progressFor(name){return sessions.filter(s=>s.exercises.some(e=>e.name===name)).map(s=>{const ex=s.exercises.find(e=>e.name===name);const vs=ex.sets.filter(s=>s.w>0&&s.r>0);const e1rm=vs.length?+(Math.max(...vs.map(s=>s.w*(1+s.r/30))).toFixed(1)):0;return{date:fmtDate(s.date),mw:Math.max(...ex.sets.map(s=>s.w)),vol:Math.round(ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0)),e1rm};});}
+
+// Groups logged exercises by database family; returns [{label, exName}] sorted by total family log count.
+// The representative exName is the most-logged variant within the family.
+function allFamilyChips(){
+  const counts={};
+  sessions.forEach(s=>s.exercises.forEach(e=>{if(e.name)counts[e.name]=(counts[e.name]||0)+1;}));
+  const byFamily={},standalone={};
+  for(const[exName,count]of Object.entries(counts)){
+    if(count<2)continue;
+    const fam=getDbFamily(exName);
+    if(fam){const fn=fam.familyName;if(!byFamily[fn])byFamily[fn]=[];byFamily[fn].push({exName,count});}
+    else standalone[exName]=count;
+  }
+  const chips=[];
+  for(const[familyName,variants]of Object.entries(byFamily)){
+    variants.sort((a,b)=>b.count-a.count);
+    const total=variants.reduce((t,v)=>t+v.count,0);
+    chips.push({label:familyName,exName:variants[0].exName,total});
+  }
+  for(const[exName,count]of Object.entries(standalone)){chips.push({label:exName,exName,total:count});}
+  chips.sort((a,b)=>b.total-a.total);
+  return chips;
+}
 function groupByMonth(ss){const g={};ss.forEach(s=>{const k=fmtMonth(s.date);if(!g[k])g[k]=[];g[k].push(s);});return g;}
 
 function getMuscleStats(){
@@ -207,6 +241,7 @@ if('serviceWorker' in navigator){
 // RENDER MASTER
 // ═══════════════════════════════════════════════
 function render(){
+  const savedScroll=document.getElementById('content')?.scrollTop||0;
   const totalVol=Math.round(sessions.reduce((t,s)=>t+sVol(s),0));
   const last=sessions[sessions.length-1];
   const da=last?daysSince(last.date):0;
@@ -271,6 +306,8 @@ function render(){
     </div>
   `;
 
+  const c=document.getElementById('content');
+  if(c)c.scrollTop=savedScroll;
   if(tab==='progress')renderCharts();
 }
 
@@ -403,22 +440,32 @@ function renderEditForm(s){
 // PROGRESS TAB
 // ═══════════════════════════════════════════════
 function renderProgress(){
-  const exList=allExNames();
-  if(!exList.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">Log more sessions first.</div>';
-  const pd=selEx?progressFor(selEx):[];
+  const chips=allFamilyChips();
+  if(!chips.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">Log more sessions first.</div>';
+  if(!selEx||!chips.some(c=>c.exName===selEx))selEx=chips[0].exName;
+  const pd=progressFor(selEx);
   const cur=pd[pd.length-1],first=pd[0];
-  const wDelta=cur&&first?cur.mw-first.mw:0;
+  const wDelta=cur&&first?+(cur.mw-first.mw).toFixed(1):0;
+  const eDelta=cur&&first?+(cur.e1rm-first.e1rm).toFixed(1):0;
   return`
     <div class="section-header">
       <div class="section-title">PROGRESS</div>
-      <div class="ex-chips">${exList.map(ex=>`<button class="ex-chip ${selEx===ex?'active':''}" onclick="selectEx('${ex.replace(/'/g,"\\'")}')"><span>${ex}</span></button>`).join('')}</div>
+      <div class="ex-chips">${chips.map(c=>`<button class="ex-chip ${selEx===c.exName?'active':''}" onclick="selectEx('${c.exName.replace(/'/g,"\\'")}')"><span>${c.label}</span></button>`).join('')}</div>
     </div>
-    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">Not enough data for ${selEx}.</div>`:`
+    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">Not enough data yet for this family.</div>`:`
+      <div class="chart-block">
+        <div class="chart-block-title">Estimated 1RM</div>
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <div class="chart-big" style="color:#6bbd7f">${cur.e1rm}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg</span></div>
+          <span class="chart-delta" style="color:${eDelta>=0?'var(--green)':'var(--red)'}">${eDelta>=0?'▲':'▼'} ${Math.abs(eDelta)} since start</span>
+        </div>
+        <div class="chart-wrap"><canvas id="eChart"></canvas></div>
+      </div>
       <div class="chart-block">
         <div class="chart-block-title">Max Weight</div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
           <div class="chart-big" style="color:var(--gold)">${cur.mw}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg</span></div>
-          <span class="chart-delta" style="color:${wDelta>=0?'var(--green)':'var(--red)'}">${wDelta>=0?'▲':'▼'} ${Math.abs(wDelta).toFixed(1)} since start</span>
+          <span class="chart-delta" style="color:${wDelta>=0?'var(--green)':'var(--red)'}">${wDelta>=0?'▲':'▼'} ${Math.abs(wDelta)} since start</span>
         </div>
         <div class="chart-wrap"><canvas id="wChart"></canvas></div>
       </div>
@@ -472,6 +519,7 @@ function renderCharts(){
       }
     });
   };
+  cfg('eChart','e1rm','#6bbd7f');
   cfg('wChart','mw','#e8b84b');
   cfg('vChart','vol','#4a90b8');
 }
@@ -537,7 +585,10 @@ function renderMuscleDetail(muscle,stat){
         return`
           <div class="muscle-ex-card">
             <div class="muscle-ex-name">${name}</div>
-            <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">${family.familyName}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              <span style="font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${family.familyName}</span>
+              ${(()=>{const r=getRepRangeConfig(family.repRangeCategory);return r?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--card3);color:var(--text2);font-family:'IBM Plex Mono',monospace;white-space:nowrap">${r.label} · ${r.minReps}–${r.maxReps}</span>`:'';})()}
+            </div>
             <div class="score-row">
               <span class="score-label">${displayM?.name||'—'}</span>
               <div class="score-dots">${dots}</div>
@@ -725,9 +776,9 @@ function renderAdd(){
 // ═══════════════════════════════════════════════
 function switchTab(t){
   tab=t; acActive=null;
-  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);return;}
-  if(t!=='muscles')selMuscle=null;
-  render();
+  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);}
+  else{if(t!=='muscles')selMuscle=null;render();}
+  setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
 function selectEx(name){selEx=name;render();}
 function toggleSession(id){if(editId===id){cancelEdit();return;}expandedId=expandedId===id?null:id;render();}
