@@ -667,8 +667,6 @@ function renderAdd(){
         </div>`:`
         <div class="no-tmpl">No previous ${f.focus} session — starting fresh</div>`}
 
-      ${showExerciseLibrary?renderExerciseBrowser():''}
-
       <div id="ex-list">
         ${f.exercises.map((ex,ei)=>{
           const lastSets=lastByEx[ex.name]||null;
@@ -715,6 +713,7 @@ function renderAdd(){
 
       ${!f.exercises.length&&!showExerciseLibrary?`<div style="padding:20px 0 8px;text-align:center;color:var(--muted);font-size:12px">No exercises yet — tap + Exercise to open the library</div>`:''}
       <button class="ghost-btn" onclick="addEx()">${showExerciseLibrary?'✕ Close library':'+ Exercise'}</button>
+      ${showExerciseLibrary?renderExerciseBrowser():''}
       <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">+ Manual exercise</button>
       <button class="save-btn" id="save-btn" onclick="saveSession()">Save Session →</button>
       <div style="height:10px"></div>
@@ -783,9 +782,10 @@ function onExFocus(ei){if(addForm.exercises[ei].name.length>=2)acActive=ei;}
 function onExBlur(){setTimeout(()=>{acActive=null;render();},150);}
 function pickAc(ei,name){addForm.exercises[ei].name=name;acActive=null;render();}
 function moveEx(ei,dir){const exs=addForm.exercises;const t=ei+dir;if(t<0||t>=exs.length)return;[exs[ei],exs[t]]=[exs[t],exs[ei]];render();}
-function addEx(){showExerciseLibrary=!showExerciseLibrary;acActive=null;render();}
-function addExerciseFromLibrary(name){addForm.exercises.push({name,sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();}
-function addBlankExercise(){addForm.exercises.push({name:'',sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();}
+function scrollContentToBottom(){setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=c.scrollHeight;},60);}
+function addEx(){showExerciseLibrary=!showExerciseLibrary;acActive=null;render();if(showExerciseLibrary)scrollContentToBottom();}
+function addExerciseFromLibrary(name){addForm.exercises.push({name,sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();scrollContentToBottom();}
+function addBlankExercise(){addForm.exercises.push({name:'',sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();scrollContentToBottom();}
 function removeEx(i){addForm.exercises.splice(i,1);acActive=null;render();}
 function addSet(ei){addForm.exercises[ei].sets.push({r:'',w:''});render();}
 function removeSet(ei,si){addForm.exercises[ei].sets.splice(si,1);render();}

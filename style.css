@@ -8,14 +8,14 @@
 
 :root{
   /* Core surfaces */
-  --bg0:#0d0c0b;
-  --bg1:#12100e;
-  --bg2:#171310;
+  --bg0:#1a1714;
+  --bg1:#201d19;
+  --bg2:#26211c;
 
-  --card0:#17130f;
-  --card1:#1b1612;
-  --card2:#221c17;
-  --card3:#2a221a;
+  --card0:#242019;
+  --card1:#2c2720;
+  --card2:#342e26;
+  --card3:#3e352b;
 
   --stroke0:rgba(255,255,255,.06);
   --stroke1:rgba(232,184,75,.10);
@@ -76,24 +76,15 @@ html,body{
 body{
   background-color:var(--bg1);
   background:
-    radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.10), transparent 56%),
-    radial-gradient(820px 600px at 95% 10%, rgba(78,160,200,.10), transparent 54%),
-    radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.08), transparent 58%),
-    radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,.0), rgba(0,0,0,.42) 72%, rgba(0,0,0,.62) 100%),
+    radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.14), transparent 56%),
+    radial-gradient(820px 600px at 95% 10%, rgba(78,160,200,.12), transparent 54%),
+    radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.10), transparent 58%),
+    radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,.0), rgba(0,0,0,.28) 72%, rgba(0,0,0,.45) 100%),
     linear-gradient(180deg, var(--bg0), var(--bg2));
   color:var(--text);
   font-family:'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   padding-top:env(safe-area-inset-top);
   overflow-x:hidden;
-}
-body::after{
-  content:"";
-  position:fixed;
-  left:0; right:0; bottom:0;
-  height:calc(env(safe-area-inset-bottom) + 32px);
-  background:var(--bg2);
-  pointer-events:none;
-  z-index:1;
 }
 
 /* Subtle overall grain */
