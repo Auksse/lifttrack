@@ -44,9 +44,46 @@ const MUSCLE_MAP={
   'Romanian deadlift':     {Hamstrings:5,Glutes:4,Back:2},
 };
 const MUSCLE_COLORS={
+  // Legacy aggregate keys (MUSCLE_MAP)
   Chest:'#c96b4a',Shoulders:'#b85a90',Triceps:'#7858c0',
   Back:'#4a90b8',Biceps:'#4aabab',Forearms:'#4a7890',
   Quads:'#5a9e62',Hamstrings:'#8a9e40',Glutes:'#c09040',Calves:'#7a8060',
+  // Back family (blues)
+  Lats:'#4a90b8','Upper Back':'#5aa4c8','Mid Back':'#3d82a8',Traps:'#6ab0d0','Spinal Erectors':'#2e6a88',
+  // Shoulders family (amber/orange)
+  'Front Delts':'#d4883a','Side Delts':'#e09848','Rear Delts':'#c07828','Rotator Cuff':'#b06818',
+  // Core family (gold)
+  Abs:'#d4a832',Obliques:'#c09020','Deep Core':'#b08010','Hip Flexors':'#e0b840',
+  // Legs family (greens)
+  Adductors:'#3e8e46',
+};
+
+// Group-level definitions for the 3-level muscle navigation
+const MUSCLE_GROUPS=[
+  {id:'Chest',        label:'Chest',        color:'#c96b4a', muscles:['Chest']},
+  {id:'Back',         label:'Back',         color:'#4a90b8', muscles:['Lats','Upper Back','Mid Back','Traps','Spinal Erectors']},
+  {id:'Shoulders',    label:'Shoulders',    color:'#d4883a', muscles:['Front Delts','Side Delts','Rear Delts','Rotator Cuff']},
+  {id:'Arms',         label:'Arms',         color:'#8868d0', muscles:['Biceps','Triceps','Forearms']},
+  {id:'Core',         label:'Core',         color:'#d4a832', muscles:['Abs','Obliques','Deep Core','Hip Flexors']},
+  {id:'Legs & Glutes',label:'Legs & Glutes',color:'#5a9e62', muscles:['Quads','Hamstrings','Glutes','Adductors','Calves']},
+];
+// Stat keys from MUSCLE_MAP/getMuscleStats that belong to each group
+const GROUP_STAT_KEYS={
+  'Chest':        ['Chest'],
+  'Back':         ['Back','Lats','Upper Back','Mid Back','Traps','Spinal Erectors'],
+  'Shoulders':    ['Shoulders','Front Delts','Side Delts','Rear Delts','Rotator Cuff'],
+  'Arms':         ['Biceps','Triceps','Forearms'],
+  'Core':         ['Abs','Obliques','Deep Core','Hip Flexors'],
+  'Legs & Glutes':['Quads','Hamstrings','Glutes','Adductors','Calves'],
+};
+// Maps visible muscle names to the actual muscle names in exerciseDatabase.muscles[]
+const VISIBLE_MUSCLE_DB_NAMES={
+  'Mid Back':  ['Mid Back','Rhomboids'],
+  'Traps':     ['Upper Traps','Mid Traps','Mid/Lower Traps'],
+  'Biceps':    ['Biceps','Brachialis'],
+  'Triceps':   ['Triceps','Triceps Long Head','Other Triceps Heads'],
+  'Forearms':  ['Forearms','Brachioradialis'],
+  'Calves':    ['Calves','Gastrocnemius','Soleus'],
 };
 
 // Returns a {muscle:score} map for an exercise name.
@@ -92,7 +129,9 @@ function getDbFamilyFor(name){
 function getDbFamiliesForMuscle(muscle){
   const catMap={Chest:'chest',Shoulders:'shoulders',Back:'back'};
   if(catMap[muscle])return exerciseDatabase.filter(f=>f.category===catMap[muscle]);
-  if(muscle==='Calves')return exerciseDatabase.filter(f=>f.muscles.some(m=>m.name==='Gastrocnemius'||m.name==='Soleus'));
+  // Check explicit multi-name mappings first (e.g. Traps → Upper Traps + Mid Traps + …)
+  const dbNames=VISIBLE_MUSCLE_DB_NAMES[muscle];
+  if(dbNames)return exerciseDatabase.filter(f=>f.muscles.some(m=>dbNames.includes(m.name)));
   return exerciseDatabase.filter(f=>f.muscles.some(m=>m.name===muscle||m.name.startsWith(muscle+' ')));
 }
 
@@ -177,7 +216,8 @@ const SEED=[
 // STATE
 // ═══════════════════════════════════════════════
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
-let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,charts={};
+let progressGroup=null,progressMuscle=null;
+let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
 
@@ -219,6 +259,15 @@ function allFamilyChips(){
   for(const[exName,count]of Object.entries(standalone)){chips.push({label:exName,exName,total:count});}
   chips.sort((a,b)=>b.total-a.total);
   return chips;
+}
+// Returns [{name, count}] of logged exercises that target `muscle`, sorted by log count desc.
+function getLoggedExercisesForMuscle(muscle){
+  const families=getDbFamiliesForMuscle(muscle);
+  const exNames=new Set();
+  families.forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);}));
+  const counts={};
+  sessions.forEach(s=>s.exercises.forEach(e=>{if(exNames.has(e.name))counts[e.name]=(counts[e.name]||0)+1;}));
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,count])=>({name,count}));
 }
 function groupByMonth(ss){const g={};ss.forEach(s=>{const k=fmtMonth(s.date);if(!g[k])g[k]=[];g[k].push(s);});return g;}
 
@@ -281,44 +330,56 @@ function render(){
   const next=nextSugg();
   const nc=FCHEX[next.focus]||'#888';
   const exList=allExNames();
+  const homeTopbar=tab==='sessions';
   if(!selEx&&exList.length)selEx=exList[0];
 
   document.getElementById('app').innerHTML=`
     ${loading?'<div class="loading-overlay"><div class="spinner"></div></div>':''}
 
-    <div class="topbar">
+    <div class="topbar ${homeTopbar?'topbar-home':''}">
       <div class="topbar-inner">
         <div class="brand">
-          <div class="logo">LIFT<em>TRACK</em></div>
-          <div class="pill">
-            <div class="rest-badge ${da>4?'warn':''}">${da}d rest</div>
-          </div>
+          <div class="logo">Lift<span>Track</span></div>
         </div>
-        <button class="cta" onclick="switchTab('add')">+ Log</button>
+
+        ${homeTopbar?`
+          <button class="pill rest-pill ${da>4?'warn':''}" onclick="switchTab('add')">
+            <span class="rest-badge ${da>4?'warn':''}">${da}d</span>
+            <span class="pill-search">⌕</span>
+          </button>
+        `:`
+          <div class="topbar-actions">
+            <div class="pill">
+              <div class="rest-badge ${da>4?'warn':''}">${da}d rest</div>
+            </div>
+            <button class="cta" onclick="switchTab('add')">+ Log</button>
+          </div>
+        `}
       </div>
     </div>
 
-    <div class="stat-strip">
+    <div class="stat-strip ${homeTopbar?'stat-strip-home':''}">
       <div class="stat-cell">
         <div class="stat-cell-label">Sessions</div>
         <div class="stat-cell-val" style="color:var(--gold)">${sessions.length}</div>
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">Volume</div>
-        <div class="stat-cell-val" style="color:var(--pull)">${(totalVol/1000).toFixed(1)}<span style="font-size:11px;color:var(--muted)">t</span></div>
+        <div class="stat-cell-val" style="color:var(--text)">${(totalVol/1000).toFixed(1)}<span style="font-size:14px;color:var(--muted)">t</span></div>
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">PRs</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
       </div>
-      <div class="stat-cell next" onclick="switchTab('add')">
-        <div class="stat-cell-label" style="color:${nc}aa">Next up</div>
-        <div class="stat-cell-val" style="color:${nc};font-size:18px">${next.focus}</div>
-        <div class="stat-cell-sub">${next.reason}</div>
-      </div>
+      ${homeTopbar?'':`
+        <div class="stat-cell next" onclick="switchTab('add')">
+          <div class="stat-cell-label" style="color:${nc}aa">Next up</div>
+          <div class="stat-cell-val" style="color:${nc};font-size:18px">${next.focus}</div>
+        </div>
+      `}
     </div>
 
-    <div class="content" id="content">
+    <div class="content ${homeTopbar?'content-home':''}" id="content">
       ${tab==='sessions'?renderSessions():tab==='progress'?renderProgress():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
     </div>
 
@@ -348,78 +409,120 @@ function render(){
 // SESSIONS TAB
 // ═══════════════════════════════════════════════
 function renderSessions(){
-  if(!sessions.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No sessions yet.</div>';
+  if(!sessions.length){
+    return '<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No sessions yet.</div>';
+  }
+
   const sorted=[...sessions].reverse();
-  const groups=groupByMonth(sorted);
+  const next=nextSugg();
+  const nextColor=FCHEX[next.focus]||'#e8b84b';
+  const nextLast=lastByFocus(next.focus);
+  const nextMeta=nextLast?`Last ${fmtDate(nextLast.date)}`:'Fresh block';
+  const todayLabel=fmtDate(new Date().toISOString().split('T')[0]);
+
   const maxExVol={};
-  sessions.forEach(s=>s.exercises.forEach(ex=>{const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;}));
+  sessions.forEach(s=>s.exercises.forEach(ex=>{
+    const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
+    if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;
+  }));
 
-  return Object.entries(groups).map(([month,ss])=>`
-    <div class="month-header">
-      <div class="month-label">${month.toUpperCase()}</div>
-      <div class="month-line"></div>
-      <div class="month-count">${ss.length}</div>
+  return `
+    <div class="log-home">
+      <div class="log-home-head">
+        <div class="log-home-title">Next Up</div>
+        <button class="log-home-mini" onclick="switchTab('add')">⌄</button>
+      </div>
+
+      <div class="next-hero gold-dust">
+        <div class="next-hero-copy">
+          <div class="next-hero-focus" style="color:${nextColor}">${next.focus}</div>
+          <div class="next-hero-meta">${todayLabel} · ${nextMeta}</div>
+          <button class="next-hero-btn" onclick="switchTab('add')">Start Workout</button>
+        </div>
+
+        <div class="next-hero-art" aria-hidden="true">
+          <span class="hero-plate hero-plate-a"></span>
+          <span class="hero-plate hero-plate-b"></span>
+          <span class="hero-bar"></span>
+          <span class="hero-core"></span>
+          <span class="hero-face"></span>
+          <span class="hero-arm hero-arm-l"></span>
+          <span class="hero-arm hero-arm-r"></span>
+        </div>
+      </div>
+
+      <div class="recent-head">
+        <div class="recent-head-title">Recent Workouts</div>
+        <div class="recent-head-count">${sorted.length}</div>
+      </div>
+
+      <div class="recent-list">
+        ${sorted.map(s=>{
+          const fc=FCHEX[s.focus]||'#888';
+          const vol=Math.round(sVol(s));
+          const volLabel=vol>=1000?`${(vol/1000).toFixed(1)}k`:`${vol}`;
+          const open=expandedId===s.id;
+          const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
+          const isEditing=editId===s.id;
+
+          return `
+            <div class="session-card log-row ${open?'open':''}">
+              <div class="session-row" onclick="toggleSession('${s.id}')">
+                <div class="session-row-main">
+                  <div class="session-row-title" style="color:${fc}">${s.focus}</div>
+                  <div class="session-row-kicker">Workout</div>
+                </div>
+
+                <div class="session-row-right">
+                  <div class="session-row-date">${fmtDate(s.date)}</div>
+                  <div class="session-row-vol">${volLabel}</div>
+                  <div class="session-row-meta">${s.exercises.length} ex${prExNames.length?` · ${prExNames.length} PR`:''}</div>
+                </div>
+
+                <div class="session-row-chevron ${open?'open':''}">›</div>
+              </div>
+
+              ${open?`
+                <div class="s-body">
+                  ${isEditing?renderEditForm(s):`
+                    <div class="s-body-inner">
+                      ${s.exercises.map(ex=>{
+                        const isPR=prExNames.includes(ex.name);
+                        const mw=Math.max(...ex.sets.map(set=>set.w));
+                        return `
+                          <div class="ex-row">
+                            <div class="ex-name-row">
+                              ${ex.ss?'<span class="ss-pill">SS</span>':''}
+                              <span class="ex-name-lbl ${isPR?'pr':''}">
+                                ${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}
+                              </span>
+                            </div>
+                            <div class="sets-row">
+                              ${ex.sets.map(set=>`
+                                <span class="set-pill ${set.w===mw&&isPR?'top':''}">
+                                  ${set.r}×${set.w}
+                                </span>
+                              `).join('')}
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+
+                      <div class="s-actions">
+                        <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
+                        <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
+                        <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
+                      </div>
+                    </div>
+                  `}
+                </div>
+              `:''}
+            </div>
+          `;
+        }).join('')}
+      </div>
     </div>
-    ${ss.map(s=>{
-      const fc=FCHEX[s.focus]||'#888';
-      const vol=Math.round(sVol(s));
-      const open=expandedId===s.id;
-      const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
-      const hasPR=prExNames.length>0;
-      const isEditing=editId===s.id;
-      return`
-        <div class="session-card ${open?'open':''}">
-          <div class="s-top" style="background:linear-gradient(135deg,${fc}12 0%, rgba(16,14,12,.95) 65%)" onclick="toggleSession('${s.id}')">
-            <div class="s-stripe" style="background:linear-gradient(180deg,${fc} 0%,${fc}66 100%)"></div>
-            <div class="s-main">
-              <div class="s-date">${fmtDate(s.date)}</div>
-              <div class="s-title-row">
-                <div class="s-title" style="color:${fc}">${s.focus}</div>
-                <span class="focus-tag" style="color:${fc}">${s.exercises.length} ex</span>
-                ${hasPR?'<span class="pr-tag">★ PR</span>':''}
-              </div>
-              <div class="s-mini-bars">
-                ${s.exercises.map(ex=>{
-                  const ev=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
-                  const h=Math.max(3,Math.round((ev/(maxExVol[ex.name]||1))*16));
-                  return`<div style="flex:1;height:${h}px;background:${fc};opacity:0.40;border-radius:6px 6px 0 0"></div>`;
-                }).join('')}
-              </div>
-            </div>
-            <div class="s-right">
-              <div><span class="s-vol-num">${vol}</span><span class="s-vol-unit">kg</span></div>
-              <span class="s-chevron ${open?'open':''}">▼</span>
-            </div>
-          </div>
-
-          ${open?`
-            <div class="s-body">
-              ${isEditing?renderEditForm(s):`
-                <div class="s-body-inner">
-                  ${s.exercises.map(ex=>{
-                    const isPR=prExNames.includes(ex.name);
-                    const mw=Math.max(...ex.sets.map(s=>s.w));
-                    return`
-                      <div class="ex-row">
-                        <div class="ex-name-row">
-                          ${ex.ss?'<span class="ss-pill">SS</span>':''}
-                          <span class="ex-name-lbl ${isPR?'pr':''}">${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}</span>
-                        </div>
-                        <div class="sets-row">
-                          ${ex.sets.map(set=>`<span class="set-pill ${set.w===mw&&isPR?'top':''}">${set.r}×${set.w}</span>`).join('')}
-                        </div>
-                      </div>`;
-                  }).join('')}
-                  <div class="s-actions">
-                    <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
-                    <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
-                    <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
-                  </div>
-                </div>`}
-            </div>`:''}
-        </div>`;
-    }).join('')}
-  `).join('');
+  `;
 }
 
 function renderEditForm(s){
@@ -473,19 +576,75 @@ function renderEditForm(s){
 // PROGRESS TAB
 // ═══════════════════════════════════════════════
 function renderProgress(){
-  const chips=allFamilyChips();
-  if(!chips.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">Log more sessions first.</div>';
-  if(!selEx||!chips.some(c=>c.exName===selEx))selEx=chips[0].exName;
+  if(progressMuscle)return renderProgressForMuscle(progressMuscle);
+  if(progressGroup){const g=MUSCLE_GROUPS.find(g=>g.id===progressGroup);if(g)return renderProgressGroup(g);}
+  // Level 1 — body-part groups
+  return`
+    <div class="section-header">
+      <div class="section-title">GAINS</div>
+      <div style="font-size:11px;color:var(--muted)">Select a body part</div>
+    </div>
+    <div class="muscle-group-grid">
+      ${MUSCLE_GROUPS.map(g=>{
+        const exNames=new Set();
+        g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
+        const logCount=sessions.reduce((t,s)=>t+s.exercises.filter(e=>exNames.has(e.name)).length,0);
+        return`<div class="muscle-group-card" onclick="progressGroup='${g.id}';render()" style="--gc:${g.color}">
+          <div class="muscle-group-name">${g.label}</div>
+          <div class="muscle-group-sub">${g.muscles.length} muscles</div>
+          ${logCount?`<div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderProgressGroup(group){
+  return`
+    <div class="muscle-detail-header">
+      <button class="back-btn" onclick="progressGroup=null;render()">←</button>
+      <div>
+        <div class="section-title" style="color:${group.color};margin-bottom:0">${group.label.toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} muscles</div>
+      </div>
+    </div>
+    <div class="muscle-grid" style="padding-top:14px">
+      ${group.muscles.map(muscle=>{
+        const c=MUSCLE_COLORS[muscle]||group.color;
+        const exs=getLoggedExercisesForMuscle(muscle);
+        const libCount=getDbFamiliesForMuscle(muscle).reduce((t,f)=>t+DB_EQUIPMENT_KEYS.filter(k=>f[k]).length,0);
+        const logCount=exs.reduce((t,e)=>t+e.count,0);
+        return`<div class="muscle-cell" onclick="progressMuscle='${muscle}';selEx=null;render()">
+          <div class="muscle-cell-name" style="color:${c}">${muscle}</div>
+          <div class="muscle-cell-sub">${exs.length?`${exs.length} ex · ${logCount} logs`:`${libCount} ex · no logs`}</div>
+          <div class="muscle-cell-bar"><div class="muscle-cell-fill" style="width:${exs.length?'60':'0'}%;background:${c}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderProgressForMuscle(muscle){
+  const group=MUSCLE_GROUPS.find(g=>g.muscles.includes(muscle));
+  const c=MUSCLE_COLORS[muscle]||group?.color||'#888';
+  const exs=getLoggedExercisesForMuscle(muscle);
+  const header=`
+    <div class="muscle-detail-header">
+      <button class="back-btn" onclick="progressMuscle=null;render()">←</button>
+      <div>
+        <div class="section-title" style="color:${c};margin-bottom:0">${muscle.toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${exs.length} exercise${exs.length!==1?'s':''} logged</div>
+      </div>
+    </div>`;
+  if(!exs.length)return header+`<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No logged exercises for ${muscle} yet.</div>`;
+  if(!selEx||!exs.some(e=>e.name===selEx))selEx=exs[0].name;
   const pd=progressFor(selEx);
   const cur=pd[pd.length-1],first=pd[0];
   const wDelta=cur&&first?+(cur.mw-first.mw).toFixed(1):0;
   const eDelta=cur&&first?+(cur.e1rm-first.e1rm).toFixed(1):0;
-  return`
-    <div class="section-header">
-      <div class="section-title">PROGRESS</div>
-      <div class="ex-chips">${chips.map(c=>`<button class="ex-chip ${selEx===c.exName?'active':''}" onclick="selectEx('${c.exName.replace(/'/g,"\\'")}')"><span>${c.label}</span></button>`).join('')}</div>
+  return header+`
+    <div class="progress-ex-header">
+      <div class="progress-ex-name">${selEx}</div>
     </div>
-    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">Not enough data yet for this family.</div>`:`
+    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">Not enough data for ${selEx} yet — log at least 2 sessions.</div>`:`
       <div class="chart-block">
         <div class="chart-block-title">Estimated 1RM</div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -506,7 +665,14 @@ function renderProgress(){
         <div class="chart-block-title">Session Volume</div>
         <div class="chart-big" style="color:var(--pull)">${cur.vol}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg·reps</span></div>
         <div class="chart-wrap"><canvas id="vChart"></canvas></div>
-      </div>`}`;
+      </div>`}
+    <div style="padding:10px 14px 16px">
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Exercises</div>
+      ${exs.map(e=>`<div class="progress-ex-row ${selEx===e.name?'active':''}" onclick="selectEx('${e.name.replace(/'/g,"\\'")}')">
+        <span class="progress-ex-row-name">${e.name}</span>
+        <span class="progress-ex-row-count">${e.count}×</span>
+      </div>`).join('')}
+    </div>`;
 }
 
 function renderCharts(){
@@ -561,27 +727,50 @@ function renderCharts(){
 // MUSCLES TAB
 // ═══════════════════════════════════════════════
 function renderMusclesTab(){
+  if(selMuscle){const stats=getMuscleStats();return renderMuscleDetail(selMuscle,stats[selMuscle]||null);}
+  if(selGroup){const g=MUSCLE_GROUPS.find(g=>g.id===selGroup);if(g)return renderMuscleGroup(g);}
+  // Level 1 — body-part groups
   const stats=getMuscleStats();
-  if(selMuscle&&stats[selMuscle])return renderMuscleDetail(selMuscle,stats[selMuscle]);
-  const muscles=Object.keys(stats).sort((a,b)=>stats[b].totalVol-stats[a].totalVol);
-  if(!muscles.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">Log sessions to see muscle stats.</div>';
-  const maxVol=Math.max(...muscles.map(m=>stats[m].totalVol));
   return`
     <div class="section-header">
       <div class="section-title">MUSCLES</div>
-      <div style="font-size:11px;color:var(--muted)">Tap a muscle to see exercises</div>
+      <div style="font-size:11px;color:var(--muted)">Select a body part</div>
     </div>
-    <div class="muscle-grid">
-      ${muscles.map(muscle=>{
-        const s=stats[muscle];const c=MUSCLE_COLORS[muscle]||'#888';
-        const pct=Math.round((s.totalVol/maxVol)*100);
-        const exCount=Object.keys(s.exercises).length;
-        return`
-          <div class="muscle-cell" onclick="selMuscle='${muscle}';render()">
-            <div class="muscle-cell-name" style="color:${c}">${muscle}</div>
-            <div class="muscle-cell-sub">${exCount} exercise${exCount!==1?'s':''}</div>
-            <div class="muscle-cell-bar"><div class="muscle-cell-fill" style="width:${pct}%;background:${c}"></div></div>
-          </div>`;
+    <div class="muscle-group-grid">
+      ${MUSCLE_GROUPS.map(g=>{
+        const groupVol=GROUP_STAT_KEYS[g.id].reduce((t,k)=>t+(stats[k]?.totalVol||0),0);
+        const exCount=g.muscles.reduce((t,m)=>t+getDbFamiliesForMuscle(m).length,0);
+        return`<div class="muscle-group-card" onclick="selGroup='${g.id}';render()" style="--gc:${g.color}">
+          <div class="muscle-group-name">${g.label}</div>
+          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''} · ${exCount} exercises</div>
+          ${groupVol?`<div class="muscle-group-vol">${Math.round(groupVol/1000)||'<1'}k vol</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderMuscleGroup(group){
+  const stats=getMuscleStats();
+  const vols=group.muscles.map(m=>stats[m]?.totalVol||0);
+  const maxVol=Math.max(...vols,1);
+  return`
+    <div class="muscle-detail-header">
+      <button class="back-btn" onclick="selGroup=null;render()">←</button>
+      <div>
+        <div class="section-title" style="color:${group.color};margin-bottom:0">${group.label.toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} muscles</div>
+      </div>
+    </div>
+    <div class="muscle-grid" style="padding-top:14px">
+      ${group.muscles.map((muscle,i)=>{
+        const c=MUSCLE_COLORS[muscle]||group.color;
+        const pct=Math.round((vols[i]/maxVol)*100);
+        const exCount=getDbFamiliesForMuscle(muscle).length;
+        return`<div class="muscle-cell" onclick="selMuscle='${muscle}';render()">
+          <div class="muscle-cell-name" style="color:${c}">${muscle}</div>
+          <div class="muscle-cell-sub">${exCount} exercise${exCount!==1?'s':''}</div>
+          <div class="muscle-cell-bar"><div class="muscle-cell-fill" style="width:${pct}%;background:${c}"></div></div>
+        </div>`;
       }).join('')}
     </div>`;
 }
@@ -666,7 +855,7 @@ function renderOverview(){
 
     <div class="ov-section">
       <div class="ov-title">Exercise Frequency</div>
-      <div class="freq-grid">${Object.entries(exFreq).sort((a,b)=>b[1]-a[1]).map(([name,count])=>`
+      <div class="freq-grid">${Object.entries(exFreq).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,count])=>`
         <div class="freq-item"><span class="freq-name">${name}</span><span class="freq-n">${count}×</span></div>
       `).join('')}</div>
     </div>`;
@@ -773,7 +962,7 @@ function renderAdd(){
               </div>
 
               ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">Apply</button></div>`:''}
-              ${alts.length?`<div class="alt-row"><span class="alt-label">Alt</span><div class="alt-chips">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
+              ${alts.length?`<div class="alt-row"><button class="alt-toggle" onclick="toggleAlts(${ei})" aria-expanded="false" id="alt-toggle-${ei}"><span class="alt-label">Alt</span><span class="alt-arrow">▶</span></button><div class="alt-chips" id="alt-chips-${ei}" style="display:none">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
 
               ${ex.sets.map((set,si)=>{
                 const prevSet=lastSets&&lastSets[si];
@@ -810,7 +999,7 @@ function renderAdd(){
 function switchTab(t){
   tab=t; acActive=null;
   if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);}
-  else{if(t!=='muscles')selMuscle=null;render();}
+  else{if(t!=='muscles'){selMuscle=null;selGroup=null;}if(t!=='progress'){progressGroup=null;progressMuscle=null;}render();}
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
 function selectEx(name){selEx=name;render();}
@@ -874,6 +1063,15 @@ function removeEx(i){addForm.exercises.splice(i,1);acActive=null;render();}
 function addSet(ei){addForm.exercises[ei].sets.push({r:'',w:''});render();}
 function removeSet(ei,si){addForm.exercises[ei].sets.splice(si,1);render();}
 function applySugg(ei,sets,reps,weight){addForm.exercises[ei].sets=Array.from({length:sets},()=>({r:String(reps),w:String(weight)}));render();}
+function toggleAlts(ei){
+  const chips=document.getElementById('alt-chips-'+ei);
+  const btn=document.getElementById('alt-toggle-'+ei);
+  if(!chips||!btn)return;
+  const open=chips.style.display==='none';
+  chips.style.display=open?'flex':'none';
+  btn.querySelector('.alt-arrow').textContent=open?'▼':'▶';
+  btn.setAttribute('aria-expanded',open);
+}
 function addAlt(name,afterIdx){
   const ls=[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name));
   const sets=ls?ls.exercises.find(e=>e.name===name).sets.map(s=>({r:String(s.r),w:String(s.w)})):[{r:'',w:''}];
