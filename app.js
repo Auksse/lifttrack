@@ -330,56 +330,43 @@ function render(){
   const next=nextSugg();
   const nc=FCHEX[next.focus]||'#888';
   const exList=allExNames();
-  const homeTopbar=tab==='sessions';
   if(!selEx&&exList.length)selEx=exList[0];
 
   document.getElementById('app').innerHTML=`
     ${loading?'<div class="loading-overlay"><div class="spinner"></div></div>':''}
 
-    <div class="topbar ${homeTopbar?'topbar-home':''}">
+    <div class="topbar">
       <div class="topbar-inner">
         <div class="brand">
-          <div class="logo">Lift<span>Track</span></div>
-        </div>
-
-        ${homeTopbar?`
-          <button class="pill rest-pill ${da>4?'warn':''}" onclick="switchTab('add')">
-            <span class="rest-badge ${da>4?'warn':''}">${da}d</span>
-            <span class="pill-search">⌕</span>
-          </button>
-        `:`
-          <div class="topbar-actions">
-            <div class="pill">
-              <div class="rest-badge ${da>4?'warn':''}">${da}d rest</div>
-            </div>
-            <button class="cta" onclick="switchTab('add')">+ Log</button>
+          <div class="logo">LIFT<em>TRACK</em></div>
+          <div class="pill">
+            <div class="rest-badge ${da>4?'warn':''}">${da}d rest</div>
           </div>
-        `}
+        </div>
+        <button class="cta" onclick="switchTab('add')">+ Log</button>
       </div>
     </div>
 
-    <div class="stat-strip ${homeTopbar?'stat-strip-home':''}">
+    <div class="stat-strip">
       <div class="stat-cell">
         <div class="stat-cell-label">Sessions</div>
         <div class="stat-cell-val" style="color:var(--gold)">${sessions.length}</div>
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">Volume</div>
-        <div class="stat-cell-val" style="color:var(--text)">${(totalVol/1000).toFixed(1)}<span style="font-size:14px;color:var(--muted)">t</span></div>
+        <div class="stat-cell-val" style="color:var(--pull)">${(totalVol/1000).toFixed(1)}<span style="font-size:11px;color:var(--muted)">t</span></div>
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">PRs</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
       </div>
-      ${homeTopbar?'':`
-        <div class="stat-cell next" onclick="switchTab('add')">
-          <div class="stat-cell-label" style="color:${nc}aa">Next up</div>
-          <div class="stat-cell-val" style="color:${nc};font-size:18px">${next.focus}</div>
-        </div>
-      `}
+      <div class="stat-cell next" onclick="switchTab('add')">
+        <div class="stat-cell-label" style="color:${nc}aa">Next up</div>
+        <div class="stat-cell-val" style="color:${nc};font-size:18px">${next.focus}</div>
+      </div>
     </div>
 
-    <div class="content ${homeTopbar?'content-home':''}" id="content">
+    <div class="content" id="content">
       ${tab==='sessions'?renderSessions():tab==='progress'?renderProgress():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
     </div>
 
@@ -409,120 +396,78 @@ function render(){
 // SESSIONS TAB
 // ═══════════════════════════════════════════════
 function renderSessions(){
-  if(!sessions.length){
-    return '<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No sessions yet.</div>';
-  }
-
+  if(!sessions.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No sessions yet.</div>';
   const sorted=[...sessions].reverse();
-  const next=nextSugg();
-  const nextColor=FCHEX[next.focus]||'#e8b84b';
-  const nextLast=lastByFocus(next.focus);
-  const nextMeta=nextLast?`Last ${fmtDate(nextLast.date)}`:'Fresh block';
-  const todayLabel=fmtDate(new Date().toISOString().split('T')[0]);
-
+  const groups=groupByMonth(sorted);
   const maxExVol={};
-  sessions.forEach(s=>s.exercises.forEach(ex=>{
-    const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
-    if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;
-  }));
+  sessions.forEach(s=>s.exercises.forEach(ex=>{const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;}));
 
-  return `
-    <div class="log-home">
-      <div class="log-home-head">
-        <div class="log-home-title">Next Up</div>
-        <button class="log-home-mini" onclick="switchTab('add')">⌄</button>
-      </div>
-
-      <div class="next-hero gold-dust">
-        <div class="next-hero-copy">
-          <div class="next-hero-focus" style="color:${nextColor}">${next.focus}</div>
-          <div class="next-hero-meta">${todayLabel} · ${nextMeta}</div>
-          <button class="next-hero-btn" onclick="switchTab('add')">Start Workout</button>
-        </div>
-
-        <div class="next-hero-art" aria-hidden="true">
-          <span class="hero-plate hero-plate-a"></span>
-          <span class="hero-plate hero-plate-b"></span>
-          <span class="hero-bar"></span>
-          <span class="hero-core"></span>
-          <span class="hero-face"></span>
-          <span class="hero-arm hero-arm-l"></span>
-          <span class="hero-arm hero-arm-r"></span>
-        </div>
-      </div>
-
-      <div class="recent-head">
-        <div class="recent-head-title">Recent Workouts</div>
-        <div class="recent-head-count">${sorted.length}</div>
-      </div>
-
-      <div class="recent-list">
-        ${sorted.map(s=>{
-          const fc=FCHEX[s.focus]||'#888';
-          const vol=Math.round(sVol(s));
-          const volLabel=vol>=1000?`${(vol/1000).toFixed(1)}k`:`${vol}`;
-          const open=expandedId===s.id;
-          const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
-          const isEditing=editId===s.id;
-
-          return `
-            <div class="session-card log-row ${open?'open':''}">
-              <div class="session-row" onclick="toggleSession('${s.id}')">
-                <div class="session-row-main">
-                  <div class="session-row-title" style="color:${fc}">${s.focus}</div>
-                  <div class="session-row-kicker">Workout</div>
-                </div>
-
-                <div class="session-row-right">
-                  <div class="session-row-date">${fmtDate(s.date)}</div>
-                  <div class="session-row-vol">${volLabel}</div>
-                  <div class="session-row-meta">${s.exercises.length} ex${prExNames.length?` · ${prExNames.length} PR`:''}</div>
-                </div>
-
-                <div class="session-row-chevron ${open?'open':''}">›</div>
-              </div>
-
-              ${open?`
-                <div class="s-body">
-                  ${isEditing?renderEditForm(s):`
-                    <div class="s-body-inner">
-                      ${s.exercises.map(ex=>{
-                        const isPR=prExNames.includes(ex.name);
-                        const mw=Math.max(...ex.sets.map(set=>set.w));
-                        return `
-                          <div class="ex-row">
-                            <div class="ex-name-row">
-                              ${ex.ss?'<span class="ss-pill">SS</span>':''}
-                              <span class="ex-name-lbl ${isPR?'pr':''}">
-                                ${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}
-                              </span>
-                            </div>
-                            <div class="sets-row">
-                              ${ex.sets.map(set=>`
-                                <span class="set-pill ${set.w===mw&&isPR?'top':''}">
-                                  ${set.r}×${set.w}
-                                </span>
-                              `).join('')}
-                            </div>
-                          </div>
-                        `;
-                      }).join('')}
-
-                      <div class="s-actions">
-                        <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
-                        <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
-                        <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
-                      </div>
-                    </div>
-                  `}
-                </div>
-              `:''}
-            </div>
-          `;
-        }).join('')}
-      </div>
+  return Object.entries(groups).map(([month,ss])=>`
+    <div class="month-header">
+      <div class="month-label">${month.toUpperCase()}</div>
+      <div class="month-line"></div>
+      <div class="month-count">${ss.length}</div>
     </div>
-  `;
+    ${ss.map(s=>{
+      const fc=FCHEX[s.focus]||'#888';
+      const vol=Math.round(sVol(s));
+      const open=expandedId===s.id;
+      const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
+      const hasPR=prExNames.length>0;
+      const isEditing=editId===s.id;
+      return`
+        <div class="session-card ${open?'open':''}">
+          <div class="s-top" style="background:linear-gradient(135deg,${fc}12 0%, rgba(16,14,12,.95) 65%)" onclick="toggleSession('${s.id}')">
+            <div class="s-stripe" style="background:linear-gradient(180deg,${fc} 0%,${fc}66 100%)"></div>
+            <div class="s-main">
+              <div class="s-date">${fmtDate(s.date)}</div>
+              <div class="s-title-row">
+                <div class="s-title" style="color:${fc}">${s.focus}</div>
+                <span class="focus-tag" style="color:${fc}">${s.exercises.length} ex</span>
+                ${hasPR?'<span class="pr-tag">★ PR</span>':''}
+              </div>
+              <div class="s-mini-bars">
+                ${s.exercises.map(ex=>{
+                  const ev=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
+                  const h=Math.max(3,Math.round((ev/(maxExVol[ex.name]||1))*16));
+                  return`<div style="flex:1;height:${h}px;background:${fc};opacity:0.40;border-radius:6px 6px 0 0"></div>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="s-right">
+              <div><span class="s-vol-num">${vol}</span><span class="s-vol-unit">kg</span></div>
+              <span class="s-chevron ${open?'open':''}">▼</span>
+            </div>
+          </div>
+
+          ${open?`
+            <div class="s-body">
+              ${isEditing?renderEditForm(s):`
+                <div class="s-body-inner">
+                  ${s.exercises.map(ex=>{
+                    const isPR=prExNames.includes(ex.name);
+                    const mw=Math.max(...ex.sets.map(s=>s.w));
+                    return`
+                      <div class="ex-row">
+                        <div class="ex-name-row">
+                          ${ex.ss?'<span class="ss-pill">SS</span>':''}
+                          <span class="ex-name-lbl ${isPR?'pr':''}">${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}</span>
+                        </div>
+                        <div class="sets-row">
+                          ${ex.sets.map(set=>`<span class="set-pill ${set.w===mw&&isPR?'top':''}">${set.r}×${set.w}</span>`).join('')}
+                        </div>
+                      </div>`;
+                  }).join('')}
+                  <div class="s-actions">
+                    <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
+                    <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
+                    <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
+                  </div>
+                </div>`}
+            </div>`:''}
+        </div>`;
+    }).join('')}
+  `).join('');
 }
 
 function renderEditForm(s){
