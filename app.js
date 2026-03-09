@@ -218,7 +218,9 @@ const SEED=[
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
 let progressGroup=null,progressMuscle=null;
 let muscleSubTab='exercises';
-let schedules=[],schedDate=new Date().toISOString().split('T')[0],schedFocus='Push';
+let schedules=[],schedFocus='Push',schedSelectedDay=null;
+let schedViewYear=new Date().getFullYear(),schedViewMonth=new Date().getMonth();
+let customSplits=[],newSplitName='';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
@@ -296,16 +298,33 @@ function getMuscleStats(){
 // ═══════════════════════════════════════════════
 function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_schedules')||'[]');}
 function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
+function loadCustomSplits(){customSplits=JSON.parse(localStorage.getItem('lifttrack_splits')||'[]');}
+function saveCustomSplits(){localStorage.setItem('lifttrack_splits',JSON.stringify(customSplits));}
 function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
+function getAllFocuses(){return['Push','Pull','Legs','Upper','Other',...customSplits.map(s=>s.name)];}
 function confirmAddSchedule(){
-  const el=document.getElementById('schedDate');
-  const date=el?el.value:schedDate;
-  if(!date)return toast('Pick a date first',true);
-  schedules.push({id:crypto.randomUUID(),date,focus:schedFocus});
+  if(!schedSelectedDay)return toast('Select a day first',true);
+  schedules.push({id:crypto.randomUUID(),date:schedSelectedDay,focus:schedFocus});
   schedules.sort((a,b)=>a.date.localeCompare(b.date));
   saveSchedules();render();toast('Session planned');
 }
 function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
+function addCustomSplit(){
+  const el=document.getElementById('newSplitInput');
+  const name=(el?el.value:newSplitName).trim();
+  if(!name)return toast('Enter a split name',true);
+  if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast('Split already exists',true);
+  customSplits.push({id:crypto.randomUUID(),name});
+  saveCustomSplits();newSplitName='';render();toast('Split created');
+}
+function deleteCustomSplit(id){
+  const removed=customSplits.find(s=>s.id===id);
+  customSplits=customSplits.filter(s=>s.id!==id);
+  if(removed&&schedFocus===removed.name)schedFocus='Push';
+  saveCustomSplits();render();
+}
+function prevSchedMonth(){schedViewMonth--;if(schedViewMonth<0){schedViewMonth=11;schedViewYear--;}schedSelectedDay=null;render();}
+function nextSchedMonth(){schedViewMonth++;if(schedViewMonth>11){schedViewMonth=0;schedViewYear++;}schedSelectedDay=null;render();}
 
 // ═══════════════════════════════════════════════
 // INDEXEDDB
@@ -382,7 +401,7 @@ function render(){
       <div class="stat-cell next" onclick="switchTab('schedule')">
         <div class="stat-cell-label" style="color:${nc}aa">${sched?'Scheduled':'Next up'}</div>
         <div class="stat-cell-val" style="color:${nc};font-size:18px">${(sched||next).focus}</div>
-        ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:`<div class="stat-cell-sub" style="color:var(--dim)">Schedule?</div>`}
+        ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:''}
       </div>
     </div>
 
@@ -392,7 +411,7 @@ function render(){
 
     <div class="dock">
       <div class="dock-inner">
-        ${[['schedule','📅','Plan'],['sessions','📋','Log']].map(([t,ic,lb])=>`
+        ${[['sessions','📋','Log'],['schedule','📅','Plan']].map(([t,ic,lb])=>`
           <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
             <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
           </button>`).join('')}
@@ -432,7 +451,7 @@ function renderSessions(){
 
   return`
     <div class="log-next-section">
-      <div class="log-section-hdr"><span class="log-section-title">Next Up</span></div>
+      <div class="log-section-hdr"><span class="log-section-title"><span style="color:var(--text)">Next</span> Up</span></div>
       <div class="next-hero-card" onclick="switchTab('add')">
         <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
         <div class="next-hero-content">
@@ -445,7 +464,7 @@ function renderSessions(){
     </div>
 
     <div class="log-section-hdr log-recent-hdr">
-      <span class="log-section-title">Recent Workouts</span>
+      <span class="log-section-title"><span style="color:var(--text)">Recent</span> Workouts</span>
     </div>
 
     ${Object.entries(groups).map(([month,ss])=>`
@@ -730,7 +749,7 @@ function renderMusclesTab(){
         return`<div class="muscle-group-card" onclick="progressGroup='${g.id}';render()" style="--gc:${g.color}">
           <div class="muscle-group-name">${g.label}</div>
           <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''}</div>
-          ${logCount?`<div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>`:''}
+          <div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>
         </div>`;
       }).join('')
     :MUSCLE_GROUPS.map(g=>{
@@ -828,48 +847,116 @@ function renderMuscleDetail(muscle,stat){
 // ═══════════════════════════════════════════════
 function renderScheduleTab(){
   const today=new Date().toISOString().split('T')[0];
+  const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const daysInMonth=new Date(schedViewYear,schedViewMonth+1,0).getDate();
+  const firstDow=new Date(schedViewYear,schedViewMonth,1).getDay();
+  const startCol=(firstDow+6)%7; // Mon=0, Sun=6
+
+  // Map this month's scheduled dates → focus colors
+  const dotMap={};
+  schedules.forEach(s=>{
+    const [sy,sm]=s.date.split('-').map(Number);
+    if(sy===schedViewYear&&sm-1===schedViewMonth){
+      if(!dotMap[s.date])dotMap[s.date]=[];
+      const fc=FCHEX[s.focus]||'#888';
+      if(!dotMap[s.date].includes(fc))dotMap[s.date].push(fc);
+    }
+  });
+
+  const cells=[];
+  for(let i=0;i<startCol;i++)cells.push(null);
+  for(let d=1;d<=daysInMonth;d++)cells.push(d);
+  while(cells.length%7!==0)cells.push(null);
+
+  const calGrid=`
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="prevSchedMonth()">‹</button>
+      <span class="cal-month-label">${MONTH_NAMES[schedViewMonth]} ${schedViewYear}</span>
+      <button class="cal-nav-btn" onclick="nextSchedMonth()">›</button>
+    </div>
+    <div class="cal-grid">
+      ${['Mo','Tu','We','Th','Fr','Sa','Su'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+      ${cells.map(d=>{
+        if(!d)return`<div></div>`;
+        const ds=`${schedViewYear}-${String(schedViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday=ds===today,isPast=ds<today,isSel=ds===schedSelectedDay;
+        const dots=(dotMap[ds]||[]).map(c=>`<span class="cal-dot" style="background:${c}"></span>`).join('');
+        return`<div class="cal-day${isToday?' cal-today':''}${isPast?' cal-past':''}${isSel?' cal-selected':''}" onclick="schedSelectedDay='${ds}';render()">
+          <span class="cal-day-num">${d}</span>
+          ${dots?`<div class="cal-dots">${dots}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  const allFocuses=getAllFocuses();
+  const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus=${JSON.stringify(f)};render()">${f}</button>`).join('');
+
+  const addPanel=schedSelectedDay?`
+    <div class="sched-add-panel">
+      <div class="sched-add-panel-date">${fmtDate(schedSelectedDay)}</div>
+      <div class="muscle-subtab-bar" style="flex-wrap:wrap">${focusPills}</div>
+      <button class="sched-add-btn" onclick="confirmAddSchedule()">+ Add to plan</button>
+    </div>`:`
+    <div style="padding:8px 16px 14px;text-align:center;font-size:12px;color:var(--dim)">Tap a day to schedule a session</div>`;
+
   const upcoming=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
   const past=[...schedules.filter(s=>s.date<today)].sort((a,b)=>b.date.localeCompare(a.date));
-  const focusPills=['Push','Pull','Legs','Upper','Other'].map(f=>
-    `<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus='${f}';render()">${f}</button>`
-  ).join('');
+
+  const schedList=(upcoming.length||past.length)?`
+    <div class="log-section-hdr log-recent-hdr">
+      <span class="log-section-title"><span style="color:var(--text)">Scheduled</span> Sessions</span>
+    </div>
+    ${upcoming.map(s=>{
+      const fc=FCHEX[s.focus]||'#888';
+      const isToday=s.date===today;
+      return`<div class="sched-card${isToday?' today':''}">
+        <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
+        <div class="sched-card-main">
+          <div class="sched-card-focus" style="color:${fc}">${s.focus}</div>
+          <div class="sched-card-date">${fmtDate(s.date)}${isToday?' · Today':''}</div>
+        </div>
+        <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
+      </div>`;
+    }).join('')}
+    ${past.map(s=>{
+      const fc=FCHEX[s.focus]||'#888';
+      return`<div class="sched-card cal-past" style="opacity:.45">
+        <div class="sched-card-stripe" style="background:${fc}44"></div>
+        <div class="sched-card-main">
+          <div class="sched-card-focus" style="color:${fc}88">${s.focus}</div>
+          <div class="sched-card-date" style="color:var(--dim)">${fmtDate(s.date)}</div>
+        </div>
+        <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
+      </div>`;
+    }).join('')}`:'';
+
+  const splitsSection=`
+    <div class="log-section-hdr log-recent-hdr" style="margin-top:4px">
+      <span class="log-section-title"><span style="color:var(--text)">My</span> Splits</span>
+    </div>
+    <div style="padding:0 12px 8px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        ${['Push','Pull','Legs','Upper','Other'].map(f=>`<div class="split-pill built-in"><span>${f}</span></div>`).join('')}
+        ${customSplits.map(s=>`<div class="split-pill custom">
+          <span>${s.name}</span>
+          <button onclick="deleteCustomSplit('${s.id}')" class="split-pill-del">×</button>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="newSplitInput" placeholder="New split name…" class="form-input" style="font-size:14px;padding:10px 12px" oninput="newSplitName=this.value" value="${newSplitName.replace(/"/g,'&quot;')}">
+        <button class="sched-add-btn" style="width:auto;padding:10px 18px;flex-shrink:0;white-space:nowrap" onclick="addCustomSplit()">+ Add</button>
+      </div>
+    </div>`;
+
   return`
     <div class="section-header">
       <div class="section-title">PLAN</div>
       <div style="font-size:11px;color:var(--muted)">Schedule future sessions</div>
     </div>
-    <div style="padding:14px 16px 16px">
-      <input type="date" id="schedDate" value="${schedDate}" onchange="schedDate=this.value" class="form-input" style="margin-bottom:10px" min="${today}">
-      <div class="muscle-subtab-bar" style="margin-bottom:12px">${focusPills}</div>
-      <button class="sched-add-btn" onclick="confirmAddSchedule()">+ Add to plan</button>
-    </div>
-    ${upcoming.length?`
-      <div class="log-section-hdr log-recent-hdr"><span class="log-section-title">Upcoming</span></div>
-      ${upcoming.map(s=>{
-        const fc=FCHEX[s.focus]||'#888';
-        const isToday=s.date===today;
-        return`<div class="sched-card${isToday?' today':''}">
-          <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
-          <div class="sched-card-main">
-            <div class="sched-card-focus" style="color:${fc}">${s.focus}</div>
-            <div class="sched-card-date">${fmtDate(s.date)}${isToday?' · Today':''}</div>
-          </div>
-          <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
-        </div>`;
-      }).join('')}`:`<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px">No upcoming sessions planned.</div>`}
-    ${past.length?`
-      <div class="log-section-hdr log-recent-hdr" style="margin-top:8px"><span class="log-section-title" style="color:var(--muted);font-size:16px">Past</span></div>
-      ${past.map(s=>{
-        const fc=FCHEX[s.focus]||'#888';
-        return`<div class="sched-card past">
-          <div class="sched-card-stripe" style="background:${fc}44"></div>
-          <div class="sched-card-main">
-            <div class="sched-card-focus" style="color:${fc}88">${s.focus}</div>
-            <div class="sched-card-date" style="color:var(--dim)">${fmtDate(s.date)}</div>
-          </div>
-          <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
-        </div>`;
-      }).join('')}`:``}`;
+    <div style="padding:14px 16px 0">${calGrid}</div>
+    ${addPanel}
+    ${schedList}
+    ${splitsSection}`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1159,7 +1246,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();render();
+  loading=true;loadSchedules();loadCustomSplits();render();
   try{await initDb();await loadSessions();}
   catch(e){toast('Failed to load data',true);}
   loading=false;render();

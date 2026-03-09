@@ -1412,6 +1412,123 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
   transition:color .12s;
 }
 .sched-del-btn:hover{color:var(--red);}
+.sched-add-panel{
+  padding:12px 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.sched-add-panel-date{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:var(--gold2);
+  margin-bottom:10px;
+}
+
+/* Calendar */
+.cal-nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.cal-month-label{
+  font-family:'Bebas Neue',cursive;
+  font-size:20px;
+  letter-spacing:.10em;
+  color:var(--text);
+}
+.cal-nav-btn{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:var(--r999);
+  color:var(--text2);
+  width:32px;height:32px;
+  font-size:18px;line-height:1;
+  cursor:pointer;
+  transition:all .12s;
+  display:flex;align-items:center;justify-content:center;
+}
+.cal-nav-btn:active{transform:scale(.92);}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:3px;
+}
+.cal-dow{
+  text-align:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:.08em;
+  color:var(--dim);
+  padding-bottom:4px;
+  text-transform:uppercase;
+}
+.cal-day{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  aspect-ratio:1;
+  border-radius:10px;
+  cursor:pointer;
+  transition:background .12s;
+  position:relative;
+}
+.cal-day:hover{background:rgba(255,255,255,.06);}
+.cal-day-num{
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  color:var(--text2);
+  line-height:1;
+}
+.cal-past .cal-day-num{color:var(--dim);}
+.cal-today{background:rgba(255,255,255,.08);}
+.cal-today .cal-day-num{color:var(--text);font-weight:900;}
+.cal-selected{background:rgba(232,184,75,.18);border:1px solid rgba(232,184,75,.35);}
+.cal-selected .cal-day-num{color:var(--gold2);font-weight:900;}
+.cal-dots{
+  display:flex;
+  gap:2px;
+  justify-content:center;
+}
+.cal-dot{
+  width:5px;height:5px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+/* My Splits */
+.split-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:5px 12px;
+  border-radius:var(--r999);
+  font-size:12px;
+  font-weight:700;
+  font-family:'DM Sans',sans-serif;
+}
+.split-pill.built-in{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:var(--muted);
+}
+.split-pill.custom{
+  background:rgba(232,184,75,.10);
+  border:1px solid rgba(232,184,75,.20);
+  color:var(--gold2);
+}
+.split-pill-del{
+  background:none;border:0;
+  color:rgba(232,184,75,.45);
+  font-size:15px;line-height:1;
+  cursor:pointer;padding:0;
+  transition:color .12s;
+}
+.split-pill-del:hover{color:var(--red);}
 
 /* Restyled Recent Workout cards */
 .rw-card{
