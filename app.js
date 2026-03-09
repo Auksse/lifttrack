@@ -220,7 +220,7 @@ let progressGroup=null,progressMuscle=null;
 let muscleSubTab='exercises';
 let schedules=[],schedFocus='Push',schedSelectedDay=null;
 let schedViewYear=new Date().getFullYear(),schedViewMonth=new Date().getMonth();
-let customSplits=[],newSplitName='';
+let customTemplates=[],newTemplateName='',editingTemplateId=null,tmplExInput='';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
@@ -298,10 +298,10 @@ function getMuscleStats(){
 // ═══════════════════════════════════════════════
 function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_schedules')||'[]');}
 function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
-function loadCustomSplits(){customSplits=JSON.parse(localStorage.getItem('lifttrack_splits')||'[]');}
-function saveCustomSplits(){localStorage.setItem('lifttrack_splits',JSON.stringify(customSplits));}
+function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem('lifttrack_templates')||'[]');}
+function saveCustomTemplates(){localStorage.setItem('lifttrack_templates',JSON.stringify(customTemplates));}
 function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
-function getAllFocuses(){return['Push','Pull','Legs','Upper','Other',...customSplits.map(s=>s.name)];}
+function getAllFocuses(){return['Push','Pull','Legs','Upper',...customTemplates.map(t=>t.name)];}
 function confirmAddSchedule(){
   if(!schedSelectedDay)return toast('Select a day first',true);
   schedules.push({id:crypto.randomUUID(),date:schedSelectedDay,focus:schedFocus});
@@ -309,19 +309,39 @@ function confirmAddSchedule(){
   saveSchedules();render();toast('Session planned');
 }
 function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
-function addCustomSplit(){
-  const el=document.getElementById('newSplitInput');
-  const name=(el?el.value:newSplitName).trim();
-  if(!name)return toast('Enter a split name',true);
-  if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast('Split already exists',true);
-  customSplits.push({id:crypto.randomUUID(),name});
-  saveCustomSplits();newSplitName='';render();toast('Split created');
+function addCustomTemplate(){
+  const el=document.getElementById('newTemplateInput');
+  const name=(el?el.value:newTemplateName).trim();
+  if(!name)return toast('Enter a template name',true);
+  if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast('Template already exists',true);
+  customTemplates.push({id:crypto.randomUUID(),name,exercises:[]});
+  saveCustomTemplates();newTemplateName='';render();toast('Template created');
 }
-function deleteCustomSplit(id){
-  const removed=customSplits.find(s=>s.id===id);
-  customSplits=customSplits.filter(s=>s.id!==id);
+function deleteCustomTemplate(id){
+  const removed=customTemplates.find(t=>t.id===id);
+  customTemplates=customTemplates.filter(t=>t.id!==id);
   if(removed&&schedFocus===removed.name)schedFocus='Push';
-  saveCustomSplits();render();
+  if(editingTemplateId===id)editingTemplateId=null;
+  saveCustomTemplates();render();
+}
+function addTemplateEx(id){
+  const el=document.getElementById('tmplExInput_'+id);
+  const name=(el?el.value:tmplExInput).trim();
+  if(!name)return;
+  const t=customTemplates.find(t=>t.id===id);if(!t)return;
+  t.exercises.push(name);
+  saveCustomTemplates();tmplExInput='';render();
+}
+function removeTemplateEx(id,idx){
+  const t=customTemplates.find(t=>t.id===id);if(!t)return;
+  t.exercises.splice(idx,1);
+  saveCustomTemplates();render();
+}
+function moveTemplateEx(id,idx,dir){
+  const t=customTemplates.find(t=>t.id===id);if(!t)return;
+  const ni=idx+dir;if(ni<0||ni>=t.exercises.length)return;
+  [t.exercises[idx],t.exercises[ni]]=[t.exercises[ni],t.exercises[idx]];
+  saveCustomTemplates();render();
 }
 function prevSchedMonth(){schedViewMonth--;if(schedViewMonth<0){schedViewMonth=11;schedViewYear--;}schedSelectedDay=null;render();}
 function nextSchedMonth(){schedViewMonth++;if(schedViewMonth>11){schedViewMonth=0;schedViewYear++;}schedSelectedDay=null;render();}
@@ -452,14 +472,16 @@ function renderSessions(){
   return`
     <div class="log-next-section">
       <div class="log-section-hdr"><span class="log-section-title"><span style="color:var(--text)">Next</span> Up</span></div>
+      <div class="next-hero-date-row">${heroMeta}</div>
       <div class="next-hero-card" onclick="switchTab('add')">
         <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
         <div class="next-hero-content">
-          <div class="next-hero-name" style="color:${nc}">${heroFocus}</div>
-          <div class="next-hero-meta">${heroMeta}</div>
+          <div class="next-hero-top-row">
+            <div class="next-hero-name" style="color:${nc}">${heroFocus}</div>
+            ${!sc?`<button class="next-hero-schedule-link" onclick="event.stopPropagation();switchTab('schedule')">Schedule a date →</button>`:''}
+          </div>
         </div>
         <button class="next-hero-cta" onclick="event.stopPropagation();switchTab('add')">Start Workout</button>
-        ${!sc?`<button class="next-hero-schedule-link" onclick="event.stopPropagation();switchTab('schedule')">Schedule a date →</button>`:''}
       </div>
     </div>
 
@@ -487,7 +509,7 @@ function renderSessions(){
               <div class="rw-stripe" style="background:linear-gradient(180deg,${fc},${fc}44)"></div>
               <div class="rw-main">
                 <div class="rw-name" style="color:${fc}">${s.focus}</div>
-                <div class="rw-sub">${s.exercises.length} exercises${hasPR?' · ★ PR':''}</div>
+                <div class="rw-sub">${s.exercises.length} exercises${hasPR?` · <span style="color:var(--gold)">★ PR</span>`:''}</div>
               </div>
               <div class="rw-right">
                 <div class="rw-date">${fmtDate(s.date)}</div>
@@ -539,7 +561,7 @@ function renderEditForm(s){
         <div class="form-group">
           <label class="form-label">Focus</label>
           <select class="form-input" onchange="editForm.focus=this.value">
-            ${['Push','Pull','Legs','Upper','Other'].map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
+            ${getAllFocuses().map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -894,7 +916,7 @@ function renderScheduleTab(){
   const addPanel=schedSelectedDay?`
     <div class="sched-add-panel">
       <div class="sched-add-panel-date">${fmtDate(schedSelectedDay)}</div>
-      <div class="muscle-subtab-bar" style="flex-wrap:wrap">${focusPills}</div>
+      <div class="muscle-subtab-bar" style="flex-wrap:wrap;margin-bottom:14px">${focusPills}</div>
       <button class="sched-add-btn" onclick="confirmAddSchedule()">+ Add to plan</button>
     </div>`:`
     <div style="padding:8px 16px 14px;text-align:center;font-size:12px;color:var(--dim)">Tap a day to schedule a session</div>`;
@@ -930,21 +952,45 @@ function renderScheduleTab(){
       </div>`;
     }).join('')}`:'';
 
-  const splitsSection=`
+  const templatesSection=`
     <div class="log-section-hdr log-recent-hdr" style="margin-top:4px">
-      <span class="log-section-title"><span style="color:var(--text)">My</span> Splits</span>
+      <span class="log-section-title"><span style="color:var(--text)">My</span> Templates</span>
     </div>
-    <div style="padding:0 12px 8px">
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        ${['Push','Pull','Legs','Upper','Other'].map(f=>`<div class="split-pill built-in"><span>${f}</span></div>`).join('')}
-        ${customSplits.map(s=>`<div class="split-pill custom">
-          <span>${s.name}</span>
-          <button onclick="deleteCustomSplit('${s.id}')" class="split-pill-del">×</button>
-        </div>`).join('')}
+    <div style="padding:0 12px 16px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${['Push','Pull','Legs','Upper'].map(f=>`<div class="split-pill built-in"><span>${f}</span></div>`).join('')}
       </div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="newSplitInput" placeholder="New split name…" class="form-input" style="font-size:14px;padding:10px 12px" oninput="newSplitName=this.value" value="${newSplitName.replace(/"/g,'&quot;')}">
-        <button class="sched-add-btn" style="width:auto;padding:10px 18px;flex-shrink:0;white-space:nowrap" onclick="addCustomSplit()">+ Add</button>
+      ${customTemplates.map(t=>{
+        const isEditing=editingTemplateId===t.id;
+        return`<div class="tmpl-editor-card">
+          <div class="tmpl-editor-header">
+            <span class="tmpl-editor-name">${t.name}</span>
+            <div style="display:flex;gap:6px">
+              <button class="tmpl-editor-btn" onclick="editingTemplateId=${isEditing?'null':`'${t.id}'`};render()">${isEditing?'Done':'Edit'}</button>
+              <button class="tmpl-editor-btn del" onclick="deleteCustomTemplate('${t.id}')">×</button>
+            </div>
+          </div>
+          ${isEditing?`
+            <div class="tmpl-ex-list">
+              ${t.exercises.length?t.exercises.map((ex,i)=>`
+                <div class="tmpl-ex-row">
+                  <div class="tmpl-ex-reorder">
+                    <button class="tmpl-reorder-btn" ${i===0?'disabled':''} onclick="moveTemplateEx('${t.id}',${i},-1)">▲</button>
+                    <button class="tmpl-reorder-btn" ${i===t.exercises.length-1?'disabled':''} onclick="moveTemplateEx('${t.id}',${i},1)">▼</button>
+                  </div>
+                  <span class="tmpl-ex-name">${ex}</span>
+                  <button class="tmpl-ex-del" onclick="removeTemplateEx('${t.id}',${i})">×</button>
+                </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:6px 0">No exercises yet.</div>`}
+            </div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <input type="text" id="tmplExInput_${t.id}" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value">
+              <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addTemplateEx('${t.id}')">+ Add</button>
+            </div>`:''}
+        </div>`;
+      }).join('')}
+      <div style="display:flex;gap:8px;margin-top:${customTemplates.length?'10px':'0'}">
+        <input type="text" id="newTemplateInput" placeholder="New template name…" class="form-input" style="font-size:14px;padding:10px 12px" oninput="newTemplateName=this.value" value="${newTemplateName.replace(/"/g,'&quot;')}">
+        <button class="sched-add-btn" style="width:auto;padding:10px 18px;flex-shrink:0;white-space:nowrap" onclick="addCustomTemplate()">+ Create</button>
       </div>
     </div>`;
 
@@ -956,7 +1002,7 @@ function renderScheduleTab(){
     <div style="padding:14px 16px 0">${calGrid}</div>
     ${addPanel}
     ${schedList}
-    ${splitsSection}`;
+    ${templatesSection}`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1063,7 +1109,7 @@ function renderAdd(){
         <div class="form-group">
           <label class="form-label">Focus</label>
           <select class="form-input" onchange="changeFocus(this.value)">
-            ${['Push','Pull','Legs','Upper','Other'].map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
+            ${getAllFocuses().map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -1145,10 +1191,13 @@ function toggleSession(id){if(editId===id){cancelEdit();return;}expandedId=expan
 function changeFocus(focus){addForm.focus=focus;loadTemplate(focus);}
 function loadTemplate(focus){
   const last=lastByFocus(focus);
-  if(!last){addForm.exercises=[];addForm.templateFrom=null;showExerciseLibrary=false;}
-  else{
+  if(last){
     addForm.exercises=last.exercises.map(ex=>({name:ex.name,ss:ex.ss||false,sets:ex.sets.map(s=>({r:String(s.r),w:String(s.w)}))}));
     addForm.templateFrom={date:last.date,id:last.id};
+  } else {
+    const tmpl=customTemplates.find(t=>t.name===focus);
+    addForm.exercises=tmpl&&tmpl.exercises.length?tmpl.exercises.map(name=>({name,ss:false,sets:[{r:'',w:''}]})):[];
+    addForm.templateFrom=null;showExerciseLibrary=false;
   }
   acActive=null;render();
 }
@@ -1246,7 +1295,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadCustomSplits();render();
+  loading=true;loadSchedules();loadCustomTemplates();render();
   try{await initDb();await loadSessions();}
   catch(e){toast('Failed to load data',true);}
   loading=false;render();
