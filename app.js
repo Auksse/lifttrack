@@ -217,6 +217,8 @@ const SEED=[
 // ═══════════════════════════════════════════════
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
 let progressGroup=null,progressMuscle=null;
+let muscleSubTab='exercises';
+let schedules=[],schedDate=new Date().toISOString().split('T')[0],schedFocus='Push';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
@@ -290,6 +292,22 @@ function getMuscleStats(){
 }
 
 // ═══════════════════════════════════════════════
+// SCHEDULE
+// ═══════════════════════════════════════════════
+function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_schedules')||'[]');}
+function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
+function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
+function confirmAddSchedule(){
+  const el=document.getElementById('schedDate');
+  const date=el?el.value:schedDate;
+  if(!date)return toast('Pick a date first',true);
+  schedules.push({id:crypto.randomUUID(),date,focus:schedFocus});
+  schedules.sort((a,b)=>a.date.localeCompare(b.date));
+  saveSchedules();render();toast('Session planned');
+}
+function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
+
+// ═══════════════════════════════════════════════
 // INDEXEDDB
 // ═══════════════════════════════════════════════
 function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('lifttrack',1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('sessions')){const store=d.createObjectStore('sessions',{keyPath:'id'});store.createIndex('date','date',{unique:false});}};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
@@ -328,7 +346,8 @@ function render(){
   const last=sessions[sessions.length-1];
   const da=last?daysSince(last.date):0;
   const next=nextSugg();
-  const nc=FCHEX[next.focus]||'#888';
+  const sched=getNextScheduled();
+  const nc=FCHEX[(sched||next).focus]||'#888';
   const exList=allExNames();
   if(!selEx&&exList.length)selEx=exList[0];
 
@@ -360,19 +379,20 @@ function render(){
         <div class="stat-cell-label">PRs</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
       </div>
-      <div class="stat-cell next" onclick="switchTab('add')">
-        <div class="stat-cell-label" style="color:${nc}aa">Next up</div>
-        <div class="stat-cell-val" style="color:${nc};font-size:18px">${next.focus}</div>
+      <div class="stat-cell next" onclick="switchTab('schedule')">
+        <div class="stat-cell-label" style="color:${nc}aa">${sched?'Scheduled':'Next up'}</div>
+        <div class="stat-cell-val" style="color:${nc};font-size:18px">${(sched||next).focus}</div>
+        ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:`<div class="stat-cell-sub" style="color:var(--dim)">Schedule?</div>`}
       </div>
     </div>
 
     <div class="content" id="content">
-      ${tab==='sessions'?renderSessions():tab==='progress'?renderProgress():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
+      ${tab==='sessions'?renderSessions():tab==='schedule'?renderScheduleTab():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
     </div>
 
     <div class="dock">
       <div class="dock-inner">
-        ${[['sessions','📋','Log'],['progress','📈','Gains']].map(([t,ic,lb])=>`
+        ${[['schedule','📅','Plan'],['sessions','📋','Log']].map(([t,ic,lb])=>`
           <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
             <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
           </button>`).join('')}
@@ -389,7 +409,7 @@ function render(){
 
   const c=document.getElementById('content');
   if(c)c.scrollTop=savedScroll;
-  if(tab==='progress')renderCharts();
+  if(tab==='muscles'&&muscleSubTab==='gains')renderCharts();
 }
 
 // ═══════════════════════════════════════════════
@@ -403,8 +423,12 @@ function renderSessions(){
   sessions.forEach(s=>s.exercises.forEach(ex=>{const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;}));
 
   const next=nextSugg();
-  const nc=FCHEX[next.focus]||'#888';
+  const sc=getNextScheduled();
+  const heroFocus=(sc||next).focus;
+  const nc=FCHEX[heroFocus]||'#888';
   const todayStr=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const today=new Date().toISOString().split('T')[0];
+  const heroMeta=sc?(sc.date===today?`Today · ${todayStr} · Scheduled`:`${fmtDate(sc.date)} · Scheduled`):`Today · ${todayStr}`;
 
   return`
     <div class="log-next-section">
@@ -412,10 +436,11 @@ function renderSessions(){
       <div class="next-hero-card" onclick="switchTab('add')">
         <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
         <div class="next-hero-content">
-          <div class="next-hero-name" style="color:${nc}">${next.focus}</div>
-          <div class="next-hero-meta">Today · ${todayStr}</div>
+          <div class="next-hero-name" style="color:${nc}">${heroFocus}</div>
+          <div class="next-hero-meta">${heroMeta}</div>
         </div>
         <button class="next-hero-cta" onclick="event.stopPropagation();switchTab('add')">Start Workout</button>
+        ${!sc?`<button class="next-hero-schedule-link" onclick="event.stopPropagation();switchTab('schedule')">Schedule a date →</button>`:''}
       </div>
     </div>
 
@@ -685,26 +710,45 @@ function renderCharts(){
 // MUSCLES TAB
 // ═══════════════════════════════════════════════
 function renderMusclesTab(){
-  if(selMuscle){const stats=getMuscleStats();return renderMuscleDetail(selMuscle,stats[selMuscle]||null);}
-  if(selGroup){const g=MUSCLE_GROUPS.find(g=>g.id===selGroup);if(g)return renderMuscleGroup(g);}
-  // Level 1 — body-part groups
-  const stats=getMuscleStats();
+  if(muscleSubTab==='gains'){
+    if(progressMuscle)return renderProgressForMuscle(progressMuscle);
+    if(progressGroup){const g=MUSCLE_GROUPS.find(g=>g.id===progressGroup);if(g)return renderProgressGroup(g);}
+  } else {
+    if(selMuscle){const stats=getMuscleStats();return renderMuscleDetail(selMuscle,stats[selMuscle]||null);}
+    if(selGroup){const g=MUSCLE_GROUPS.find(g=>g.id===selGroup);if(g)return renderMuscleGroup(g);}
+  }
+  // Level 1 — body-part groups with sub-tab picker
+  const subTabPicker=`<div class="muscle-subtab-bar">
+    <button class="muscle-subtab ${muscleSubTab==='exercises'?'active':''}" onclick="muscleSubTab='exercises';selGroup=null;selMuscle=null;render()">Exercises</button>
+    <button class="muscle-subtab ${muscleSubTab==='gains'?'active':''}" onclick="muscleSubTab='gains';progressGroup=null;progressMuscle=null;render()">Gains</button>
+  </div>`;
+  const cards=muscleSubTab==='gains'
+    ?MUSCLE_GROUPS.map(g=>{
+        const exNames=new Set();
+        g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
+        const logCount=sessions.reduce((t,s)=>t+s.exercises.filter(e=>exNames.has(e.name)).length,0);
+        return`<div class="muscle-group-card" onclick="progressGroup='${g.id}';render()" style="--gc:${g.color}">
+          <div class="muscle-group-name">${g.label}</div>
+          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''}</div>
+          ${logCount?`<div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>`:''}
+        </div>`;
+      }).join('')
+    :MUSCLE_GROUPS.map(g=>{
+        const exNames=new Set();
+        g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
+        const exCount=exNames.size;
+        return`<div class="muscle-group-card" onclick="selGroup='${g.id}';render()" style="--gc:${g.color}">
+          <div class="muscle-group-name">${g.label}</div>
+          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''}</div>
+          <div class="muscle-group-vol">${exCount} exercise${exCount!==1?'s':''}</div>
+        </div>`;
+      }).join('');
   return`
     <div class="section-header">
       <div class="section-title">MUSCLES</div>
-      <div style="font-size:11px;color:var(--muted)">Select a body part</div>
+      ${subTabPicker}
     </div>
-    <div class="muscle-group-grid">
-      ${MUSCLE_GROUPS.map(g=>{
-        const groupVol=GROUP_STAT_KEYS[g.id].reduce((t,k)=>t+(stats[k]?.totalVol||0),0);
-        const exCount=g.muscles.reduce((t,m)=>t+getDbFamiliesForMuscle(m).length,0);
-        return`<div class="muscle-group-card" onclick="selGroup='${g.id}';render()" style="--gc:${g.color}">
-          <div class="muscle-group-name">${g.label}</div>
-          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''} · ${exCount} exercises</div>
-          ${groupVol?`<div class="muscle-group-vol">${Math.round(groupVol/1000)||'<1'}k vol</div>`:''}
-        </div>`;
-      }).join('')}
-    </div>`;
+    <div class="muscle-group-grid">${cards}</div>`;
 }
 
 function renderMuscleGroup(group){
@@ -777,6 +821,55 @@ function renderMuscleDetail(muscle,stat){
           </div>`;
       }).join(''):`<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:12px">No ${DB_EQ_LABELS[dbEquipment].toLowerCase()} option for ${muscle}.</div>`}
     </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SCHEDULE TAB
+// ═══════════════════════════════════════════════
+function renderScheduleTab(){
+  const today=new Date().toISOString().split('T')[0];
+  const upcoming=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
+  const past=[...schedules.filter(s=>s.date<today)].sort((a,b)=>b.date.localeCompare(a.date));
+  const focusPills=['Push','Pull','Legs','Upper','Other'].map(f=>
+    `<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus='${f}';render()">${f}</button>`
+  ).join('');
+  return`
+    <div class="section-header">
+      <div class="section-title">PLAN</div>
+      <div style="font-size:11px;color:var(--muted)">Schedule future sessions</div>
+    </div>
+    <div style="padding:14px 16px 16px">
+      <input type="date" id="schedDate" value="${schedDate}" onchange="schedDate=this.value" class="form-input" style="margin-bottom:10px" min="${today}">
+      <div class="muscle-subtab-bar" style="margin-bottom:12px">${focusPills}</div>
+      <button class="sched-add-btn" onclick="confirmAddSchedule()">+ Add to plan</button>
+    </div>
+    ${upcoming.length?`
+      <div class="log-section-hdr log-recent-hdr"><span class="log-section-title">Upcoming</span></div>
+      ${upcoming.map(s=>{
+        const fc=FCHEX[s.focus]||'#888';
+        const isToday=s.date===today;
+        return`<div class="sched-card${isToday?' today':''}">
+          <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
+          <div class="sched-card-main">
+            <div class="sched-card-focus" style="color:${fc}">${s.focus}</div>
+            <div class="sched-card-date">${fmtDate(s.date)}${isToday?' · Today':''}</div>
+          </div>
+          <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
+        </div>`;
+      }).join('')}`:`<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px">No upcoming sessions planned.</div>`}
+    ${past.length?`
+      <div class="log-section-hdr log-recent-hdr" style="margin-top:8px"><span class="log-section-title" style="color:var(--muted);font-size:16px">Past</span></div>
+      ${past.map(s=>{
+        const fc=FCHEX[s.focus]||'#888';
+        return`<div class="sched-card past">
+          <div class="sched-card-stripe" style="background:${fc}44"></div>
+          <div class="sched-card-main">
+            <div class="sched-card-focus" style="color:${fc}88">${s.focus}</div>
+            <div class="sched-card-date" style="color:var(--dim)">${fmtDate(s.date)}</div>
+          </div>
+          <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
+        </div>`;
+      }).join('')}`:``}`;
 }
 
 // ═══════════════════════════════════════════════
@@ -957,7 +1050,7 @@ function renderAdd(){
 function switchTab(t){
   tab=t; acActive=null;
   if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);}
-  else{if(t!=='muscles'){selMuscle=null;selGroup=null;}if(t!=='progress'){progressGroup=null;progressMuscle=null;}render();}
+  else{if(t!=='muscles'){selMuscle=null;selGroup=null;progressGroup=null;progressMuscle=null;}render();}
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
 function selectEx(name){selEx=name;render();}
@@ -1066,7 +1159,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;render();
+  loading=true;loadSchedules();render();
   try{await initDb();await loadSessions();}
   catch(e){toast('Failed to load data',true);}
   loading=false;render();

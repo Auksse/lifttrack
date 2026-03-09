@@ -1013,6 +1013,26 @@ body{
 .muscle-group-name{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.06em;color:var(--gc,var(--text));margin-bottom:4px;}
 .muscle-group-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
 .muscle-group-vol{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-top:6px;}
+.muscle-subtab-bar{display:flex;gap:6px;margin-top:8px;}
+.muscle-subtab{
+  flex-shrink:0;
+  padding:5px 14px;
+  border-radius:var(--r999);
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(18,16,14,.72);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  box-shadow:var(--shadowInset);
+  transition:all .12s;
+}
+.muscle-subtab.active{
+  background:rgba(42,32,11,.68);
+  color:var(--gold2);
+  border-color:rgba(232,184,75,.25);
+}
 
 /* ============================================================
    Overview tab
@@ -1333,6 +1353,65 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
     inset 0 -1px 0 rgba(0,0,0,.22);
 }
 .next-hero-cta:active{transform:translateY(1px);}
+.next-hero-schedule-link{
+  position:relative;z-index:3;
+  background:none;border:0;
+  color:rgba(200,184,152,.55);
+  font-size:12px;font-weight:700;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  text-align:center;
+  padding:2px 0;
+  letter-spacing:.04em;
+  transition:color .15s;
+}
+.next-hero-schedule-link:hover{color:rgba(200,184,152,.85);}
+
+/* ============================================================
+   Schedule tab
+   ============================================================ */
+.sched-add-btn{
+  width:100%;
+  background:linear-gradient(135deg,rgba(232,184,75,.16),rgba(232,184,75,.08));
+  border:1px solid rgba(232,184,75,.22);
+  border-radius:var(--r16);
+  color:var(--gold2);
+  padding:13px;
+  font-size:14px;
+  font-weight:900;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  transition:all .12s;
+}
+.sched-add-btn:active{transform:translateY(1px);opacity:.85;}
+.sched-card{
+  display:flex;
+  align-items:center;
+  margin:0 12px 8px;
+  border-radius:var(--r16);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(135deg,rgba(30,24,18,.97),rgba(14,12,10,.98));
+  box-shadow:0 6px 18px rgba(0,0,0,.38);
+  min-height:60px;
+}
+.sched-card.today{border-color:rgba(232,184,75,.22);box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 0 1px rgba(232,184,75,.08) inset;}
+.sched-card.past{opacity:.5;}
+.sched-card-stripe{width:4px;align-self:stretch;flex-shrink:0;min-height:60px;}
+.sched-card-main{flex:1;padding:10px 12px;}
+.sched-card-focus{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:.06em;line-height:1.1;}
+.sched-card-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;}
+.sched-del-btn{
+  flex-shrink:0;
+  padding:10px 16px;
+  background:none;border:0;
+  color:var(--dim);font-size:18px;
+  cursor:pointer;
+  transition:color .12s;
+}
+.sched-del-btn:hover{color:var(--red);}
 
 /* Restyled Recent Workout cards */
 .rw-card{
