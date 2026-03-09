@@ -230,9 +230,9 @@ let muscleSubTab='exercises';
 let schedules=[],schedFocus='Push',schedSelectedDay=null;
 let schedViewYear=new Date().getFullYear(),schedViewMonth=new Date().getMonth();
 let customTemplates=[],newTemplateName='',tmplExInput='';
-let builtinTemplateExercises={};
+let builtinTemplateExercises={},builtinTemplateColors={},hiddenBuiltins=[];
 let expandedTemplateKey=null,editingTemplateKey=null;
-let creatingTemplate=false,newTemplateExercises=[],newTmplExInput='';
+let creatingTemplate=false,newTemplateExercises=[],newTmplExInput='',newTemplateColor='';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
@@ -269,7 +269,7 @@ const STRINGS={
     tmpl_name_ph:'Template name…',add_ex_below:'Add exercises below.',
     ex_name_ph:'Exercise name…',add_btn:'+ Add',
     save_template:'Save Template',create_template:'+ Create Template',
-    plan_title:'PLAN',sched_future:'Schedule future sessions',
+    plan_pre:'MY',plan_gold:'PLAN',sched_future:'Schedule future sessions',
     overview_title:'OVERVIEW',total_lbl:'total',
     session_split:'Session Split',vol_per_session:'Volume per Session',ex_freq:'Exercise Frequency',
     library:'Library',
@@ -324,7 +324,7 @@ const STRINGS={
     tmpl_name_ph:'Nom du modèle…',add_ex_below:'Ajoutez des exercices ci-dessous.',
     ex_name_ph:"Nom de l'exercice…",add_btn:'+ Ajouter',
     save_template:'Enregistrer le modèle',create_template:'+ Créer un modèle',
-    plan_title:'PLANNING',sched_future:'Planifier des séances',
+    plan_pre:'MON',plan_gold:'PLANNING',sched_future:'Planifier des séances',
     overview_title:'APERÇU',total_lbl:'total',
     session_split:'Répartition des séances',vol_per_session:'Volume par séance',ex_freq:'Fréquence des exercices',
     library:'Bibliothèque',
@@ -373,6 +373,13 @@ function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:
 // UTILS
 // ═══════════════════════════════════════════════
 const FCHEX={Push:'#c96b4a',Pull:'#4a90b8',Legs:'#5a9e62',Upper:'#8860b8',Other:'#6a6050'};
+const TMPL_COLORS=['#c96b4a','#4a90b8','#5a9e62','#8860b8','#c89830','#4aabab','#b85a90','#7b715f'];
+function getFocusColor(focus){
+  const ct=customTemplates.find(tc=>tc.name===focus);
+  if(ct&&ct.color)return ct.color;
+  if(builtinTemplateColors[focus])return builtinTemplateColors[focus];
+  return getFocusColor(focus);
+}
 function fmtDate(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'short'});}
 function fmtMonth(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{month:'long',year:'numeric'});}
 function daysSince(ds){return Math.floor((Date.now()-new Date(ds+'T12:00:00'))/86400000);}
@@ -454,6 +461,19 @@ function loadBuiltinTemplates(){
   if(!stored)saveBuiltinTemplates();
 }
 function saveBuiltinTemplates(){localStorage.setItem('lifttrack_builtin_tmpl',JSON.stringify(builtinTemplateExercises));}
+function loadBuiltinColors(){builtinTemplateColors=JSON.parse(localStorage.getItem('lifttrack_builtin_colors')||'{}');}
+function saveBuiltinColors(){localStorage.setItem('lifttrack_builtin_colors',JSON.stringify(builtinTemplateColors));}
+function loadHiddenBuiltins(){hiddenBuiltins=JSON.parse(localStorage.getItem('lifttrack_hidden_builtins')||'[]');}
+function saveHiddenBuiltins(){localStorage.setItem('lifttrack_hidden_builtins',JSON.stringify(hiddenBuiltins));}
+function setTemplateColor(key,color,isBuiltin){
+  if(isBuiltin){builtinTemplateColors[key]=color;saveBuiltinColors();}
+  else{const tc=customTemplates.find(tc=>tc.id===key);if(tc){tc.color=color;saveCustomTemplates();}}
+  render();
+}
+function deleteBuiltinTemplate(key){
+  if(!hiddenBuiltins.includes(key))hiddenBuiltins.push(key);
+  saveHiddenBuiltins();expandedTemplateKey=null;editingTemplateKey=null;render();
+}
 function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
 function getAllFocuses(){return['Push','Pull','Legs','Upper',...customTemplates.map(t=>t.name)];}
 function confirmAddSchedule(){
@@ -468,16 +488,42 @@ function addCustomTemplate(){
   if(!name)return toast(t('enter_tmpl_name'),true);
   if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast(t('tmpl_exists'),true);
   const id=crypto.randomUUID();
-  customTemplates.push({id,name,exercises:[...newTemplateExercises]});
-  saveCustomTemplates();creatingTemplate=false;newTemplateName='';newTemplateExercises=[];expandedTemplateKey=id;editingTemplateKey=null;render();toast(t('tmpl_created'));
+  const color=newTemplateColor||TMPL_COLORS[customTemplates.length%TMPL_COLORS.length];
+  customTemplates.push({id,name,exercises:[...newTemplateExercises],color});
+  saveCustomTemplates();creatingTemplate=false;newTemplateName='';newTemplateExercises=[];newTemplateColor='';expandedTemplateKey=id;editingTemplateKey=null;render();toast(t('tmpl_created'));
 }
-function startCreatingTemplate(){creatingTemplate=true;newTemplateName='';newTemplateExercises=[];newTmplExInput='';expandedTemplateKey=null;editingTemplateKey=null;render();}
+function startCreatingTemplate(){creatingTemplate=true;newTemplateName='';newTemplateExercises=[];newTmplExInput='';newTemplateColor='';expandedTemplateKey=null;editingTemplateKey=null;render();}
 function cancelCreatingTemplate(){creatingTemplate=false;newTemplateName='';newTemplateExercises=[];render();}
+function getTmplExSuggestions(query){
+  const logged=allExNames();
+  const db=getDbExerciseNames();
+  const pool=[...new Set([...logged,...db])];
+  if(!query||!query.trim())return logged.slice(0,24);
+  const q=query.toLowerCase();
+  return pool.filter(n=>n.toLowerCase().includes(q)).slice(0,24);
+}
 function addToNewTemplate(){
   const el=document.getElementById('newTmplExInput');
   const name=(el?el.value:newTmplExInput).trim();if(!name)return;
   newTemplateExercises.push(name);newTmplExInput='';render();
   setTimeout(()=>{const inp=document.getElementById('newTmplExInput');if(inp)inp.focus();},30);
+}
+function addToNewTemplateByName(name){
+  if(!name)return;
+  newTemplateExercises.push(name);newTmplExInput='';render();
+  setTimeout(()=>{const inp=document.getElementById('newTmplExInput');if(inp){inp.value='';inp.focus();}},0);
+}
+function addTemplateExByName(id,name){
+  if(!name)return;
+  const tc=customTemplates.find(tc=>tc.id===id);if(!tc)return;
+  tc.exercises.push(name);saveCustomTemplates();tmplExInput='';render();
+  setTimeout(()=>{const inp=document.getElementById('tmplExInput_'+id);if(inp){inp.value='';inp.focus();}},0);
+}
+function addBuiltinExByName(focus,name){
+  if(!name)return;
+  if(!builtinTemplateExercises[focus])builtinTemplateExercises[focus]=[];
+  builtinTemplateExercises[focus].push(name);saveBuiltinTemplates();tmplExInput='';render();
+  setTimeout(()=>{const inp=document.getElementById('tmplExInput_'+focus);if(inp){inp.value='';inp.focus();}},0);
 }
 function removeFromNewTemplate(idx){newTemplateExercises.splice(idx,1);render();}
 function deleteCustomTemplate(id){
@@ -564,7 +610,7 @@ function render(){
   const da=last?daysSince(last.date):0;
   const next=nextSugg();
   const sched=getNextScheduled();
-  const nc=FCHEX[(sched||next).focus]||'#888';
+  const nc=getFocusColor((sched||next).focus);
   const exList=allExNames();
   if(!selEx&&exList.length)selEx=exList[0];
 
@@ -644,7 +690,7 @@ function renderSessions(){
   const next=nextSugg();
   const sc=getNextScheduled();
   const heroFocus=(sc||next).focus;
-  const nc=FCHEX[heroFocus]||'#888';
+  const nc=getFocusColor(heroFocus);
   const todayStr=new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short'});
   const today=new Date().toISOString().split('T')[0];
   const heroMeta=sc?(sc.date===today?`${t('today_meta')} · ${todayStr} · ${t('scheduled')}`:`${fmtDate(sc.date)} · ${t('scheduled')}`):`${t('today_meta')} · ${todayStr}`;
@@ -676,7 +722,7 @@ function renderSessions(){
         <div class="month-count">${ss.length}</div>
       </div>
       ${ss.map(s=>{
-        const fc=FCHEX[s.focus]||'#888';
+        const fc=getFocusColor(s.focus);
         const vol=Math.round(sVol(s));
         const volStr=vol>=1000?(vol/1000).toFixed(1)+'k':String(vol);
         const open=expandedId===s.id;
@@ -1064,7 +1110,7 @@ function renderScheduleTab(){
     const [sy,sm]=s.date.split('-').map(Number);
     if(sy===schedViewYear&&sm-1===schedViewMonth){
       if(!dotMap[s.date])dotMap[s.date]=[];
-      const fc=FCHEX[s.focus]||'#888';
+      const fc=getFocusColor(s.focus);
       if(!dotMap[s.date].includes(fc))dotMap[s.date].push(fc);
     }
   });
@@ -1113,7 +1159,7 @@ function renderScheduleTab(){
       <span class="log-section-title"><span style="color:var(--text)">${t('sched_sessions_pre')}</span> ${t('sched_sessions_post')}</span>
     </div>
     ${upcoming.map(s=>{
-      const fc=FCHEX[s.focus]||'#888';
+      const fc=getFocusColor(s.focus);
       const isToday=s.date===today;
       return`<div class="sched-card${isToday?' today':''}">
         <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
@@ -1125,7 +1171,7 @@ function renderScheduleTab(){
       </div>`;
     }).join('')}
     ${past.map(s=>{
-      const fc=FCHEX[s.focus]||'#888';
+      const fc=getFocusColor(s.focus);
       return`<div class="sched-card cal-past" style="opacity:.45">
         <div class="sched-card-stripe" style="background:${fc}44"></div>
         <div class="sched-card-main">
@@ -1138,16 +1184,16 @@ function renderScheduleTab(){
 
   const BUILTIN_FOCUSES=['Push','Pull','Legs','Upper'];
   const allTmplEntries=[
-    ...BUILTIN_FOCUSES.map(f=>({key:f,name:tFocus(f),rawKey:f,exercises:builtinTemplateExercises[f]||[],builtin:true})),
-    ...customTemplates.map(tc=>({key:tc.id,name:tc.name,rawKey:tc.id,exercises:tc.exercises,builtin:false}))
+    ...BUILTIN_FOCUSES.filter(f=>!hiddenBuiltins.includes(f)).map(f=>({key:f,name:tFocus(f),rawKey:f,focusId:f,exercises:builtinTemplateExercises[f]||[],builtin:true,color:getFocusColor(f)})),
+    ...customTemplates.map(tc=>({key:tc.id,name:tc.name,rawKey:tc.id,focusId:tc.name,exercises:tc.exercises,builtin:false,color:tc.color||TMPL_COLORS[0]}))
   ];
-  const renderTmplCard=({key,name,rawKey,exercises,builtin})=>{
+  const renderTmplCard=({key,name,rawKey,focusId,exercises,builtin,color})=>{
     const isExpanded=expandedTemplateKey===key;
     const isEditing=editingTemplateKey===key;
-    const nameColor=builtin?'var(--text2)':'var(--gold2)';
+    const nameColor=color||'var(--text2)';
     const builtinKey=rawKey||key;
     return`<div class="tmpl-editor-card ${isExpanded?'tmpl-expanded':''}">
-      <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;render()`}">
+      <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;schedFocus=${JSON.stringify(focusId)};render()`}">
         <span class="tmpl-editor-name" style="color:${nameColor}">${name}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace">${exercises.length} ${t('ex_lbl')}</span>
@@ -1168,12 +1214,20 @@ function renderScheduleTab(){
         </div>
         ${isEditing?`
           <div style="display:flex;gap:6px;margin-top:10px">
-            <input type="text" id="tmplExInput_${key}" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value" value="">
-            <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="event.stopPropagation();${builtin?`addBuiltinEx('${builtinKey}')`:`addTemplateEx('${key}')`}">${t('add_btn')}</button>
+            <input type="text" id="tmplExInput_${key}" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value;render();setTimeout(()=>{const e=document.getElementById('tmplExInput_${key}');if(e){e.focus();const l=e.value.length;e.setSelectionRange(l,l);}},0)" value="${tmplExInput}">
+          </div>
+          <div class="tmpl-ex-library">
+            ${getTmplExSuggestions(tmplExInput).map(n=>`<button class="tmpl-lib-btn" onmousedown="event.preventDefault();event.stopPropagation();${builtin?`addBuiltinExByName('${builtinKey}'`:`addTemplateExByName('${key}'`},'${n.replace(/'/g,"\\'")}')">` + n + `</button>`).join('')}
+          </div>`:''}
+        ${isEditing?`
+          <div class="tmpl-color-row">
+            ${TMPL_COLORS.map(c=>`<button class="tmpl-color-swatch${(color||'')==c?' active':''}" style="background:${c}" onclick="event.stopPropagation();setTemplateColor('${builtin?builtinKey:key}','${c}',${builtin})"></button>`).join('')}
           </div>`:''}
         <div style="display:flex;gap:6px;margin-top:${isEditing?'8px':'10px'};padding-top:${isEditing?'8px':'0'};${isEditing?'border-top:1px solid rgba(255,255,255,.06)':''}">
           <button class="tmpl-editor-btn" onclick="event.stopPropagation();editingTemplateKey=${isEditing?'null':`'${key}'`};render()">${isEditing?t('done'):t('edit')}</button>
-          ${builtin?'':`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('${t('delete')} ${name}?'))deleteCustomTemplate('${key}')">${t('delete')}</button>`}
+          ${builtin
+            ?`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('${t('delete')} ${name}?'))deleteBuiltinTemplate('${builtinKey}')">${t('delete')}</button>`
+            :`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('${t('delete')} ${name}?'))deleteCustomTemplate('${key}')">${t('delete')}</button>`}
         </div>`:''}
     </div>`;
   };
@@ -1190,9 +1244,14 @@ function renderScheduleTab(){
             <button class="tmpl-ex-del" onclick="removeFromNewTemplate(${i})">×</button>
           </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0">${t('add_ex_below')}</div>`}
       </div>
-      <div style="display:flex;gap:6px;margin-top:10px">
-        <input type="text" id="newTmplExInput" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="newTmplExInput=this.value" value="">
-        <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addToNewTemplate()">${t('add_btn')}</button>
+      <div style="margin-top:10px">
+        <input type="text" id="newTmplExInput" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px;width:100%;box-sizing:border-box" oninput="newTmplExInput=this.value;render();setTimeout(()=>{const e=document.getElementById('newTmplExInput');if(e){e.focus();const l=e.value.length;e.setSelectionRange(l,l);}},0)" value="${newTmplExInput}">
+      </div>
+      <div class="tmpl-ex-library">
+        ${getTmplExSuggestions(newTmplExInput).map(n=>`<button class="tmpl-lib-btn" onmousedown="event.preventDefault();addToNewTemplateByName('${n.replace(/'/g,"\\'")}')">` + n + `</button>`).join('')}
+      </div>
+      <div class="tmpl-color-row" style="margin-top:10px">
+        ${TMPL_COLORS.map(c=>`<button class="tmpl-color-swatch${newTemplateColor===c?' active':''}" style="background:${c}" onclick="newTemplateColor='${c}';render()"></button>`).join('')}
       </div>
       <button class="tmpl-save-btn" onclick="addCustomTemplate()">${t('save_template')}</button>
     </div>`
@@ -1208,7 +1267,7 @@ function renderScheduleTab(){
 
   return`
     <div class="section-header">
-      <div class="section-title">${t('plan_title')}</div>
+      <div class="section-title">${t('plan_pre')} <span style="color:var(--gold)">${t('plan_gold')}</span></div>
       <div style="font-size:11px;color:var(--muted)">${t('sched_future')}</div>
     </div>
     <div style="padding:14px 16px 0">${calGrid}</div>
@@ -1237,16 +1296,16 @@ function renderOverview(){
       ${Object.entries(fc).sort((a,b)=>b[1]-a[1]).map(([focus,count])=>`
         <div class="focus-row">
           <div class="focus-row-top">
-            <span class="focus-row-name" style="color:${FCHEX[focus]||'#888'}">${tFocus(focus)}</span>
+            <span class="focus-row-name" style="color:${getFocusColor(focus)}">${tFocus(focus)}</span>
             <span class="focus-row-count">${count}/${sessions.length}</span>
           </div>
-          <div class="focus-track"><div class="focus-fill" style="width:${(count/sessions.length)*100}%;background:${FCHEX[focus]||'#888'}"></div></div>
+          <div class="focus-track"><div class="focus-fill" style="width:${(count/sessions.length)*100}%;background:${getFocusColor(focus)}"></div></div>
         </div>`).join('')}
     </div>
 
     <div class="ov-section">
       <div class="ov-title">${t('vol_per_session')}</div>
-      <div class="vol-bars">${vols.map(s=>`<div class="vol-bar" style="height:${Math.round((s.vol/maxVol)*56)+6}px;background:${FCHEX[s.focus]||'#888'}"></div>`).join('')}</div>
+      <div class="vol-bars">${vols.map(s=>`<div class="vol-bar" style="height:${Math.round((s.vol/maxVol)*56)+6}px;background:${getFocusColor(s.focus)}"></div>`).join('')}</div>
     </div>
 
     <div class="ov-section">
@@ -1577,7 +1636,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadCustomTemplates();loadBuiltinTemplates();render();
+  loading=true;loadSchedules();loadCustomTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();

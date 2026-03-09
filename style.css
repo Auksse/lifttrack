@@ -1874,6 +1874,50 @@ body.ex-detail-open .dock{display:none;}
   font-size:12px;
 }
 
+/* ─── Template exercise library ─── */
+.tmpl-ex-library{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:8px;
+  max-height:160px;
+  overflow-y:auto;
+  padding:2px 0;
+}
+.tmpl-lib-btn{
+  background:var(--card3);
+  border:1px solid var(--stroke0);
+  color:var(--text2);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  padding:5px 9px;
+  border-radius:6px;
+  cursor:pointer;
+  text-align:left;
+  transition:background .12s,border-color .12s;
+}
+.tmpl-lib-btn:hover{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.3);color:var(--gold2);}
+
+/* ─── Template color swatches ─── */
+.tmpl-color-row{
+  display:flex;gap:7px;align-items:center;
+  padding:8px 0 2px;
+}
+.tmpl-color-swatch{
+  width:20px;height:20px;
+  border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;
+  padding:0;
+  flex-shrink:0;
+  transition:transform .12s,border-color .12s;
+}
+.tmpl-color-swatch:hover{transform:scale(1.18);}
+.tmpl-color-swatch.active{
+  border-color:#fff;
+  transform:scale(1.18);
+}
+
 /* ─── Settings button ─── */
 .settings-btn{
   background:none;
