@@ -71,16 +71,17 @@
    Base
    ============================================================ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
 html{
-  height:100%;
+  min-height:100%;
   background-color:var(--bg2);
 }
+
 body{
-  min-height:100%;
+  min-height:100svh;
   min-height:100dvh;
-  background-color:var(--bg1);
-}
-body{
+  overflow-x:hidden;
+  overflow-y:auto;
   background-color:var(--bg1);
   background:
     radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.10), transparent 56%),
@@ -97,8 +98,8 @@ body{
 #app{
   display:flex;
   flex-direction:column;
-  position:fixed;
-  inset:0;
+  min-height:100svh;
+  min-height:100dvh;
   padding-top:env(safe-area-inset-top);
   z-index:1;
   background:
@@ -107,6 +108,7 @@ body{
     radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.07), transparent 58%),
     radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,.05) 72%, rgba(0,0,0,.12) 100%),
     linear-gradient(180deg, var(--bg0), var(--bg2));
+  position:relative;
 }
 
 /* ============================================================
@@ -1096,7 +1098,7 @@ body{
   left:12px;
   right:12px;
   bottom:0;
-  padding-bottom:8px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 8px);
   z-index:210;
   pointer-events:none;
 }
