@@ -96,7 +96,20 @@ body{
   text-rendering:optimizeLegibility;
 }
 
-#app{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;padding-top:env(safe-area-inset-top);z-index:1;background-color:var(--bg1);}
+#app{
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  inset:0;
+  padding-top:env(safe-area-inset-top);
+  z-index:1;
+  background:
+    radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.10), transparent 56%),
+    radial-gradient(820px 600px at 95% 10%, rgba(78,160,200,.08), transparent 54%),
+    radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.07), transparent 58%),
+    radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,.05) 72%, rgba(0,0,0,.12) 100%),
+    linear-gradient(180deg, var(--bg0), var(--bg2));
+}
 
 /* ============================================================
    “Gold Dust” texture helpers
@@ -276,8 +289,11 @@ body{
 .content{
   flex:1;
   overflow-y:auto;
-  padding-bottom:calc(110px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(150px + env(safe-area-inset-bottom));
 }
+
 .content::-webkit-scrollbar{display:none;}
 
 /* Section headers */
@@ -1079,23 +1095,28 @@ body{
    ============================================================ */
 .dock{
   position:fixed;
-  left:12px; right:12px; bottom:10px;
-  padding-bottom:max(env(safe-area-inset-bottom),10px);
+  left:12px;
+  right:12px;
+  bottom:0;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 8px);
   z-index:210;
   pointer-events:none;
 }
+
 .dock-inner{
   pointer-events:auto;
   display:flex;
   align-items:flex-end;
   gap:6px;
-  padding:8px 8px 7px;
+  padding:8px 8px 8px;
   border-radius:24px;
   border:1px solid rgba(255,255,255,.12);
   background:rgba(16,14,12,.96);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
-  box-shadow:0 20px 54px rgba(0,0,0,.56), inset 0 1px 0 rgba(255,255,255,.05);
+  box-shadow:
+    0 20px 54px rgba(0,0,0,.56),
+    inset 0 1px 0 rgba(255,255,255,.05);
   position:relative;
   overflow:visible;
 }
@@ -1202,11 +1223,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
   border-radius:var(--r20);
   /* Layered: top-center gold hotspot → amber haze → side/bottom vignette → espresso base */
   background:
-    radial-gradient(ellipse 68% 40% at 30% -6%,  rgba(215,152,42,.40) 0%, rgba(130,82,14,.10) 52%, transparent 72%),
-    radial-gradient(ellipse 84% 54% at 40% 28%,  rgba(72,46,14,.62) 0%, transparent 64%),
-    radial-gradient(ellipse 55% 65% at 95% 55%,  rgba(4,2,1,.62) 0%, transparent 68%),
-    radial-gradient(ellipse 100% 40% at 50% 114%, rgba(3,2,1,.82) 0%, transparent 56%),
-    linear-gradient(162deg, #1e1509 0%, #130e07 42%, #0d0a06 100%);
+    radial-gradient(ellipse 68% 40% at 30% -6%, rgba(215,152,42,.34) 0%, rgba(130,82,14,.10) 52%, transparent 72%),
+    radial-gradient(ellipse 84% 54% at 40% 28%, rgba(78,50,16,.46) 0%, transparent 64%),
+    radial-gradient(ellipse 55% 65% at 95% 55%, rgba(5,3,2,.70) 0%, transparent 68%),
+    radial-gradient(ellipse 100% 40% at 50% 114%, rgba(3,2,1,.86) 0%, transparent 56%),
+    linear-gradient(162deg, #1a120b 0%, #120d08 42%, #090705 100%);
   /* Implied border: inner top-edge highlight + very faint warm stroke */
   border:1px solid rgba(150,100,22,.18);
   box-shadow:
@@ -1266,8 +1287,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
 }
 /* Colour-accent glow (inline style) + ornamental diamond lattice */
 .next-hero-bg{
-  position:absolute;inset:0;
-  pointer-events:none;z-index:2;
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  opacity:.55;
+  background:
+    radial-gradient(ellipse 42% 34% at 78% 48%, rgba(116,72,8,.16) 0%, transparent 70%),
+    radial-gradient(ellipse 54% 38% at 18% 18%, rgba(232,174,58,.14) 0%, transparent 72%);
+  mix-blend-mode:screen;
 }
 /* Faint baroque lattice masked to upper-left shadow zone */
 .next-hero-bg::after{
