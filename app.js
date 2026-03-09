@@ -378,7 +378,7 @@ function getFocusColor(focus){
   const ct=customTemplates.find(tc=>tc.name===focus);
   if(ct&&ct.color)return ct.color;
   if(builtinTemplateColors[focus])return builtinTemplateColors[focus];
-  return getFocusColor(focus);
+  return FCHEX[focus]||'#888';
 }
 function fmtDate(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'short'});}
 function fmtMonth(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{month:'long',year:'numeric'});}
