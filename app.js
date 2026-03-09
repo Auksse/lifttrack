@@ -237,6 +237,129 @@ let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
 let exDetailName=null;
+let lang=localStorage.getItem('lifttrack_lang')||'en';
+let showSettings=false;
+
+const STRINGS={
+  en:{
+    rest:'d rest',sessions:'Sessions',volume:'Volume',prs:'PRs',
+    scheduled:'Scheduled',next_up:'Next up',
+    tab_log:'Log',tab_plan:'Plan',tab_muscles:'Muscles',tab_stats:'Stats',
+    no_sessions:'No sessions yet.',
+    next_up_title:'Next',next_up_title2:'Up',
+    schedule_link:'Schedule a date →',start_workout:'Start Workout',
+    recent_pre:'Recent',recent_post:'Workouts',
+    edit:'Edit',use_as_template:'Use as template',delete:'Delete',
+    date:'Date',focus:'Focus',exercise_ph:'Exercise…',reps_ph:'Reps',
+    add_set:'+ Set',add_exercise:'+ Exercise',cancel:'Cancel',save_changes:'Save changes',
+    gains:'GAINS',select_body_part:'Select a body part',
+    muscles_lbl:'muscles',exercises_lbl:'exercises',exercise_lbl:'exercise',
+    not_logged_yet:'Not logged yet',
+    no_logged_ex:'No logged exercises for',yet:'yet.',
+    not_enough_pre:'Not enough data for',not_enough_post:'yet — log at least 2 sessions.',
+    est_1rm:'Estimated 1RM',since_start:'since start',max_weight:'Max Weight',
+    session_volume:'Session Volume',kg_reps:'kg·reps',
+    exercises_section:'Exercises',
+    subtab_exercises:'Exercises',subtab_gains:'Gains',
+    muscles_title:'MUSCLES',logged_lbl:'logged',in_library:'in library',
+    tap_day:'Tap a day to schedule a session',
+    add_to_plan:'+ Add to plan',sched_sessions_pre:'Scheduled',sched_sessions_post:'Sessions',today_lbl:'Today',
+    my_tmpl_pre:'My',my_tmpl_post:'Templates',
+    no_ex_yet:'No exercises yet.',done:'Done',
+    tmpl_name_ph:'Template name…',add_ex_below:'Add exercises below.',
+    ex_name_ph:'Exercise name…',add_btn:'+ Add',
+    save_template:'Save Template',create_template:'+ Create Template',
+    plan_title:'PLAN',sched_future:'Schedule future sessions',
+    overview_title:'OVERVIEW',total_lbl:'total',
+    session_split:'Session Split',vol_per_session:'Volume per Session',ex_freq:'Exercise Frequency',
+    library:'Library',
+    primary:'Primary',secondary:'Secondary',instructions:'Instructions',
+    no_details:'No details available for this exercise yet.',
+    log_workout:'LOG WORKOUT',tmpl_from:'Template from',clear:'Clear',
+    no_prev_pre:'No previous',no_prev_post:'session — starting fresh',
+    no_ex_tap:'No exercises yet — tap + Exercise to open the library',
+    close_library:'✕ Close library',manual_ex:'+ Manual exercise',save_session:'Save Session →',
+    session_updated:'Session updated ✓',session_saved:'Session saved ✓',
+    add_at_least:'Add at least one exercise',delete_confirm:'Delete this session?',
+    deleted:'Deleted',failed_load:'Failed to load data',
+    update_banner:'⬆ Update available',reload:'Reload',
+    select_day:'Select a day first',session_planned:'Session planned',
+    enter_tmpl_name:'Enter a template name',tmpl_exists:'Template already exists',tmpl_created:'Template created',
+    similar:'similar',apply:'Apply',alt_lbl:'Alt',
+    logs_lbl:'logs',log_lbl:'log',no_logs:'no logs',ex_lbl:'ex',sessions_lbl:'sessions',today_meta:'Today',
+    eq_body:'Body',eq_dbs:'DBs',eq_barbell:'Barbell',eq_cable:'Cable',eq_machine:'Machine',eq_plate:'Plate',
+    cat_chest:'Chest',cat_shoulders:'Shoulders',cat_back:'Back',cat_legs:'Legs & Glutes',cat_arms:'Arms',cat_core:'Core',
+    m1:'January',m2:'February',m3:'March',m4:'April',m5:'May',m6:'June',
+    m7:'July',m8:'August',m9:'September',m10:'October',m11:'November',m12:'December',
+    d_mo:'Mo',d_tu:'Tu',d_we:'We',d_th:'Th',d_fr:'Fr',d_sa:'Sa',d_su:'Su',
+    settings:'Settings',language:'Language',
+    f_Push:'Push',f_Pull:'Pull',f_Legs:'Legs',f_Upper:'Upper',f_Core:'Core',f_Other:'Other',
+    not_logged_short:'not logged',
+  },
+  fr:{
+    rest:'j repos',sessions:'Séances',volume:'Volume',prs:'PRs',
+    scheduled:'Planifié',next_up:'Prochaine',
+    tab_log:'Journal',tab_plan:'Planning',tab_muscles:'Muscles',tab_stats:'Stats',
+    no_sessions:'Aucune séance.',
+    next_up_title:'Prochaine',next_up_title2:'Séance',
+    schedule_link:'Planifier une date →',start_workout:'Commencer',
+    recent_pre:'Séances',recent_post:'Récentes',
+    edit:'Modifier',use_as_template:'Utiliser comme modèle',delete:'Supprimer',
+    date:'Date',focus:'Séance',exercise_ph:'Exercice…',reps_ph:'Rép.',
+    add_set:'+ Série',add_exercise:'+ Exercice',cancel:'Annuler',save_changes:'Enregistrer',
+    gains:'PROGRÈS',select_body_part:'Sélectionner un muscle',
+    muscles_lbl:'muscles',exercises_lbl:'exercices',exercise_lbl:'exercice',
+    not_logged_yet:'Pas encore enregistré',
+    no_logged_ex:'Aucun exercice enregistré pour',yet:'encore.',
+    not_enough_pre:'Pas assez de données pour',not_enough_post:'encore — enregistre au moins 2 séances.',
+    est_1rm:'1RM Estimé',since_start:'depuis le début',max_weight:'Poids Max',
+    session_volume:'Volume de Séance',kg_reps:'kg·rép.',
+    exercises_section:'Exercices',
+    subtab_exercises:'Exercices',subtab_gains:'Progrès',
+    muscles_title:'MUSCLES',logged_lbl:'enregistrés',in_library:'en bibliothèque',
+    tap_day:'Appuie sur un jour pour planifier',
+    add_to_plan:'+ Ajouter au planning',sched_sessions_pre:'Séances',sched_sessions_post:'Planifiées',today_lbl:"Aujourd'hui",
+    my_tmpl_pre:'Mes',my_tmpl_post:'Modèles',
+    no_ex_yet:"Pas encore d'exercices.",done:'Terminé',
+    tmpl_name_ph:'Nom du modèle…',add_ex_below:'Ajoutez des exercices ci-dessous.',
+    ex_name_ph:"Nom de l'exercice…",add_btn:'+ Ajouter',
+    save_template:'Enregistrer le modèle',create_template:'+ Créer un modèle',
+    plan_title:'PLANNING',sched_future:'Planifier des séances',
+    overview_title:'APERÇU',total_lbl:'total',
+    session_split:'Répartition des séances',vol_per_session:'Volume par séance',ex_freq:'Fréquence des exercices',
+    library:'Bibliothèque',
+    primary:'Principal',secondary:'Secondaire',instructions:'Instructions',
+    no_details:'Aucun détail disponible pour cet exercice.',
+    log_workout:'ENREGISTRER UNE SÉANCE',tmpl_from:'Modèle du',clear:'Effacer',
+    no_prev_pre:'Aucune séance',no_prev_post:'précédente — nouveau départ',
+    no_ex_tap:'Aucun exercice — appuie sur + Exercice pour ouvrir la bibliothèque',
+    close_library:'✕ Fermer la bibliothèque',manual_ex:'+ Exercice manuel',save_session:'Enregistrer →',
+    session_updated:'Séance mise à jour ✓',session_saved:'Séance enregistrée ✓',
+    add_at_least:'Ajoutez au moins un exercice',delete_confirm:'Supprimer cette séance ?',
+    deleted:'Supprimé',failed_load:'Erreur de chargement',
+    update_banner:'⬆ Mise à jour disponible',reload:'Recharger',
+    select_day:'Sélectionne d\'abord un jour',session_planned:'Séance planifiée',
+    enter_tmpl_name:'Entrer un nom de modèle',tmpl_exists:'Ce modèle existe déjà',tmpl_created:'Modèle créé',
+    similar:'similaire',apply:'Appliquer',alt_lbl:'Alt',
+    logs_lbl:'séances',log_lbl:'séance',no_logs:'non enregistré',ex_lbl:'ex',sessions_lbl:'séances',today_meta:"Aujourd'hui",
+    eq_body:'Corps',eq_dbs:'Halt.',eq_barbell:'Barre',eq_cable:'Poulie',eq_machine:'Machine',eq_plate:'Disques',
+    cat_chest:'Pectoraux',cat_shoulders:'Épaules',cat_back:'Dos',cat_legs:'Jambes & Fessiers',cat_arms:'Bras',cat_core:'Abdos',
+    m1:'Janvier',m2:'Février',m3:'Mars',m4:'Avril',m5:'Mai',m6:'Juin',
+    m7:'Juillet',m8:'Août',m9:'Septembre',m10:'Octobre',m11:'Novembre',m12:'Décembre',
+    d_mo:'Lu',d_tu:'Ma',d_we:'Me',d_th:'Je',d_fr:'Ve',d_sa:'Sa',d_su:'Di',
+    settings:'Paramètres',language:'Langue',
+    f_Push:'Poussée',f_Pull:'Tirage',f_Legs:'Jambes',f_Upper:'Haut',f_Core:'Tronc',f_Other:'Autre',
+    not_logged_short:'non enregistré',
+  }
+};
+function t(key){return(STRINGS[lang]||STRINGS.en)[key]||STRINGS.en[key]||key;}
+function tFocus(f){return t('f_'+f)||f;}
+function tMuscle(m){
+  if(lang!=='fr')return m;
+  const M={'Chest':'Pectoraux','Back':'Dos','Shoulders':'Épaules','Arms':'Bras','Core':'Abdominaux','Legs & Glutes':'Jambes & Fessiers','Lats':'Dorsaux','Upper Back':'Haut du dos','Mid Back':'Dos moyen','Traps':'Trapèzes','Spinal Erectors':'Érecteurs spinaux','Front Delts':'Deltoïdes ant.','Side Delts':'Deltoïdes lat.','Rear Delts':'Deltoïdes post.','Rotator Cuff':'Coiffe rotateurs','Biceps':'Biceps','Triceps':'Triceps','Forearms':'Avant-bras','Brachialis':'Brachial','Brachioradialis':'Brachio-radial','Abs':'Abdominaux','Obliques':'Obliques','Deep Core':'Profond','Hip Flexors':'Fléch. hanche','Serratus':'Serratus','Quads':'Quadriceps','Hamstrings':'Ischio-jamb.','Glutes':'Fessiers','Adductors':'Adducteurs','Calves':'Mollets','Gastrocnemius':'Gastrocnémien','Soleus':'Soléaire','Upper Traps':'Trapèzes sup.','Mid Traps':'Trapèzes moy.','Mid/Lower Traps':'Trap. moy./inf.','Rhomboids':'Rhomboïdes','Lower Chest':'Pec inf.','Upper Chest':'Pec sup.','Triceps Long Head':'Chef long tri.','Other Triceps Heads':'Autres chefs','Shoulders':'Épaules'};
+  return M[m]||m;
+}
+function setLang(l){lang=l;localStorage.setItem('lifttrack_lang',l);showSettings=false;render();}
 
 function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[],templateFrom:null};}
 
@@ -244,8 +367,8 @@ function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:
 // UTILS
 // ═══════════════════════════════════════════════
 const FCHEX={Push:'#c96b4a',Pull:'#4a90b8',Legs:'#5a9e62',Upper:'#8860b8',Other:'#6a6050'};
-function fmtDate(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
-function fmtMonth(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});}
+function fmtDate(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'short'});}
+function fmtMonth(ds){const d=new Date(ds+'T12:00:00');return d.toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{month:'long',year:'numeric'});}
 function daysSince(ds){return Math.floor((Date.now()-new Date(ds+'T12:00:00'))/86400000);}
 function sVol(s){return s.exercises.reduce((t,ex)=>t+ex.sets.reduce((st,set)=>st+set.r*Math.max(set.w,0),0),0);}
 function allExNames(){const c={};sessions.forEach(s=>s.exercises.forEach(e=>{c[e.name]=(c[e.name]||0)+1;}));return Object.entries(c).filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]).map(([n])=>n);}
@@ -328,19 +451,19 @@ function saveBuiltinTemplates(){localStorage.setItem('lifttrack_builtin_tmpl',JS
 function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
 function getAllFocuses(){return['Push','Pull','Legs','Upper',...customTemplates.map(t=>t.name)];}
 function confirmAddSchedule(){
-  if(!schedSelectedDay)return toast('Select a day first',true);
+  if(!schedSelectedDay)return toast(t('select_day'),true);
   schedules.push({id:crypto.randomUUID(),date:schedSelectedDay,focus:schedFocus});
   schedules.sort((a,b)=>a.date.localeCompare(b.date));
-  saveSchedules();render();toast('Session planned');
+  saveSchedules();render();toast(t('session_planned'));
 }
 function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
 function addCustomTemplate(){
   const name=newTemplateName.trim();
-  if(!name)return toast('Enter a template name',true);
-  if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast('Template already exists',true);
+  if(!name)return toast(t('enter_tmpl_name'),true);
+  if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast(t('tmpl_exists'),true);
   const id=crypto.randomUUID();
   customTemplates.push({id,name,exercises:[...newTemplateExercises]});
-  saveCustomTemplates();creatingTemplate=false;newTemplateName='';newTemplateExercises=[];expandedTemplateKey=id;editingTemplateKey=null;render();toast('Template created');
+  saveCustomTemplates();creatingTemplate=false;newTemplateName='';newTemplateExercises=[];expandedTemplateKey=id;editingTemplateKey=null;render();toast(t('tmpl_created'));
 }
 function startCreatingTemplate(){creatingTemplate=true;newTemplateName='';newTemplateExercises=[];newTmplExInput='';expandedTemplateKey=null;editingTemplateKey=null;render();}
 function cancelCreatingTemplate(){creatingTemplate=false;newTemplateName='';newTemplateExercises=[];render();}
@@ -416,7 +539,7 @@ function showUpdateBanner(){
   const b=document.createElement('div');
   b.id='ub';
   b.style.cssText='position:fixed;top:calc(env(safe-area-inset-top)+10px);left:50%;transform:translateX(-50%);background:rgba(18,16,14,.80);backdrop-filter:blur(10px);border:1px solid rgba(232,184,75,.25);color:#f5d47a;border-radius:16px;padding:10px 14px;font-size:12px;font-family:DM Sans,sans-serif;font-weight:700;z-index:350;display:flex;align-items:center;gap:10px;box-shadow:0 18px 40px rgba(0,0,0,.55);cursor:pointer;white-space:nowrap;';
-  b.innerHTML='<span>⬆ Update available</span><span style="background:linear-gradient(135deg,#f5d47a,#c89830);color:#0b0b0a;border-radius:999px;padding:6px 10px;font-weight:900;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Reload</span>';
+  b.innerHTML=`<span>${t('update_banner')}</span><span style="background:linear-gradient(135deg,#f5d47a,#c89830);color:#0b0b0a;border-radius:999px;padding:6px 10px;font-weight:900;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${t('reload')}</span>`;
   b.onclick=()=>window.location.reload();
   document.body.appendChild(b);
 }
@@ -447,29 +570,29 @@ function render(){
         <div class="brand">
           <div class="logo">LIFT<em>TRACK</em></div>
           <div class="pill">
-            <div class="rest-badge ${da>4?'warn':''}">${da}d rest</div>
+            <div class="rest-badge ${da>4?'warn':''}">${da}${t('rest')}</div>
           </div>
         </div>
-        <button class="cta" onclick="switchTab('add')">+ Log</button>
+        <button class="settings-btn" onclick="showSettings=!showSettings;render()" title="${t('settings')}">⚙</button>
       </div>
     </div>
 
     <div class="stat-strip">
       <div class="stat-cell">
-        <div class="stat-cell-label">Sessions</div>
+        <div class="stat-cell-label">${t('sessions')}</div>
         <div class="stat-cell-val" style="color:var(--gold)">${sessions.length}</div>
       </div>
       <div class="stat-cell">
-        <div class="stat-cell-label">Volume</div>
+        <div class="stat-cell-label">${t('volume')}</div>
         <div class="stat-cell-val" style="color:var(--pull)">${(totalVol/1000).toFixed(1)}<span style="font-size:11px;color:var(--muted)">t</span></div>
       </div>
       <div class="stat-cell">
-        <div class="stat-cell-label">PRs</div>
+        <div class="stat-cell-label">${t('prs')}</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
       </div>
       <div class="stat-cell next" onclick="switchTab('schedule')">
-        <div class="stat-cell-label" style="color:${nc}aa">${sched?'Scheduled':'Next up'}</div>
-        <div class="stat-cell-val" style="color:${nc};font-size:18px">${(sched||next).focus}</div>
+        <div class="stat-cell-label" style="color:${nc}aa">${sched?t('scheduled'):t('next_up')}</div>
+        <div class="stat-cell-val" style="color:${nc};font-size:18px">${tFocus((sched||next).focus)}</div>
         ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:''}
       </div>
     </div>
@@ -480,20 +603,21 @@ function render(){
 
     <div class="dock">
       <div class="dock-inner">
-        ${[['sessions','📋','Log'],['schedule','📅','Plan']].map(([t,ic,lb])=>`
-          <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
+        ${[['sessions','📋',t('tab_log')],['schedule','📅',t('tab_plan')]].map(([tb,ic,lb])=>`
+          <button class="tab ${tab===tb?'active':''}" onclick="switchTab('${tb}')">
             <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
           </button>`).join('')}
         <button class="tab tab-add ${tab==='add'?'active':''}" onclick="switchTab('add')">
           <span class="tab-icon">＋</span>
         </button>
-        ${[['muscles','💪','Muscles'],['overview','◎','Stats']].map(([t,ic,lb])=>`
-          <button class="tab ${tab===t?'active':''}" onclick="switchTab('${t}')">
+        ${[['muscles','💪',t('tab_muscles')],['overview','◎',t('tab_stats')]].map(([tb,ic,lb])=>`
+          <button class="tab ${tab===tb?'active':''}" onclick="switchTab('${tb}')">
             <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
           </button>`).join('')}
       </div>
     </div>
     ${renderExDetailModal()}
+    ${renderSettingsModal()}
   `;
 
   const c=document.getElementById('content');
@@ -505,7 +629,7 @@ function render(){
 // SESSIONS TAB
 // ═══════════════════════════════════════════════
 function renderSessions(){
-  if(!sessions.length)return'<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No sessions yet.</div>';
+  if(!sessions.length)return`<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">${t('no_sessions')}</div>`;
   const sorted=[...sessions].reverse();
   const groups=groupByMonth(sorted);
   const maxExVol={};
@@ -515,28 +639,28 @@ function renderSessions(){
   const sc=getNextScheduled();
   const heroFocus=(sc||next).focus;
   const nc=FCHEX[heroFocus]||'#888';
-  const todayStr=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const todayStr=new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short'});
   const today=new Date().toISOString().split('T')[0];
-  const heroMeta=sc?(sc.date===today?`Today · ${todayStr} · Scheduled`:`${fmtDate(sc.date)} · Scheduled`):`Today · ${todayStr}`;
+  const heroMeta=sc?(sc.date===today?`${t('today_meta')} · ${todayStr} · ${t('scheduled')}`:`${fmtDate(sc.date)} · ${t('scheduled')}`):`${t('today_meta')} · ${todayStr}`;
 
   return`
     <div class="log-next-section">
-      <div class="log-section-hdr"><span class="log-section-title"><span style="color:var(--text)">Next</span> Up</span></div>
+      <div class="log-section-hdr"><span class="log-section-title"><span style="color:var(--text)">${t('next_up_title')}</span> ${t('next_up_title2')}</span></div>
       <div class="next-hero-date-row">${heroMeta}</div>
       <div class="next-hero-card" onclick="switchTab('add')">
         <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
         <div class="next-hero-content">
           <div class="next-hero-top-row">
-            <div class="next-hero-name" style="color:${nc}">${heroFocus}</div>
-            ${!sc?`<button class="next-hero-schedule-link" onclick="event.stopPropagation();switchTab('schedule')">Schedule a date →</button>`:''}
+            <div class="next-hero-name" style="color:${nc}">${tFocus(heroFocus)}</div>
+            ${!sc?`<button class="next-hero-schedule-link" onclick="event.stopPropagation();switchTab('schedule')">${t('schedule_link')}</button>`:''}
           </div>
         </div>
-        <button class="next-hero-cta" onclick="event.stopPropagation();switchTab('add')">Start Workout</button>
+        <button class="next-hero-cta" onclick="event.stopPropagation();switchTab('add')">${t('start_workout')}</button>
       </div>
     </div>
 
     <div class="log-section-hdr log-recent-hdr">
-      <span class="log-section-title"><span style="color:var(--text)">Recent</span> Workouts</span>
+      <span class="log-section-title"><span style="color:var(--text)">${t('recent_pre')}</span> ${t('recent_post')}</span>
     </div>
 
     ${Object.entries(groups).map(([month,ss])=>`
@@ -558,8 +682,8 @@ function renderSessions(){
             <div class="rw-card-top" onclick="toggleSession('${s.id}')">
               <div class="rw-stripe" style="background:linear-gradient(180deg,${fc},${fc}44)"></div>
               <div class="rw-main">
-                <div class="rw-name" style="color:${fc}">${s.focus}</div>
-                <div class="rw-sub">${s.exercises.length} exercises${hasPR?` · <span style="color:var(--gold)">★ PR</span>`:''}</div>
+                <div class="rw-name" style="color:${fc}">${tFocus(s.focus)}</div>
+                <div class="rw-sub">${s.exercises.length} ${t('exercises_lbl')}${hasPR?` · <span style="color:var(--gold)">★ PR</span>`:''}</div>
               </div>
               <div class="rw-right">
                 <div class="rw-date">${fmtDate(s.date)}</div>
@@ -588,9 +712,9 @@ function renderSessions(){
                         </div>`;
                     }).join('')}
                     <div class="s-actions">
-                      <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
-                      <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
-                      <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
+                      <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">${t('edit')}</button>
+                      <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">${t('use_as_template')}</button>
+                      <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">${t('delete')}</button>
                     </div>
                   </div>`}
               </div>`:''}
@@ -606,13 +730,13 @@ function renderEditForm(s){
     <div class="edit-form" onclick="event.stopPropagation()">
       <div class="form-row" style="margin-bottom:10px">
         <div class="form-group">
-          <label class="form-label">Date</label>
+          <label class="form-label">${t('date')}</label>
           <input class="form-input" type="date" value="${f.date}" onchange="editForm.date=this.value" style="color-scheme:dark">
         </div>
         <div class="form-group">
-          <label class="form-label">Focus</label>
+          <label class="form-label">${t('focus')}</label>
           <select class="form-input" onchange="editForm.focus=this.value">
-            ${getAllFocuses().map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
+            ${getAllFocuses().map(foc=>`<option value="${foc}" ${f.focus===foc?'selected':''}>${tFocus(foc)}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -624,25 +748,25 @@ function renderEditForm(s){
               <button class="reorder-btn" ${ei===0?'disabled':''} onclick="eMoveEx(${ei},-1)">▲</button>
               <button class="reorder-btn" ${ei===f.exercises.length-1?'disabled':''} onclick="eMoveEx(${ei},1)">▼</button>
             </div>
-            <input class="ex-name-input" style="flex:1;margin:0 6px" placeholder="Exercise…" value="${ex.name}" oninput="editForm.exercises[${ei}].name=this.value">
+            <input class="ex-name-input" style="flex:1;margin:0 6px" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="editForm.exercises[${ei}].name=this.value">
             <button class="rm-ex-btn-add" style="width:42px;height:46px" onclick="eRemoveEx(${ei})">×</button>
           </div>
 
           ${ex.sets.map((set,si)=>`
             <div class="set-form-row">
               <span class="set-num">${si+1}</span>
-              <input class="set-input" type="number" placeholder="Reps" value="${set.r}" oninput="editForm.exercises[${ei}].sets[${si}].r=this.value">
+              <input class="set-input" type="number" placeholder="${t('reps_ph')}" value="${set.r}" oninput="editForm.exercises[${ei}].sets[${si}].r=this.value">
               <span class="set-sep">×</span>
               <input class="set-input" type="number" placeholder="kg" step="0.5" value="${set.w}" oninput="editForm.exercises[${ei}].sets[${si}].w=this.value">
               ${ex.sets.length>1?`<button class="rm-set-btn" onclick="eRemoveSet(${ei},${si})">×</button>`:''}
             </div>`).join('')}
-          <button class="add-set-btn" onclick="eAddSet(${ei})">+ Set</button>
+          <button class="add-set-btn" onclick="eAddSet(${ei})">${t('add_set')}</button>
         </div>`).join('')}
 
-      <button class="ghost-btn" style="margin-top:4px" onclick="eAddEx()">+ Exercise</button>
+      <button class="ghost-btn" style="margin-top:4px" onclick="eAddEx()">${t('add_exercise')}</button>
       <div style="display:flex;gap:10px;margin-top:6px">
-        <button class="s-act-btn" style="flex:1" onclick="cancelEdit()">Cancel</button>
-        <button class="s-act-btn primary" style="flex:2" onclick="saveEdit()">Save changes</button>
+        <button class="s-act-btn" style="flex:1" onclick="cancelEdit()">${t('cancel')}</button>
+        <button class="s-act-btn primary" style="flex:2" onclick="saveEdit()">${t('save_changes')}</button>
       </div>
     </div>`;
 }
@@ -656,8 +780,8 @@ function renderProgress(){
   // Level 1 — body-part groups
   return`
     <div class="section-header">
-      <div class="section-title">GAINS</div>
-      <div style="font-size:11px;color:var(--muted)">Select a body part</div>
+      <div class="section-title">${t('gains')}</div>
+      <div style="font-size:11px;color:var(--muted)">${t('select_body_part')}</div>
     </div>
     <div class="muscle-group-grid">
       ${MUSCLE_GROUPS.map(g=>{
@@ -665,8 +789,8 @@ function renderProgress(){
         g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
         const logCount=sessions.reduce((t,s)=>t+s.exercises.filter(e=>exNames.has(e.name)).length,0);
         return`<div class="muscle-group-card" onclick="progressGroup='${g.id}';render()" style="--gc:${g.color}">
-          <div class="muscle-group-name">${g.label}</div>
-          <div class="muscle-group-sub">${g.muscles.length} muscles</div>
+          <div class="muscle-group-name">${tMuscle(g.label)}</div>
+          <div class="muscle-group-sub">${g.muscles.length} ${t('muscles_lbl')}</div>
           ${logCount?`<div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>`:''}
         </div>`;
       }).join('')}
@@ -678,8 +802,8 @@ function renderProgressGroup(group){
     <div class="muscle-detail-header">
       <button class="back-btn" onclick="progressGroup=null;render()">←</button>
       <div>
-        <div class="section-title" style="color:${group.color};margin-bottom:0">${group.label.toUpperCase()}</div>
-        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} muscles</div>
+        <div class="section-title" style="color:${group.color};margin-bottom:0">${tMuscle(group.label).toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} ${t('muscles_lbl')}</div>
       </div>
     </div>
     <div class="muscle-grid" style="padding-top:14px">
@@ -689,8 +813,8 @@ function renderProgressGroup(group){
         const libCount=getDbFamiliesForMuscle(muscle).reduce((t,f)=>t+DB_EQUIPMENT_KEYS.filter(k=>f[k]).length,0);
         const logCount=exs.reduce((t,e)=>t+e.count,0);
         return`<div class="muscle-cell" onclick="progressMuscle='${muscle}';selEx=null;render()">
-          <div class="muscle-cell-name" style="color:${c}">${muscle}</div>
-          <div class="muscle-cell-sub">${exs.length?`${exs.length} ex · ${logCount} logs`:`${libCount} ex · no logs`}</div>
+          <div class="muscle-cell-name" style="color:${c}">${tMuscle(muscle)}</div>
+          <div class="muscle-cell-sub">${exs.length?`${exs.length} ${t('ex_lbl')} · ${logCount} ${t('logs_lbl')}`:`${libCount} ${t('ex_lbl')} · ${t('no_logs')}`}</div>
           <div class="muscle-cell-bar"><div class="muscle-cell-fill" style="width:${exs.length?'60':'0'}%;background:${c}"></div></div>
         </div>`;
       }).join('')}
@@ -706,10 +830,10 @@ function renderProgressForMuscle(muscle){
       <button class="back-btn" onclick="progressMuscle=null;render()">←</button>
       <div>
         <div class="section-title" style="color:${c};margin-bottom:0">${muscle.toUpperCase()}</div>
-        <div style="font-size:11px;color:var(--muted)">${exs.length} exercise${exs.length!==1?'s':''} logged</div>
+        <div style="font-size:11px;color:var(--muted)">${exs.length} ${exs.length!==1?t('exercises_lbl'):t('exercise_lbl')} ${t('logged_lbl')}</div>
       </div>
     </div>`;
-  if(!exs.length)return header+`<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">No logged exercises for ${muscle} yet.</div>`;
+  if(!exs.length)return header+`<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">${t('no_logged_ex')} ${tMuscle(muscle)} ${t('yet')}</div>`;
   if(!selEx||!exs.some(e=>e.name===selEx))selEx=exs[0].name;
   const pd=progressFor(selEx);
   const cur=pd[pd.length-1],first=pd[0];
@@ -719,30 +843,30 @@ function renderProgressForMuscle(muscle){
     <div class="progress-ex-header">
       <div class="progress-ex-name">${selEx}</div>
     </div>
-    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">Not enough data for ${selEx} yet — log at least 2 sessions.</div>`:`
+    ${pd.length<2?`<div style="padding:20px 16px;color:var(--muted);font-size:12px">${t('not_enough_pre')} ${selEx} ${t('not_enough_post')}</div>`:`
       <div class="chart-block">
-        <div class="chart-block-title">Estimated 1RM</div>
+        <div class="chart-block-title">${t('est_1rm')}</div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
           <div class="chart-big" style="color:#6bbd7f">${cur.e1rm}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg</span></div>
-          <span class="chart-delta" style="color:${eDelta>=0?'var(--green)':'var(--red)'}">${eDelta>=0?'▲':'▼'} ${Math.abs(eDelta)} since start</span>
+          <span class="chart-delta" style="color:${eDelta>=0?'var(--green)':'var(--red)'}">${eDelta>=0?'▲':'▼'} ${Math.abs(eDelta)} ${t('since_start')}</span>
         </div>
         <div class="chart-wrap"><canvas id="eChart"></canvas></div>
       </div>
       <div class="chart-block">
-        <div class="chart-block-title">Max Weight</div>
+        <div class="chart-block-title">${t('max_weight')}</div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
           <div class="chart-big" style="color:var(--gold)">${cur.mw}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg</span></div>
-          <span class="chart-delta" style="color:${wDelta>=0?'var(--green)':'var(--red)'}">${wDelta>=0?'▲':'▼'} ${Math.abs(wDelta)} since start</span>
+          <span class="chart-delta" style="color:${wDelta>=0?'var(--green)':'var(--red)'}">${wDelta>=0?'▲':'▼'} ${Math.abs(wDelta)} ${t('since_start')}</span>
         </div>
         <div class="chart-wrap"><canvas id="wChart"></canvas></div>
       </div>
       <div class="chart-block">
-        <div class="chart-block-title">Session Volume</div>
-        <div class="chart-big" style="color:var(--pull)">${cur.vol}<span style="font-size:12px;color:var(--muted);margin-left:4px">kg·reps</span></div>
+        <div class="chart-block-title">${t('session_volume')}</div>
+        <div class="chart-big" style="color:var(--pull)">${cur.vol}<span style="font-size:12px;color:var(--muted);margin-left:4px">${t('kg_reps')}</span></div>
         <div class="chart-wrap"><canvas id="vChart"></canvas></div>
       </div>`}
     <div style="padding:10px 14px 16px">
-      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Exercises</div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">${t('exercises_section')}</div>
       ${exs.map(e=>`<div class="progress-ex-row ${selEx===e.name?'active':''}" onclick="selectEx('${e.name.replace(/'/g,"\\'")}')">
         <span class="progress-ex-row-name">${e.name}</span>
         <span class="progress-ex-row-count">${e.count}×</span>
@@ -811,8 +935,8 @@ function renderMusclesTab(){
   }
   // Level 1 — body-part groups with sub-tab picker
   const subTabPicker=`<div class="muscle-subtab-bar">
-    <button class="muscle-subtab ${muscleSubTab==='exercises'?'active':''}" onclick="muscleSubTab='exercises';selGroup=null;selMuscle=null;render()">Exercises</button>
-    <button class="muscle-subtab ${muscleSubTab==='gains'?'active':''}" onclick="muscleSubTab='gains';progressGroup=null;progressMuscle=null;render()">Gains</button>
+    <button class="muscle-subtab ${muscleSubTab==='exercises'?'active':''}" onclick="muscleSubTab='exercises';selGroup=null;selMuscle=null;render()">${t('subtab_exercises')}</button>
+    <button class="muscle-subtab ${muscleSubTab==='gains'?'active':''}" onclick="muscleSubTab='gains';progressGroup=null;progressMuscle=null;render()">${t('subtab_gains')}</button>
   </div>`;
   const cards=muscleSubTab==='gains'
     ?MUSCLE_GROUPS.map(g=>{
@@ -820,9 +944,9 @@ function renderMusclesTab(){
         g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
         const logCount=sessions.reduce((t,s)=>t+s.exercises.filter(e=>exNames.has(e.name)).length,0);
         return`<div class="muscle-group-card" onclick="progressGroup='${g.id}';render()" style="--gc:${g.color}">
-          <div class="muscle-group-name">${g.label}</div>
-          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''}</div>
-          <div class="muscle-group-vol">${logCount} log${logCount!==1?'s':''}</div>
+          <div class="muscle-group-name">${tMuscle(g.label)}</div>
+          <div class="muscle-group-sub">${g.muscles.length} ${t('muscles_lbl')}</div>
+          <div class="muscle-group-vol">${logCount} ${logCount!==1?t('logs_lbl'):t('log_lbl')}</div>
         </div>`;
       }).join('')
     :MUSCLE_GROUPS.map(g=>{
@@ -830,14 +954,14 @@ function renderMusclesTab(){
         g.muscles.forEach(m=>getDbFamiliesForMuscle(m).forEach(f=>DB_EQUIPMENT_KEYS.forEach(k=>{if(f[k])exNames.add(f[k]);})));
         const exCount=exNames.size;
         return`<div class="muscle-group-card" onclick="selGroup='${g.id}';render()" style="--gc:${g.color}">
-          <div class="muscle-group-name">${g.label}</div>
-          <div class="muscle-group-sub">${g.muscles.length} muscle${g.muscles.length!==1?'s':''}</div>
-          <div class="muscle-group-vol">${exCount} exercise${exCount!==1?'s':''}</div>
+          <div class="muscle-group-name">${tMuscle(g.label)}</div>
+          <div class="muscle-group-sub">${g.muscles.length} ${t('muscles_lbl')}</div>
+          <div class="muscle-group-vol">${exCount} ${exCount!==1?t('exercises_lbl'):t('exercise_lbl')}</div>
         </div>`;
       }).join('');
   return`
     <div class="section-header">
-      <div class="section-title">MUSCLES</div>
+      <div class="section-title">${t('muscles_title')}</div>
       ${subTabPicker}
     </div>
     <div class="muscle-group-grid">${cards}</div>`;
@@ -851,8 +975,8 @@ function renderMuscleGroup(group){
     <div class="muscle-detail-header">
       <button class="back-btn" onclick="selGroup=null;render()">←</button>
       <div>
-        <div class="section-title" style="color:${group.color};margin-bottom:0">${group.label.toUpperCase()}</div>
-        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} muscles</div>
+        <div class="section-title" style="color:${group.color};margin-bottom:0">${tMuscle(group.label).toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${group.muscles.length} ${t('muscles_lbl')}</div>
       </div>
     </div>
     <div class="muscle-grid" style="padding-top:14px">
@@ -861,8 +985,8 @@ function renderMuscleGroup(group){
         const pct=Math.round((vols[i]/maxVol)*100);
         const exCount=getDbFamiliesForMuscle(muscle).length;
         return`<div class="muscle-cell" onclick="selMuscle='${muscle}';render()">
-          <div class="muscle-cell-name" style="color:${c}">${muscle}</div>
-          <div class="muscle-cell-sub">${exCount} exercise${exCount!==1?'s':''}</div>
+          <div class="muscle-cell-name" style="color:${c}">${tMuscle(muscle)}</div>
+          <div class="muscle-cell-sub">${exCount} ${exCount!==1?t('exercises_lbl'):t('exercise_lbl')}</div>
           <div class="muscle-cell-bar"><div class="muscle-cell-fill" style="width:${pct}%;background:${c}"></div></div>
         </div>`;
       }).join('')}
@@ -883,13 +1007,13 @@ function renderMuscleDetail(muscle,stat){
     <div class="muscle-detail-header">
       <button class="back-btn" onclick="selMuscle=null;render()">←</button>
       <div>
-        <div class="section-title" style="color:${c};margin-bottom:0">${muscle.toUpperCase()}</div>
-        <div style="font-size:11px;color:var(--muted)">${Object.keys(loggedData).length} logged · ${families.length} in library</div>
+        <div class="section-title" style="color:${c};margin-bottom:0">${tMuscle(muscle).toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--muted)">${Object.keys(loggedData).length} ${t('logged_lbl')} · ${families.length} ${t('in_library')}</div>
       </div>
     </div>
     <div style="padding:10px 14px 6px">
       <div class="db-eq-bar">
-        ${Object.entries(DB_EQ_LABELS).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
+        ${Object.entries(getEqLabels()).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
       </div>
     </div>
     <div style="padding:8px 14px 12px">
@@ -912,9 +1036,9 @@ function renderMuscleDetail(muscle,stat){
               <span class="score-label">${displayM?.name||'—'}</span>
               <div class="score-dots">${dots}</div>
             </div>
-            <div class="muscle-ex-stats">${data?`${data.sessions} sessions · max ${data.maxW}kg · last ${lastSession?fmtDate(lastSession.date):'—'}`:'Not logged yet'}</div>
+            <div class="muscle-ex-stats">${data?`${data.sessions} ${t('sessions_lbl')} · max ${data.maxW}kg · last ${lastSession?fmtDate(lastSession.date):'—'}`:t('not_logged_yet')}</div>
           </div>`;
-      }).join(''):`<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:12px">No ${DB_EQ_LABELS[dbEquipment].toLowerCase()} option for ${muscle}.</div>`}
+      }).join(''):`<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:12px">No ${(getEqLabels()[dbEquipment]||dbEquipment).toLowerCase()} option for ${muscle}.</div>`}
     </div>`;
 }
 
@@ -923,7 +1047,7 @@ function renderMuscleDetail(muscle,stat){
 // ═══════════════════════════════════════════════
 function renderScheduleTab(){
   const today=new Date().toISOString().split('T')[0];
-  const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTH_NAMES=[t('m1'),t('m2'),t('m3'),t('m4'),t('m5'),t('m6'),t('m7'),t('m8'),t('m9'),t('m10'),t('m11'),t('m12')];
   const daysInMonth=new Date(schedViewYear,schedViewMonth+1,0).getDate();
   const firstDow=new Date(schedViewYear,schedViewMonth,1).getDay();
   const startCol=(firstDow+6)%7; // Mon=0, Sun=6
@@ -951,7 +1075,7 @@ function renderScheduleTab(){
       <button class="cal-nav-btn" onclick="nextSchedMonth()">›</button>
     </div>
     <div class="cal-grid">
-      ${['Mo','Tu','We','Th','Fr','Sa','Su'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+      ${[t('d_mo'),t('d_tu'),t('d_we'),t('d_th'),t('d_fr'),t('d_sa'),t('d_su')].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
       ${cells.map(d=>{
         if(!d)return`<div></div>`;
         const ds=`${schedViewYear}-${String(schedViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -965,22 +1089,22 @@ function renderScheduleTab(){
     </div>`;
 
   const allFocuses=getAllFocuses();
-  const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus=${JSON.stringify(f)};render()">${f}</button>`).join('');
+  const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus=${JSON.stringify(f)};render()">${tFocus(f)}</button>`).join('');
 
   const addPanel=schedSelectedDay?`
     <div class="sched-add-panel">
       <div class="sched-add-panel-date">${fmtDate(schedSelectedDay)}</div>
       <div class="muscle-subtab-bar" style="flex-wrap:wrap;margin-bottom:14px">${focusPills}</div>
-      <button class="sched-add-btn" onclick="confirmAddSchedule()">+ Add to plan</button>
+      <button class="sched-add-btn" onclick="confirmAddSchedule()">${t('add_to_plan')}</button>
     </div>`:`
-    <div style="padding:8px 16px 14px;text-align:center;font-size:12px;color:var(--dim)">Tap a day to schedule a session</div>`;
+    <div style="padding:8px 16px 14px;text-align:center;font-size:12px;color:var(--dim)">${t('tap_day')}</div>`;
 
   const upcoming=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
   const past=[...schedules.filter(s=>s.date<today)].sort((a,b)=>b.date.localeCompare(a.date));
 
   const schedList=(upcoming.length||past.length)?`
     <div class="log-section-hdr log-recent-hdr">
-      <span class="log-section-title"><span style="color:var(--text)">Scheduled</span> Sessions</span>
+      <span class="log-section-title"><span style="color:var(--text)">${t('sched_sessions_pre')}</span> ${t('sched_sessions_post')}</span>
     </div>
     ${upcoming.map(s=>{
       const fc=FCHEX[s.focus]||'#888';
@@ -988,8 +1112,8 @@ function renderScheduleTab(){
       return`<div class="sched-card${isToday?' today':''}">
         <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
         <div class="sched-card-main">
-          <div class="sched-card-focus" style="color:${fc}">${s.focus}</div>
-          <div class="sched-card-date">${fmtDate(s.date)}${isToday?' · Today':''}</div>
+          <div class="sched-card-focus" style="color:${fc}">${tFocus(s.focus)}</div>
+          <div class="sched-card-date">${fmtDate(s.date)}${isToday?` · ${t('today_lbl')}`:''}</div>
         </div>
         <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
       </div>`;
@@ -999,7 +1123,7 @@ function renderScheduleTab(){
       return`<div class="sched-card cal-past" style="opacity:.45">
         <div class="sched-card-stripe" style="background:${fc}44"></div>
         <div class="sched-card-main">
-          <div class="sched-card-focus" style="color:${fc}88">${s.focus}</div>
+          <div class="sched-card-focus" style="color:${fc}88">${tFocus(s.focus)}</div>
           <div class="sched-card-date" style="color:var(--dim)">${fmtDate(s.date)}</div>
         </div>
         <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
@@ -1008,18 +1132,19 @@ function renderScheduleTab(){
 
   const BUILTIN_FOCUSES=['Push','Pull','Legs','Upper'];
   const allTmplEntries=[
-    ...BUILTIN_FOCUSES.map(f=>({key:f,name:f,exercises:builtinTemplateExercises[f]||[],builtin:true})),
-    ...customTemplates.map(t=>({key:t.id,name:t.name,exercises:t.exercises,builtin:false}))
+    ...BUILTIN_FOCUSES.map(f=>({key:f,name:tFocus(f),rawKey:f,exercises:builtinTemplateExercises[f]||[],builtin:true})),
+    ...customTemplates.map(tc=>({key:tc.id,name:tc.name,rawKey:tc.id,exercises:tc.exercises,builtin:false}))
   ];
-  const renderTmplCard=({key,name,exercises,builtin})=>{
+  const renderTmplCard=({key,name,rawKey,exercises,builtin})=>{
     const isExpanded=expandedTemplateKey===key;
     const isEditing=editingTemplateKey===key;
     const nameColor=builtin?'var(--text2)':'var(--gold2)';
+    const builtinKey=rawKey||key;
     return`<div class="tmpl-editor-card ${isExpanded?'tmpl-expanded':''}">
       <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;render()`}">
         <span class="tmpl-editor-name" style="color:${nameColor}">${name}</span>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace">${exercises.length} ex</span>
+          <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace">${exercises.length} ${t('ex_lbl')}</span>
           <span class="tmpl-chevron ${isExpanded?'open':''}">▼</span>
         </div>
       </div>
@@ -1028,28 +1153,28 @@ function renderScheduleTab(){
           ${exercises.length?exercises.map((ex,i)=>`
             <div class="tmpl-ex-row">
               ${isEditing?`<div class="tmpl-ex-reorder">
-                <button class="tmpl-reorder-btn" ${i===0?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${key}',${i},-1)`:`moveTemplateEx('${key}',${i},-1)`}">▲</button>
-                <button class="tmpl-reorder-btn" ${i===exercises.length-1?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${key}',${i},1)`:`moveTemplateEx('${key}',${i},1)`}">▼</button>
+                <button class="tmpl-reorder-btn" ${i===0?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${builtinKey}',${i},-1)`:`moveTemplateEx('${key}',${i},-1)`}">▲</button>
+                <button class="tmpl-reorder-btn" ${i===exercises.length-1?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${builtinKey}',${i},1)`:`moveTemplateEx('${key}',${i},1)`}">▼</button>
               </div>`:''}
               <span class="tmpl-ex-name">${ex}</span>
-              ${isEditing?`<button class="tmpl-ex-del" onclick="event.stopPropagation();${builtin?`removeBuiltinEx('${key}',${i})`:`removeTemplateEx('${key}',${i})`}">×</button>`:''}
-            </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0 8px">No exercises yet.</div>`}
+              ${isEditing?`<button class="tmpl-ex-del" onclick="event.stopPropagation();${builtin?`removeBuiltinEx('${builtinKey}',${i})`:`removeTemplateEx('${key}',${i})`}">×</button>`:''}
+            </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0 8px">${t('no_ex_yet')}</div>`}
         </div>
         ${isEditing?`
           <div style="display:flex;gap:6px;margin-top:10px">
-            <input type="text" id="tmplExInput_${key}" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value" value="">
-            <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="event.stopPropagation();${builtin?`addBuiltinEx('${key}')`:`addTemplateEx('${key}')`}">+ Add</button>
+            <input type="text" id="tmplExInput_${key}" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value" value="">
+            <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="event.stopPropagation();${builtin?`addBuiltinEx('${builtinKey}')`:`addTemplateEx('${key}')`}">${t('add_btn')}</button>
           </div>`:''}
         <div style="display:flex;gap:6px;margin-top:${isEditing?'8px':'10px'};padding-top:${isEditing?'8px':'0'};${isEditing?'border-top:1px solid rgba(255,255,255,.06)':''}">
-          <button class="tmpl-editor-btn" onclick="event.stopPropagation();editingTemplateKey=${isEditing?'null':`'${key}'`};render()">${isEditing?'Done':'Edit'}</button>
-          ${builtin?'':`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('Delete ${name}?'))deleteCustomTemplate('${key}')">Delete</button>`}
+          <button class="tmpl-editor-btn" onclick="event.stopPropagation();editingTemplateKey=${isEditing?'null':`'${key}'`};render()">${isEditing?t('done'):t('edit')}</button>
+          ${builtin?'':`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('${t('delete')} ${name}?'))deleteCustomTemplate('${key}')">${t('delete')}</button>`}
         </div>`:''}
     </div>`;
   };
   const createFormHtml=creatingTemplate?`
     <div class="tmpl-editor-card" style="border-color:rgba(232,184,75,.25)">
       <div class="tmpl-editor-header">
-        <input type="text" class="tmpl-name-input" placeholder="Template name…" oninput="newTemplateName=this.value" value="${newTemplateName.replace(/"/g,'&quot;')}" autofocus>
+        <input type="text" class="tmpl-name-input" placeholder="${t('tmpl_name_ph')}" oninput="newTemplateName=this.value" value="${newTemplateName.replace(/"/g,'&quot;')}" autofocus>
         <button class="tmpl-editor-btn del" onclick="cancelCreatingTemplate()" style="flex-shrink:0">✕</button>
       </div>
       <div class="tmpl-ex-list" style="margin-top:8px;min-height:24px">
@@ -1057,18 +1182,18 @@ function renderScheduleTab(){
           <div class="tmpl-ex-row">
             <span class="tmpl-ex-name">${ex}</span>
             <button class="tmpl-ex-del" onclick="removeFromNewTemplate(${i})">×</button>
-          </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0">Add exercises below.</div>`}
+          </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0">${t('add_ex_below')}</div>`}
       </div>
       <div style="display:flex;gap:6px;margin-top:10px">
-        <input type="text" id="newTmplExInput" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="newTmplExInput=this.value" value="">
-        <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addToNewTemplate()">+ Add</button>
+        <input type="text" id="newTmplExInput" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="newTmplExInput=this.value" value="">
+        <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addToNewTemplate()">${t('add_btn')}</button>
       </div>
-      <button class="tmpl-save-btn" onclick="addCustomTemplate()">Save Template</button>
+      <button class="tmpl-save-btn" onclick="addCustomTemplate()">${t('save_template')}</button>
     </div>`
-    :`<button class="tmpl-create-btn" onclick="startCreatingTemplate()">+ Create Template</button>`;
+    :`<button class="tmpl-create-btn" onclick="startCreatingTemplate()">${t('create_template')}</button>`;
   const templatesSection=`
     <div class="log-section-hdr log-recent-hdr" style="margin-top:4px">
-      <span class="log-section-title"><span style="color:var(--text)">My</span> Templates</span>
+      <span class="log-section-title"><span style="color:var(--text)">${t('my_tmpl_pre')}</span> ${t('my_tmpl_post')}</span>
     </div>
     <div style="padding:0 12px 16px">
       ${allTmplEntries.map(renderTmplCard).join('')}
@@ -1077,8 +1202,8 @@ function renderScheduleTab(){
 
   return`
     <div class="section-header">
-      <div class="section-title">PLAN</div>
-      <div style="font-size:11px;color:var(--muted)">Schedule future sessions</div>
+      <div class="section-title">${t('plan_title')}</div>
+      <div style="font-size:11px;color:var(--muted)">${t('sched_future')}</div>
     </div>
     <div style="padding:14px 16px 0">${calGrid}</div>
     ${addPanel}
@@ -1097,16 +1222,16 @@ function renderOverview(){
   const maxVol=Math.max(1,...vols.map(s=>s.vol));
   return`
     <div class="section-header">
-      <div class="section-title">OVERVIEW</div>
-      <div style="font-size:11px;color:var(--muted)">${sessions.length} sessions · ${(totVol/1000).toFixed(1)}t total</div>
+      <div class="section-title">${t('overview_title')}</div>
+      <div style="font-size:11px;color:var(--muted)">${sessions.length} ${t('sessions_lbl')} · ${(totVol/1000).toFixed(1)}t ${t('total_lbl')}</div>
     </div>
 
     <div class="ov-section">
-      <div class="ov-title">Session Split</div>
+      <div class="ov-title">${t('session_split')}</div>
       ${Object.entries(fc).sort((a,b)=>b[1]-a[1]).map(([focus,count])=>`
         <div class="focus-row">
           <div class="focus-row-top">
-            <span class="focus-row-name" style="color:${FCHEX[focus]||'#888'}">${focus}</span>
+            <span class="focus-row-name" style="color:${FCHEX[focus]||'#888'}">${tFocus(focus)}</span>
             <span class="focus-row-count">${count}/${sessions.length}</span>
           </div>
           <div class="focus-track"><div class="focus-fill" style="width:${(count/sessions.length)*100}%;background:${FCHEX[focus]||'#888'}"></div></div>
@@ -1114,12 +1239,12 @@ function renderOverview(){
     </div>
 
     <div class="ov-section">
-      <div class="ov-title">Volume per Session</div>
+      <div class="ov-title">${t('vol_per_session')}</div>
       <div class="vol-bars">${vols.map(s=>`<div class="vol-bar" style="height:${Math.round((s.vol/maxVol)*56)+6}px;background:${FCHEX[s.focus]||'#888'}"></div>`).join('')}</div>
     </div>
 
     <div class="ov-section">
-      <div class="ov-title">Exercise Frequency</div>
+      <div class="ov-title">${t('ex_freq')}</div>
       <div class="freq-grid">${Object.entries(exFreq).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,count])=>`
         <div class="freq-item"><span class="freq-name">${name}</span><span class="freq-n">${count}×</span></div>
       `).join('')}</div>
@@ -1129,8 +1254,10 @@ function renderOverview(){
 // ═══════════════════════════════════════════════
 // EXERCISE LIBRARY BROWSER
 // ═══════════════════════════════════════════════
-const DB_EQ_LABELS={bodyweight:'Body',dumbbells:'DBs',barbell:'Barbell',cable:'Cable',machine:'Machine',plateLoaded:'Plate'};
-const DB_CAT_LABELS={chest:'Chest',shoulders:'Shoulders',back:'Back',legs_glutes:'Legs & Glutes',arms:'Arms',core:'Core'};
+const DB_EQ_KEYS={bodyweight:'eq_body',dumbbells:'eq_dbs',barbell:'eq_barbell',cable:'eq_cable',machine:'eq_machine',plateLoaded:'eq_plate'};
+const DB_CAT_KEYS={chest:'cat_chest',shoulders:'cat_shoulders',back:'cat_back',legs_glutes:'cat_legs',arms:'cat_arms',core:'cat_core'};
+function getEqLabels(){const o={};Object.entries(DB_EQ_KEYS).forEach(([k,v])=>{o[k]=t(v);});return o;}
+function getCatLabels(){const o={};Object.entries(DB_CAT_KEYS).forEach(([k,v])=>{o[k]=t(v);});return o;}
 const DB_CAT_COLORS={chest:'#c96b4a',shoulders:'#b85a90',back:'#4a90b8',legs_glutes:'#5a9e62',arms:'#4aabab',core:'#8860b8'};
 const DB_CAT_ORDER=['chest','shoulders','back','legs_glutes','arms','core'];
 
@@ -1145,9 +1272,9 @@ function renderExerciseBrowser(){
   return`
     <div class="db-browser">
       <div class="db-browser-header">
-        <div class="db-browser-title">Library</div>
+        <div class="db-browser-title">${t('library')}</div>
         <div class="db-eq-bar">
-          ${Object.entries(DB_EQ_LABELS).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
+          ${Object.entries(getEqLabels()).map(([key,label])=>`<button class="db-eq-tab ${dbEquipment===key?'active':''}" onclick="dbEquipment='${key}';render()">${label}</button>`).join('')}
         </div>
       </div>
       <div class="db-exercise-list">
@@ -1157,12 +1284,32 @@ function renderExerciseBrowser(){
           const c=DB_CAT_COLORS[cat];
           return`
             <div class="db-cat-group">
-              <div class="db-cat-label" style="color:${c}">${DB_CAT_LABELS[cat].toUpperCase()}</div>
+              <div class="db-cat-label" style="color:${c}">${(getCatLabels()[cat]||cat).toUpperCase()}</div>
               <div class="db-cat-exercises">
                 ${exs.map(name=>`<button class="db-ex-btn" onclick="addExerciseFromLibrary('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
               </div>
             </div>`;
         }).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════
+function renderSettingsModal(){
+  if(!showSettings)return'';
+  return`
+    <div class="settings-backdrop" onclick="showSettings=false;render()"></div>
+    <div class="settings-sheet">
+      <div class="settings-handle"></div>
+      <div class="settings-title">${t('settings')}</div>
+      <div class="settings-row">
+        <span class="settings-label">${t('language')}</span>
+        <div class="settings-lang-btns">
+          <button class="lang-btn ${lang==='en'?'active':''}" onclick="setLang('en')">EN</button>
+          <button class="lang-btn ${lang==='fr'?'active':''}" onclick="setLang('fr')">FR</button>
+        </div>
       </div>
     </div>`;
 }
@@ -1187,28 +1334,28 @@ function renderExDetailModal(){
         <div class="ex-detail-title">${exDetailName}</div>
         <button class="ex-detail-close" onclick="closeExDetail()">✕</button>
       </div>
-      ${(level||mechanic)?`<div class="ex-detail-meta">${[level,mechanic].filter(Boolean).map(t=>`<span class="ex-detail-tag">${t}</span>`).join('')}</div>`:''}
+      ${(level||mechanic)?`<div class="ex-detail-meta">${[level,mechanic].filter(Boolean).map(tag=>`<span class="ex-detail-tag">${tag}</span>`).join('')}</div>`:''}
       ${imgs.length?`
         <div class="ex-detail-imgs">
           ${imgs.map(img=>`<img class="ex-detail-img" src="exercise-assets/exercises/${img}" alt="" loading="lazy" onerror="this.style.display='none'">`).join('')}
         </div>`:''}
       ${primary.length?`
         <div class="ex-detail-section">
-          <div class="ex-detail-section-lbl">Primary</div>
-          <div class="ex-detail-chips">${primary.map(m=>`<span class="ex-detail-chip primary">${m}</span>`).join('')}</div>
+          <div class="ex-detail-section-lbl">${t('primary')}</div>
+          <div class="ex-detail-chips">${primary.map(m=>`<span class="ex-detail-chip primary">${tMuscle(m)}</span>`).join('')}</div>
         </div>`:''}
       ${secondary.length?`
         <div class="ex-detail-section">
-          <div class="ex-detail-section-lbl">Secondary</div>
-          <div class="ex-detail-chips">${secondary.map(m=>`<span class="ex-detail-chip">${m}</span>`).join('')}</div>
+          <div class="ex-detail-section-lbl">${t('secondary')}</div>
+          <div class="ex-detail-chips">${secondary.map(m=>`<span class="ex-detail-chip">${tMuscle(m)}</span>`).join('')}</div>
         </div>`:''}
       ${steps.length?`
         <div class="ex-detail-section">
-          <div class="ex-detail-section-lbl">Instructions</div>
+          <div class="ex-detail-section-lbl">${t('instructions')}</div>
           <ol class="ex-detail-steps">
             ${steps.map(s=>`<li class="ex-detail-step">${s}</li>`).join('')}
           </ol>
-        </div>`:(!e?`<div class="ex-detail-empty">No details available for this exercise yet.</div>`:'')}
+        </div>`:(!e?`<div class="ex-detail-empty">${t('no_details')}</div>`:'')}
     </div>`;
 }
 
@@ -1222,17 +1369,17 @@ function renderAdd(){
   const currentNames=f.exercises.map(e=>e.name).filter(Boolean);
 
   return`
-    <div class="add-header"><div class="add-title">LOG WORKOUT</div></div>
+    <div class="add-header"><div class="add-title">${t('log_workout')}</div></div>
     <div class="add-body">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Date</label>
+          <label class="form-label">${t('date')}</label>
           <input class="form-input" type="date" value="${f.date}" onchange="addForm.date=this.value">
         </div>
         <div class="form-group">
-          <label class="form-label">Focus</label>
+          <label class="form-label">${t('focus')}</label>
           <select class="form-input" onchange="changeFocus(this.value)">
-            ${getAllFocuses().map(foc=>`<option ${f.focus===foc?'selected':''}>${foc}</option>`).join('')}
+            ${getAllFocuses().map(foc=>`<option value="${foc}" ${f.focus===foc?'selected':''}>${tFocus(foc)}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -1240,12 +1387,12 @@ function renderAdd(){
       ${last?`
         <div class="tmpl-banner">
           <div>
-            <div class="tmpl-lbl">Template from</div>
-            <div class="tmpl-date">${fmtDate(last.date)} · ${last.exercises.length} ex</div>
+            <div class="tmpl-lbl">${t('tmpl_from')}</div>
+            <div class="tmpl-date">${fmtDate(last.date)} · ${last.exercises.length} ${t('ex_lbl')}</div>
           </div>
-          <button class="tmpl-clear" onclick="clearTemplate()">Clear</button>
+          <button class="tmpl-clear" onclick="clearTemplate()">${t('clear')}</button>
         </div>`:`
-        <div class="no-tmpl">No previous ${f.focus} session — starting fresh</div>`}
+        <div class="no-tmpl">${t('no_prev_pre')} ${tFocus(f.focus)} ${t('no_prev_post')}</div>`}
 
       <div id="ex-list">
         ${f.exercises.map((ex,ei)=>{
@@ -1262,15 +1409,15 @@ function renderAdd(){
                   <button class="reorder-btn-add" ${ei===f.exercises.length-1?'disabled':''} onclick="moveEx(${ei},1)">▼</button>
                 </div>
                 <div class="ex-name-wrap" style="flex:1;margin:0 6px">
-                  <input class="ex-name-input" placeholder="Exercise name…" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
-                  ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">similar</span></div>`).join('')}</div>`:''}
+                  <input class="ex-name-input" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
+                  ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">${t('similar')}</span></div>`).join('')}</div>`:''}
                 </div>
                 ${ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
                 <button class="rm-ex-btn-add" onclick="removeEx(${ei})">×</button>
               </div>
 
-              ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">Apply</button></div>`:''}
-              ${alts.length?`<div class="alt-row"><button class="alt-toggle" onclick="toggleAlts(${ei})" aria-expanded="false" id="alt-toggle-${ei}"><span class="alt-label">Alt</span><span class="alt-arrow">▶</span></button><div class="alt-chips" id="alt-chips-${ei}" style="display:none">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
+              ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">${t('apply')}</button></div>`:''}
+              ${alts.length?`<div class="alt-row"><button class="alt-toggle" onclick="toggleAlts(${ei})" aria-expanded="false" id="alt-toggle-${ei}"><span class="alt-label">${t('alt_lbl')}</span><span class="alt-arrow">▶</span></button><div class="alt-chips" id="alt-chips-${ei}" style="display:none">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
 
               ${ex.sets.map((set,si)=>{
                 const prevSet=lastSets&&lastSets[si];
@@ -1279,7 +1426,7 @@ function renderAdd(){
                 return`
                   <div class="set-form-row">
                     <span class="set-num">${si+1}</span>
-                    <input class="set-input" type="number" placeholder="Reps" value="${set.r}" oninput="addForm.exercises[${ei}].sets[${si}].r=this.value">
+                    <input class="set-input" type="number" placeholder="${t('reps_ph')}" value="${set.r}" oninput="addForm.exercises[${ei}].sets[${si}].r=this.value">
                     <span class="set-sep">×</span>
                     <input class="set-input" type="number" placeholder="kg" step="0.5" value="${set.w}" oninput="addForm.exercises[${ei}].sets[${si}].w=this.value">
                     ${prevSet?`<span class="prev-ref ${wd===null?'':wd>0?'prev-up':wd<0?'prev-dn':''}">${prevSet.r}×${prevSet.w}</span>`:''}
@@ -1287,16 +1434,16 @@ function renderAdd(){
                   </div>`;
               }).join('')}
 
-              <button class="add-set-btn" onclick="addSet(${ei})">+ Set</button>
+              <button class="add-set-btn" onclick="addSet(${ei})">${t('add_set')}</button>
             </div>`;
         }).join('')}
       </div>
 
-      ${!f.exercises.length&&!showExerciseLibrary?`<div style="padding:20px 0 8px;text-align:center;color:var(--muted);font-size:12px">No exercises yet — tap + Exercise to open the library</div>`:''}
-      <button class="ghost-btn" onclick="addEx()">${showExerciseLibrary?'✕ Close library':'+ Exercise'}</button>
+      ${!f.exercises.length&&!showExerciseLibrary?`<div style="padding:20px 0 8px;text-align:center;color:var(--muted);font-size:12px">${t('no_ex_tap')}</div>`:''}
+      <button class="ghost-btn" onclick="addEx()">${showExerciseLibrary?t('close_library'):t('add_exercise')}</button>
       ${showExerciseLibrary?renderExerciseBrowser():''}
-      <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">+ Manual exercise</button>
-      <button class="save-btn" id="save-btn" onclick="saveSession()">Save Session →</button>
+      <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">${t('manual_ex')}</button>
+      <button class="save-btn" id="save-btn" onclick="saveSession()">${t('save_session')}</button>
       <div style="height:10px"></div>
     </div>`;
 }
@@ -1353,12 +1500,12 @@ function eAddEx(){editForm.exercises.push({name:'',sets:[{r:'',w:''}]});render()
 function eRemoveEx(i){editForm.exercises.splice(i,1);render();}
 function eAddSet(ei){editForm.exercises[ei].sets.push({r:'',w:''});render();}
 function eRemoveSet(ei,si){editForm.exercises[ei].sets.splice(si,1);render();}
-function eMoveEx(ei,dir){const exs=editForm.exercises;const t=ei+dir;if(t<0||t>=exs.length)return;[exs[ei],exs[t]]=[exs[t],exs[ei]];render();}
+function eMoveEx(ei,dir){const exs=editForm.exercises;const tmp=ei+dir;if(tmp<0||tmp>=exs.length)return;[exs[ei],exs[tmp]]=[exs[tmp],exs[ei]];render();}
 async function saveEdit(){
   const exs=editForm.exercises.filter(e=>e.name.trim()).map(e=>({name:e.name.trim(),ss:e.ss||false,sets:e.sets.filter(s=>s.r&&s.w).map(s=>({r:+s.r,w:+s.w}))})).filter(e=>e.sets.length);
-  if(!exs.length){toast('Add at least one exercise',true);return;}
+  if(!exs.length){toast(t('add_at_least'),true);return;}
   loading=true;render();
-  try{await updateSession(editId,{date:editForm.date,focus:editForm.focus,exercises:exs});toast('Session updated ✓');editId=null;editForm=null;}
+  try{await updateSession(editId,{date:editForm.date,focus:editForm.focus,exercises:exs});toast(t('session_updated'));editId=null;editForm=null;}
   catch(e){toast('Error: '+e.message,true);}
   loading=false;render();
 }
@@ -1368,7 +1515,7 @@ function onExIn(ei,val){addForm.exercises[ei].name=val;acActive=val.length>=2?ei
 function onExFocus(ei){if(addForm.exercises[ei].name.length>=2)acActive=ei;}
 function onExBlur(){setTimeout(()=>{acActive=null;render();},150);}
 function pickAc(ei,name){addForm.exercises[ei].name=name;acActive=null;render();}
-function moveEx(ei,dir){const exs=addForm.exercises;const t=ei+dir;if(t<0||t>=exs.length)return;[exs[ei],exs[t]]=[exs[t],exs[ei]];render();}
+function moveEx(ei,dir){const exs=addForm.exercises;const tmp=ei+dir;if(tmp<0||tmp>=exs.length)return;[exs[ei],exs[tmp]]=[exs[tmp],exs[ei]];render();}
 function scrollContentToBottom(){setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=c.scrollHeight;},60);}
 function addEx(){showExerciseLibrary=!showExerciseLibrary;acActive=null;render();if(showExerciseLibrary)scrollContentToBottom();}
 function addExerciseFromLibrary(name){addForm.exercises.push({name,sets:[{r:'',w:''}]});showExerciseLibrary=false;acActive=null;render();scrollContentToBottom();}
@@ -1404,16 +1551,16 @@ function addDbExercise(name){
 async function saveSession(){
   const btn=document.getElementById('save-btn'); if(btn)btn.disabled=true;
   const exs=addForm.exercises.filter(e=>e.name.trim()).map(e=>({name:e.name.trim(),sets:e.sets.filter(s=>s.r&&s.w).map(s=>({r:+s.r,w:+s.w}))})).filter(e=>e.sets.length);
-  if(!exs.length){toast('Add at least one exercise',true);if(btn)btn.disabled=false;return;}
+  if(!exs.length){toast(t('add_at_least'),true);if(btn)btn.disabled=false;return;}
   loading=true;render();
-  try{await addSession({date:addForm.date,focus:addForm.focus,exercises:exs});toast('Session saved ✓');tab='sessions';addForm=defaultForm();}
+  try{await addSession({date:addForm.date,focus:addForm.focus,exercises:exs});toast(t('session_saved'));tab='sessions';addForm=defaultForm();}
   catch(e){toast('Error: '+e.message,true);}
   loading=false;render();
 }
 async function confirmDelete(id){
-  if(!confirm('Delete this session?'))return;
+  if(!confirm(t('delete_confirm')))return;
   loading=true;render();
-  try{await deleteSession(id);toast('Deleted');}
+  try{await deleteSession(id);toast(t('deleted'));}
   catch(e){toast('Error: '+e.message,true);}
   loading=false;render();
 }
@@ -1424,7 +1571,7 @@ async function confirmDelete(id){
 async function init(){
   loading=true;loadSchedules();loadCustomTemplates();loadBuiltinTemplates();render();
   try{await initDb();await loadSessions();}
-  catch(e){toast('Failed to load data',true);}
+  catch(e){toast(t('failed_load'),true);}
   loading=false;render();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).catch(()=>{});
 }

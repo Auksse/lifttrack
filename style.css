@@ -1874,3 +1874,80 @@ body.ex-detail-open .dock{display:none;}
   font-size:12px;
 }
 
+/* ─── Settings button ─── */
+.settings-btn{
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:18px;
+  padding:4px 6px;
+  cursor:pointer;
+  line-height:1;
+  border-radius:6px;
+  transition:color .15s;
+}
+.settings-btn:hover{color:var(--text2);}
+
+/* ─── Settings modal ─── */
+.settings-backdrop{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:300;
+}
+.settings-sheet{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--card1);
+  border-top:1px solid var(--stroke1);
+  border-radius:18px 18px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,16px);
+  z-index:301;
+  animation:slideUp .22s ease;
+}
+.settings-handle{
+  width:36px;height:4px;
+  background:rgba(255,255,255,.15);
+  border-radius:2px;
+  margin:10px auto 0;
+}
+.settings-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:14px 20px 10px;
+}
+.settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 20px 18px;
+}
+.settings-label{
+  font-size:14px;
+  color:var(--text2);
+}
+.settings-lang-btns{
+  display:flex;
+  gap:6px;
+}
+.lang-btn{
+  background:var(--card3);
+  border:1px solid var(--stroke0);
+  color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 14px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.lang-btn.active{
+  background:rgba(232,184,75,.15);
+  border-color:var(--gold2);
+  color:var(--gold2);
+}
+
