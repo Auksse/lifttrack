@@ -178,6 +178,15 @@ function getProfile(n){return EX_PROFILES[n.toLowerCase()]||{min:8,max:12,inc:2.
 // FUZZY MATCH
 // ═══════════════════════════════════════════════
 function normName(n){return n.toLowerCase().replace(/\bdbs?\b/g,'dumbbell').replace(/\boh\b/g,'overhead').replace(/\bbb\b/g,'barbell').replace(/\bincl\.?\b/g,'inclined').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
+// Looks up a LiftTrack unified exercise entry by exact name, alias, or normalized name.
+function lookupMergedEx(name){
+  if(!window.LIFTTRACK_EXERCISE_DB||!name)return null;
+  const mdb=window.LIFTTRACK_EXERCISE_DB;
+  let e=mdb.find(x=>x.name===name);if(e)return e;
+  e=mdb.find(x=>x.aliases&&x.aliases.includes(name));if(e)return e;
+  const n=name.toLowerCase().trim();
+  return mdb.find(x=>x.name.toLowerCase()===n||(x.aliases&&x.aliases.some(a=>a.toLowerCase()===n)))||null;
+}
 function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i||j));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);return d[m][n];}
 function fuzzyMatch(input,names,thr=0.5){if(!input||input.length<2)return[];const ni=normName(input);return names.map(name=>{const nn=normName(name);const c=nn.includes(ni)||ni.includes(nn);const s=c?0.95:1-lev(ni,nn)/Math.max(ni.length,nn.length);return{name,s};}).filter(x=>x.s>=thr&&normName(x.name)!==normName(input)).sort((a,b)=>b.s-a.s).slice(0,4).map(x=>x.name);}
 function getAlts(name,current){
@@ -224,6 +233,7 @@ let customTemplates=[],newTemplateName='',editingTemplateId=null,tmplExInput='';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
+let exDetailName=null;
 
 function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[],templateFrom:null};}
 
@@ -444,6 +454,7 @@ function render(){
           </button>`).join('')}
       </div>
     </div>
+    ${renderExDetailModal()}
   `;
 
   const c=document.getElementById('content');
@@ -530,6 +541,7 @@ function renderSessions(){
                           <div class="ex-name-row">
                             ${ex.ss?'<span class="ss-pill">SS</span>':''}
                             <span class="ex-name-lbl ${isPR?'pr':''}">${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}</span>
+                            <button class="ex-info-btn" onclick="event.stopPropagation();openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>
                           </div>
                           <div class="sets-row">
                             ${ex.sets.map(set=>`<span class="set-pill ${set.w===mw&&isPR?'top':''}">${set.r}×${set.w}</span>`).join('')}
@@ -1089,6 +1101,48 @@ function renderExerciseBrowser(){
 // ═══════════════════════════════════════════════
 // ADD FORM
 // ═══════════════════════════════════════════════
+function renderExDetailModal(){
+  if(!exDetailName)return'';
+  const e=lookupMergedEx(exDetailName);
+  const imgs=(e&&e.images&&e.images.length)?e.images.slice(0,2):[];
+  const primary=(e&&e.primaryMuscles&&e.primaryMuscles.length)?e.primaryMuscles:[];
+  const secondary=(e&&e.secondaryMuscles&&e.secondaryMuscles.length)?e.secondaryMuscles:[];
+  const steps=(e&&e.instructions&&e.instructions.length)?e.instructions:[];
+  const level=e?e.level:null;
+  const mechanic=e?e.mechanic:null;
+  return`
+    <div class="ex-detail-backdrop" onclick="closeExDetail()"></div>
+    <div class="ex-detail-sheet">
+      <div class="ex-detail-handle"></div>
+      <div class="ex-detail-header">
+        <div class="ex-detail-title">${exDetailName}</div>
+        <button class="ex-detail-close" onclick="closeExDetail()">✕</button>
+      </div>
+      ${(level||mechanic)?`<div class="ex-detail-meta">${[level,mechanic].filter(Boolean).map(t=>`<span class="ex-detail-tag">${t}</span>`).join('')}</div>`:''}
+      ${imgs.length?`
+        <div class="ex-detail-imgs">
+          ${imgs.map(img=>`<img class="ex-detail-img" src="exercise-assets/exercises/${img}" alt="" loading="lazy" onerror="this.style.display='none'">`).join('')}
+        </div>`:''}
+      ${primary.length?`
+        <div class="ex-detail-section">
+          <div class="ex-detail-section-lbl">Primary</div>
+          <div class="ex-detail-chips">${primary.map(m=>`<span class="ex-detail-chip primary">${m}</span>`).join('')}</div>
+        </div>`:''}
+      ${secondary.length?`
+        <div class="ex-detail-section">
+          <div class="ex-detail-section-lbl">Secondary</div>
+          <div class="ex-detail-chips">${secondary.map(m=>`<span class="ex-detail-chip">${m}</span>`).join('')}</div>
+        </div>`:''}
+      ${steps.length?`
+        <div class="ex-detail-section">
+          <div class="ex-detail-section-lbl">Instructions</div>
+          <ol class="ex-detail-steps">
+            ${steps.map(s=>`<li class="ex-detail-step">${s}</li>`).join('')}
+          </ol>
+        </div>`:(!e?`<div class="ex-detail-empty">No details available for this exercise yet.</div>`:'')}
+    </div>`;
+}
+
 function renderAdd(){
   const f=addForm;
   const last=f.templateFrom?sessions.find(s=>s.id===f.templateFrom.id):null;
@@ -1142,6 +1196,7 @@ function renderAdd(){
                   <input class="ex-name-input" placeholder="Exercise name…" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
                   ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">similar</span></div>`).join('')}</div>`:''}
                 </div>
+                ${ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
                 <button class="rm-ex-btn-add" onclick="removeEx(${ei})">×</button>
               </div>
 
@@ -1187,6 +1242,8 @@ function switchTab(t){
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
 function selectEx(name){selEx=name;render();}
+function openExDetail(name){exDetailName=name;render();}
+function closeExDetail(){exDetailName=null;render();}
 function toggleSession(id){if(editId===id){cancelEdit();return;}expandedId=expandedId===id?null:id;render();}
 function changeFocus(focus){addForm.focus=focus;loadTemplate(focus);}
 function loadTemplate(focus){
