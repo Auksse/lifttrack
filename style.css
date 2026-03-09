@@ -73,7 +73,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{
   height:100%;
-  background:red !important;
+  background-color:var(--bg2);
 }
 body{
   min-height:100%;
@@ -82,10 +82,14 @@ body{
 }
 body{
   background-color:var(--bg1);
-  background:blue !important;
+  background:
+    radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.10), transparent 56%),
+    radial-gradient(820px 600px at 95% 10%, rgba(78,160,200,.08), transparent 54%),
+    radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.07), transparent 58%),
+    radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,.05) 72%, rgba(0,0,0,.12) 100%),
+    linear-gradient(180deg, var(--bg0), var(--bg2));
   color:var(--text);
   font-family:'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
@@ -97,7 +101,12 @@ body{
   inset:0;
   padding-top:env(safe-area-inset-top);
   z-index:1;
-  background:green !important;
+  background:
+    radial-gradient(900px 650px at 15% -10%, rgba(232,184,75,.10), transparent 56%),
+    radial-gradient(820px 600px at 95% 10%, rgba(78,160,200,.08), transparent 54%),
+    radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.07), transparent 58%),
+    radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,.05) 72%, rgba(0,0,0,.12) 100%),
+    linear-gradient(180deg, var(--bg0), var(--bg2));
 }
 
 /* ============================================================
@@ -281,7 +290,6 @@ body{
   overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   padding-bottom:calc(150px + env(safe-area-inset-bottom));
-  background:purple !important;
 }
 
 .content::-webkit-scrollbar{display:none;}
@@ -1091,7 +1099,6 @@ body{
   padding-bottom:8px;
   z-index:210;
   pointer-events:none;
-  background:rgba(255,255,0,.20) !important;
 }
 
 .dock-inner{
@@ -1102,6 +1109,7 @@ body{
   padding:8px 8px 8px;
   border-radius:24px;
   border:1px solid rgba(255,255,255,.12);
+  background:rgba(16,14,12,.96);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
   box-shadow:
@@ -1109,7 +1117,6 @@ body{
     inset 0 1px 0 rgba(255,255,255,.05);
   position:relative;
   overflow:visible;
-  background:rgba(255,0,255,.35) !important;
 }
 
 .tab{
