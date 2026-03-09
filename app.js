@@ -402,72 +402,85 @@ function renderSessions(){
   const maxExVol={};
   sessions.forEach(s=>s.exercises.forEach(ex=>{const v=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);if(!maxExVol[ex.name]||v>maxExVol[ex.name])maxExVol[ex.name]=v;}));
 
-  return Object.entries(groups).map(([month,ss])=>`
-    <div class="month-header">
-      <div class="month-label">${month.toUpperCase()}</div>
-      <div class="month-line"></div>
-      <div class="month-count">${ss.length}</div>
-    </div>
-    ${ss.map(s=>{
-      const fc=FCHEX[s.focus]||'#888';
-      const vol=Math.round(sVol(s));
-      const open=expandedId===s.id;
-      const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
-      const hasPR=prExNames.length>0;
-      const isEditing=editId===s.id;
-      return`
-        <div class="session-card ${open?'open':''}">
-          <div class="s-top" style="background:linear-gradient(135deg,${fc}12 0%, rgba(16,14,12,.95) 65%)" onclick="toggleSession('${s.id}')">
-            <div class="s-stripe" style="background:linear-gradient(180deg,${fc} 0%,${fc}66 100%)"></div>
-            <div class="s-main">
-              <div class="s-date">${fmtDate(s.date)}</div>
-              <div class="s-title-row">
-                <div class="s-title" style="color:${fc}">${s.focus}</div>
-                <span class="focus-tag" style="color:${fc}">${s.exercises.length} ex</span>
-                ${hasPR?'<span class="pr-tag">★ PR</span>':''}
-              </div>
-              <div class="s-mini-bars">
-                ${s.exercises.map(ex=>{
-                  const ev=ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0);
-                  const h=Math.max(3,Math.round((ev/(maxExVol[ex.name]||1))*16));
-                  return`<div style="flex:1;height:${h}px;background:${fc};opacity:0.40;border-radius:6px 6px 0 0"></div>`;
-                }).join('')}
-              </div>
-            </div>
-            <div class="s-right">
-              <div><span class="s-vol-num">${vol}</span><span class="s-vol-unit">kg</span></div>
-              <span class="s-chevron ${open?'open':''}">▼</span>
-            </div>
-          </div>
+  const next=nextSugg();
+  const nc=FCHEX[next.focus]||'#888';
+  const todayStr=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 
-          ${open?`
-            <div class="s-body">
-              ${isEditing?renderEditForm(s):`
-                <div class="s-body-inner">
-                  ${s.exercises.map(ex=>{
-                    const isPR=prExNames.includes(ex.name);
-                    const mw=Math.max(...ex.sets.map(s=>s.w));
-                    return`
-                      <div class="ex-row">
-                        <div class="ex-name-row">
-                          ${ex.ss?'<span class="ss-pill">SS</span>':''}
-                          <span class="ex-name-lbl ${isPR?'pr':''}">${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}</span>
-                        </div>
-                        <div class="sets-row">
-                          ${ex.sets.map(set=>`<span class="set-pill ${set.w===mw&&isPR?'top':''}">${set.r}×${set.w}</span>`).join('')}
-                        </div>
-                      </div>`;
-                  }).join('')}
-                  <div class="s-actions">
-                    <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
-                    <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
-                    <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
-                  </div>
-                </div>`}
-            </div>`:''}
-        </div>`;
-    }).join('')}
-  `).join('');
+  return`
+    <div class="log-next-section">
+      <div class="log-section-hdr"><span class="log-section-title">Next Up</span></div>
+      <div class="next-hero-card gold-dust" onclick="switchTab('add')">
+        <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
+        <div class="next-hero-content">
+          <div class="next-hero-name" style="color:${nc}">${next.focus}</div>
+          <div class="next-hero-meta">Today · ${todayStr}</div>
+        </div>
+        <button class="next-hero-cta" onclick="event.stopPropagation();switchTab('add')">Start Workout</button>
+      </div>
+    </div>
+
+    <div class="log-section-hdr log-recent-hdr">
+      <span class="log-section-title">Recent Workouts</span>
+    </div>
+
+    ${Object.entries(groups).map(([month,ss])=>`
+      <div class="month-header">
+        <div class="month-label">${month.toUpperCase()}</div>
+        <div class="month-line"></div>
+        <div class="month-count">${ss.length}</div>
+      </div>
+      ${ss.map(s=>{
+        const fc=FCHEX[s.focus]||'#888';
+        const vol=Math.round(sVol(s));
+        const volStr=vol>=1000?(vol/1000).toFixed(1)+'k':String(vol);
+        const open=expandedId===s.id;
+        const prExNames=s.exercises.filter(ex=>isNewPR(s,ex.name)).map(e=>e.name);
+        const hasPR=prExNames.length>0;
+        const isEditing=editId===s.id;
+        return`
+          <div class="rw-card ${open?'open':''}">
+            <div class="rw-card-top" onclick="toggleSession('${s.id}')">
+              <div class="rw-stripe" style="background:linear-gradient(180deg,${fc},${fc}44)"></div>
+              <div class="rw-main">
+                <div class="rw-name" style="color:${fc}">${s.focus}</div>
+                <div class="rw-sub">${s.exercises.length} exercises${hasPR?' · ★ PR':''}</div>
+              </div>
+              <div class="rw-right">
+                <div class="rw-date">${fmtDate(s.date)}</div>
+                <div class="rw-vol">${volStr}</div>
+              </div>
+              <span class="rw-chevron ${open?'open':''}">▼</span>
+            </div>
+
+            ${open?`
+              <div class="s-body">
+                ${isEditing?renderEditForm(s):`
+                  <div class="s-body-inner">
+                    ${s.exercises.map(ex=>{
+                      const isPR=prExNames.includes(ex.name);
+                      const mw=Math.max(...ex.sets.map(s=>s.w));
+                      return`
+                        <div class="ex-row">
+                          <div class="ex-name-row">
+                            ${ex.ss?'<span class="ss-pill">SS</span>':''}
+                            <span class="ex-name-lbl ${isPR?'pr':''}">${ex.name}${isPR?` <span class="ex-pr-lbl">★${mw}kg</span>`:''}</span>
+                          </div>
+                          <div class="sets-row">
+                            ${ex.sets.map(set=>`<span class="set-pill ${set.w===mw&&isPR?'top':''}">${set.r}×${set.w}</span>`).join('')}
+                          </div>
+                        </div>`;
+                    }).join('')}
+                    <div class="s-actions">
+                      <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">Edit</button>
+                      <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">Use as template</button>
+                      <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">Delete</button>
+                    </div>
+                  </div>`}
+              </div>`:''}
+          </div>`;
+      }).join('')}
+    `).join('')}
+  `;
 }
 
 function renderEditForm(s){
