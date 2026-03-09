@@ -1094,6 +1094,7 @@ body{
    Floating bottom dock
    ============================================================ */
 .dock{
+  display:none !important;
   position:fixed;
   left:12px;
   right:12px;
