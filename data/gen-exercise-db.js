@@ -418,14 +418,21 @@ const ID_MAP = {
   "Push-Up":                             "Pushups",
   "Dumbbell Flat Press":                 "Dumbbell_Bench_Press",
   "Barbell Bench Press":                 "Barbell_Bench_Press_-_Medium_Grip",
+  "Feet-Elevated Push-Up":              "Push-Ups_With_Feet_Elevated",
+  "Cable Incline Press":                 "Incline_Cable_Chest_Press",
+  "Chest Press Machine":                 "Machine_Bench_Press",
+  "Incline Press Machine":              "Leverage_Incline_Chest_Press",
   // Incline Press
   "Dumbbell Incline Press":              "Incline_Dumbbell_Press",
   "Barbell Incline Bench Press":         "Barbell_Incline_Bench_Press_-_Medium_Grip",
   // Chest Fly
   "Dumbbell Fly":                        "Dumbbell_Flyes",
   "Cable Fly":                           "Flat_Bench_Cable_Flyes",
+  "Pec Deck":                            "Butterfly",
   // Chest Dip
   "Chest Dip":                           "Dips_-_Chest_Version",
+  "Weighted Dip":                        "Parallel_Bar_Dip",
+  "Assisted Dip Machine":               "Dip_Machine",
   // Pullover
   "Dumbbell Pullover":                   "Straight-Arm_Dumbbell_Pullover",
   "Barbell Pullover":                    "Bent-Arm_Barbell_Pullover",
@@ -433,12 +440,19 @@ const ID_MAP = {
   // Vertical Press
   "Dumbbell Overhead Press":             "Dumbbell_Shoulder_Press",
   "Barbell Overhead Press":              "Standing_Military_Press",
+  "Shoulder Press Machine":             "Machine_Shoulder_Military_Press",
   // Lateral Raise
   "Dumbbell Lateral Raise":              "Side_Lateral_Raise",
   "Cable Lateral Raise":                 "Cable_Seated_Lateral_Raise",
+  "Lateral Raise Machine":              "Seated_Side_Lateral_Raise",
+  // Front Raise
+  "Dumbbell Front Raise":               "Front_Dumbbell_Raise",
+  "Cable Front Raise":                  "Front_Cable_Raise",
   // Rear Delt Fly
   "Dumbbell Rear Delt Fly":             "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
   "Cable Rear Delt Fly":                "Cable_Rear_Delt_Fly",
+  "Rear Delt Machine":                  "Reverse_Machine_Flyes",
+  "Reverse Pec Deck":                   "Reverse_Machine_Flyes",
   // Face Pull
   "Cable Face Pull":                     "Face_Pull",
   // Shrug
@@ -446,9 +460,11 @@ const ID_MAP = {
   "Dumbbell Shrug":                      "Dumbbell_Shrug",
   "Barbell Shrug":                       "Barbell_Shrug",
   "Cable Shrug":                         "Cable_Shrugs",
+  "Shrug Machine":                       "Leverage_Shrug",
   // Vertical Pull
   "Pull-Up":                             "Pullups",
   "Cable Lat Pulldown":                  "Wide-Grip_Lat_Pulldown",
+  "Lat Pulldown Machine":               "Full_Range-Of-Motion_Lat_Pulldown",
   // Chin-Up Pattern
   "Chin-Up":                             "Chin-Up",
   "Supinated Lat Pulldown":              "Close-Grip_Front_Lat_Pulldown",
@@ -457,12 +473,17 @@ const ID_MAP = {
   "One-Arm Dumbbell Row":               "One-Arm_Dumbbell_Row",
   "Barbell Bent-Over Row":              "Bent_Over_Barbell_Row",
   "Seated Cable Row":                    "Seated_Cable_Rows",
+  "Chest-Supported Dumbbell Row":       "Dumbbell_Incline_Row",
   // Back Extension
   "Superman":                            "Superman",
+  "Dumbbell Back Extension":            "Hyperextensions_Back_Extensions",
   "Barbell Good Morning":               "Good_Morning",
   "Cable Pull-Through":                  "Pull_Through",
+  "Back Extension Machine":             "Hyperextensions_Back_Extensions",
   // Romanian Deadlift
   "Barbell Romanian Deadlift":          "Romanian_Deadlift",
+  "Dumbbell Romanian Deadlift":         "Stiff-Legged_Dumbbell_Deadlift",
+  "Smith Machine Romanian Deadlift":    "Smith_Machine_Stiff-Legged_Deadlift",
   // Conventional Deadlift
   "Barbell Deadlift":                    "Barbell_Deadlift",
   // Squat
@@ -474,13 +495,16 @@ const ID_MAP = {
   // Hack Squat Pattern
   "Barbell Hack Squat":                  "Barbell_Hack_Squat",
   "Hack Squat Machine":                  "Hack_Squat",
+  // Split Squat
+  "Split Squat":                         "Split_Squats",
+  "Dumbbell Bulgarian Split Squat":     "Split_Squat_with_Dumbbells",
+  "Barbell Bulgarian Split Squat":      "Barbell_Side_Split_Squat",
   // Walking Lunge
   "Walking Lunge":                       "Bodyweight_Walking_Lunge",
   "Dumbbell Walking Lunge":             "Dumbbell_Lunges",
   "Barbell Walking Lunge":              "Barbell_Walking_Lunge",
-  // Split Squat
-  // (no exact matches in free-db)
   // Step-Up
+  "Step-Up":                             "Step-up_with_Knee_Raise",
   "Dumbbell Step-Up":                   "Dumbbell_Step_Ups",
   "Barbell Step-Up":                    "Barbell_Step_Ups",
   // Hip Thrust
@@ -488,19 +512,28 @@ const ID_MAP = {
   "Barbell Hip Thrust":                  "Barbell_Hip_Thrust",
   // Glute Kickback
   "Cable Glute Kickback":               "Glute_Kickback",
+  "Glute Kickback Machine":             "One-Legged_Cable_Kickback",
   // Leg Curl
+  "Nordic Curl":                         "Natural_Glute_Ham_Raise",
+  "Dumbbell Leg Curl":                  "Lying_Leg_Curls",
+  "Cable Leg Curl":                     "Standing_Leg_Curl",
   "Leg Curl Machine":                    "Lying_Leg_Curls",
   // Leg Extension
   "Sissy Squat":                         "Weighted_Sissy_Squat",
   "Leg Extension Machine":              "Leg_Extensions",
   // Standing Calf Raise
   "Standing Calf Raise":                "Standing_Calf_Raises",
+  "Dumbbell Standing Calf Raise":       "Standing_Dumbbell_Calf_Raise",
+  "Barbell Standing Calf Raise":        "Standing_Barbell_Calf_Raise",
   // Seated Calf Raise
+  "Dumbbell Seated Calf Raise":         "Dumbbell_Seated_One-Leg_Calf_Raise",
   "Barbell Seated Calf Raise":          "Barbell_Seated_Calf_Raise",
   "Seated Calf Raise Machine":          "Seated_Calf_Raise",
   // Curl
   "Dumbbell Curl":                       "Dumbbell_Alternate_Bicep_Curl",
   "Barbell Curl":                        "Barbell_Curl",
+  "Cable Curl":                          "Standing_Biceps_Cable_Curl",
+  "Biceps Curl Machine":                "Machine_Bicep_Curl",
   // Hammer Curl
   "Dumbbell Hammer Curl":               "Alternate_Hammer_Curl",
   "Rope Hammer Curl":                   "Cable_Hammer_Curls_-_Rope_Attachment",
@@ -513,19 +546,30 @@ const ID_MAP = {
   "Cable Triceps Pushdown":             "Triceps_Pushdown_-_Rope_Attachment",
   "Triceps Pushdown Machine":           "Triceps_Pushdown",
   // Overhead Triceps Extension
+  "Bodyweight Triceps Extension":       "Body_Tricep_Press",
+  "Dumbbell Overhead Triceps Extension": "Standing_Dumbbell_Triceps_Extension",
+  "Barbell Overhead Triceps Extension": "Standing_Overhead_Barbell_Triceps_Extension",
   "Cable Overhead Triceps Extension":   "Cable_Rope_Overhead_Triceps_Extension",
+  "Triceps Extension Machine":          "Machine_Triceps_Extension",
   // Skull Crusher
+  "Dumbbell Skull Crusher":             "Lying_Dumbbell_Tricep_Extension",
   "Barbell Skull Crusher":              "EZ-Bar_Skullcrusher",
+  "Cable Skull Crusher":                "Cable_Lying_Triceps_Extension",
   // Crunch
   "Crunch":                              "Crunches",
   "Cable Crunch":                        "Cable_Crunch",
+  "Ab Crunch Machine":                  "Ab_Crunch_Machine",
   // Leg Raise
   "Hanging Leg Raise":                  "Hanging_Leg_Raise",
+  "Vertical Knee Raise Machine":        "Knee_Hip_Raise_On_Parallel_Bars",
   // Rotation Core
   "Dumbbell Russian Twist":             "Russian_Twist",
   "Cable Woodchop":                     "Standing_Cable_Wood_Chop",
+  "Landmine Rotation":                  "Landmine_180s",
+  "Rotary Torso Machine":               "Torso_Rotation",
   // Plank
   "Plank":                               "Plank",
+  "Barbell Rollout":                     "Barbell_Ab_Rollout",
   // Leg Press
   "Leg Press Machine":                  "Leg_Press",
 };

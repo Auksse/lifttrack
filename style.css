@@ -1559,8 +1559,48 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
   font-family:'Bebas Neue',cursive;
   font-size:18px;
   letter-spacing:.08em;
-  color:var(--gold2);
+  color:var(--text2);
 }
+.tmpl-chevron{
+  color:var(--dim);font-size:11px;
+  transition:transform .18s;
+}
+.tmpl-chevron.open{transform:rotate(180deg);}
+.tmpl-editor-card.tmpl-expanded{
+  border-color:rgba(255,255,255,.13);
+}
+.tmpl-name-input{
+  background:transparent;border:none;outline:none;
+  font-family:'Bebas Neue',cursive;
+  font-size:18px;letter-spacing:.08em;
+  color:var(--gold2);width:0;flex:1;
+  padding:0;
+}
+.tmpl-name-input::placeholder{color:rgba(232,184,75,.35);}
+.tmpl-save-btn{
+  width:100%;margin-top:10px;
+  background:linear-gradient(135deg,rgba(232,184,75,.16),rgba(232,184,75,.06));
+  border:1px solid rgba(232,184,75,.3);
+  border-radius:var(--r12);
+  color:var(--gold2);
+  font-size:13px;font-weight:800;
+  font-family:'DM Sans',sans-serif;
+  padding:10px;cursor:pointer;
+  transition:all .15s;
+}
+.tmpl-save-btn:hover{background:linear-gradient(135deg,rgba(232,184,75,.24),rgba(232,184,75,.10));border-color:rgba(232,184,75,.45);}
+.tmpl-create-btn{
+  width:100%;
+  background:rgba(255,255,255,.04);
+  border:1px dashed rgba(255,255,255,.12);
+  border-radius:var(--r16);
+  color:var(--muted);
+  font-size:13px;font-weight:700;
+  font-family:'DM Sans',sans-serif;
+  padding:12px;cursor:pointer;
+  transition:all .15s;
+}
+.tmpl-create-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);color:var(--text2);}
 .tmpl-editor-btn{
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.12);
@@ -1700,6 +1740,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
   margin-left:auto;
 }
 .ex-info-btn:hover,.ex-info-btn:active{color:var(--gold2);}
+
+/* ─── Exercise Detail: lock scroll + hide dock ────────────────── */
+body.ex-detail-open{overflow:hidden;overscroll-behavior:none;}
+body.ex-detail-open .dock{display:none;}
 
 /* ─── Exercise Detail Bottom Sheet ────────────────────────────── */
 .ex-detail-backdrop{

@@ -229,7 +229,10 @@ let progressGroup=null,progressMuscle=null;
 let muscleSubTab='exercises';
 let schedules=[],schedFocus='Push',schedSelectedDay=null;
 let schedViewYear=new Date().getFullYear(),schedViewMonth=new Date().getMonth();
-let customTemplates=[],newTemplateName='',editingTemplateId=null,tmplExInput='';
+let customTemplates=[],newTemplateName='',tmplExInput='';
+let builtinTemplateExercises={};
+let expandedTemplateKey=null,editingTemplateKey=null;
+let creatingTemplate=false,newTemplateExercises=[],newTmplExInput='';
 let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null,selGroup=null,charts={};
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
@@ -310,6 +313,18 @@ function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_sc
 function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
 function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem('lifttrack_templates')||'[]');}
 function saveCustomTemplates(){localStorage.setItem('lifttrack_templates',JSON.stringify(customTemplates));}
+const BUILTIN_TEMPLATE_DEFAULTS={
+  Push:['Barbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Cable Lateral Raise','Pec Deck','Cable Overhead Triceps Extension'],
+  Pull:['Lat Pulldown Machine','Seated Row Machine','Rear Delt Machine','Cable Face Pull','Biceps Curl Machine','Dumbbell Curl'],
+  Legs:['Leg Press Machine','Leg Extension Machine','Leg Curl Machine','Dumbbell Bulgarian Split Squat','Standing Calf Raise Machine'],
+  Upper:['Barbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Lat Pulldown Machine','Seated Row Machine','Barbell Curl','Cable Triceps Pushdown']
+};
+function loadBuiltinTemplates(){
+  const stored=localStorage.getItem('lifttrack_builtin_tmpl');
+  builtinTemplateExercises=stored?JSON.parse(stored):Object.fromEntries(Object.entries(BUILTIN_TEMPLATE_DEFAULTS).map(([k,v])=>[k,[...v]]));
+  if(!stored)saveBuiltinTemplates();
+}
+function saveBuiltinTemplates(){localStorage.setItem('lifttrack_builtin_tmpl',JSON.stringify(builtinTemplateExercises));}
 function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
 function getAllFocuses(){return['Push','Pull','Legs','Upper',...customTemplates.map(t=>t.name)];}
 function confirmAddSchedule(){
@@ -320,18 +335,28 @@ function confirmAddSchedule(){
 }
 function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
 function addCustomTemplate(){
-  const el=document.getElementById('newTemplateInput');
-  const name=(el?el.value:newTemplateName).trim();
+  const name=newTemplateName.trim();
   if(!name)return toast('Enter a template name',true);
   if(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))return toast('Template already exists',true);
-  customTemplates.push({id:crypto.randomUUID(),name,exercises:[]});
-  saveCustomTemplates();newTemplateName='';render();toast('Template created');
+  const id=crypto.randomUUID();
+  customTemplates.push({id,name,exercises:[...newTemplateExercises]});
+  saveCustomTemplates();creatingTemplate=false;newTemplateName='';newTemplateExercises=[];expandedTemplateKey=id;editingTemplateKey=null;render();toast('Template created');
 }
+function startCreatingTemplate(){creatingTemplate=true;newTemplateName='';newTemplateExercises=[];newTmplExInput='';expandedTemplateKey=null;editingTemplateKey=null;render();}
+function cancelCreatingTemplate(){creatingTemplate=false;newTemplateName='';newTemplateExercises=[];render();}
+function addToNewTemplate(){
+  const el=document.getElementById('newTmplExInput');
+  const name=(el?el.value:newTmplExInput).trim();if(!name)return;
+  newTemplateExercises.push(name);newTmplExInput='';render();
+  setTimeout(()=>{const inp=document.getElementById('newTmplExInput');if(inp)inp.focus();},30);
+}
+function removeFromNewTemplate(idx){newTemplateExercises.splice(idx,1);render();}
 function deleteCustomTemplate(id){
   const removed=customTemplates.find(t=>t.id===id);
   customTemplates=customTemplates.filter(t=>t.id!==id);
   if(removed&&schedFocus===removed.name)schedFocus='Push';
-  if(editingTemplateId===id)editingTemplateId=null;
+  if(expandedTemplateKey===id)expandedTemplateKey=null;
+  if(editingTemplateKey===id)editingTemplateKey=null;
   saveCustomTemplates();render();
 }
 function addTemplateEx(id){
@@ -352,6 +377,20 @@ function moveTemplateEx(id,idx,dir){
   const ni=idx+dir;if(ni<0||ni>=t.exercises.length)return;
   [t.exercises[idx],t.exercises[ni]]=[t.exercises[ni],t.exercises[idx]];
   saveCustomTemplates();render();
+}
+function addBuiltinEx(focus){
+  const el=document.getElementById('tmplExInput_'+focus);
+  const name=(el?el.value:tmplExInput).trim();if(!name)return;
+  if(!builtinTemplateExercises[focus])builtinTemplateExercises[focus]=[];
+  builtinTemplateExercises[focus].push(name);
+  saveBuiltinTemplates();tmplExInput='';render();
+}
+function removeBuiltinEx(focus,idx){builtinTemplateExercises[focus].splice(idx,1);saveBuiltinTemplates();render();}
+function moveBuiltinEx(focus,idx,dir){
+  const arr=builtinTemplateExercises[focus];
+  const ni=idx+dir;if(ni<0||ni>=arr.length)return;
+  [arr[idx],arr[ni]]=[arr[ni],arr[idx]];
+  saveBuiltinTemplates();render();
 }
 function prevSchedMonth(){schedViewMonth--;if(schedViewMonth<0){schedViewMonth=11;schedViewYear--;}schedSelectedDay=null;render();}
 function nextSchedMonth(){schedViewMonth++;if(schedViewMonth>11){schedViewMonth=0;schedViewYear++;}schedSelectedDay=null;render();}
@@ -861,7 +900,10 @@ function renderMuscleDetail(muscle,stat){
         const lastSession=data?[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name)):null;
         return`
           <div class="muscle-ex-card">
-            <div class="muscle-ex-name">${name}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+              <div class="muscle-ex-name" style="margin-bottom:0">${name}</div>
+              <button class="ex-info-btn" onclick="event.stopPropagation();openExDetail('${name.replace(/'/g,"\\'")}')">ⓘ</button>
+            </div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
               <span style="font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${family.familyName}</span>
               ${(()=>{const r=getRepRangeConfig(family.repRangeCategory);return r?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:var(--card3);color:var(--text2);font-family:'IBM Plex Mono',monospace;white-space:nowrap">${r.label} · ${r.minReps}–${r.maxReps}</span>`:'';})()}
@@ -964,46 +1006,73 @@ function renderScheduleTab(){
       </div>`;
     }).join('')}`:'';
 
+  const BUILTIN_FOCUSES=['Push','Pull','Legs','Upper'];
+  const allTmplEntries=[
+    ...BUILTIN_FOCUSES.map(f=>({key:f,name:f,exercises:builtinTemplateExercises[f]||[],builtin:true})),
+    ...customTemplates.map(t=>({key:t.id,name:t.name,exercises:t.exercises,builtin:false}))
+  ];
+  const renderTmplCard=({key,name,exercises,builtin})=>{
+    const isExpanded=expandedTemplateKey===key;
+    const isEditing=editingTemplateKey===key;
+    const nameColor=builtin?'var(--text2)':'var(--gold2)';
+    return`<div class="tmpl-editor-card ${isExpanded?'tmpl-expanded':''}">
+      <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;render()`}">
+        <span class="tmpl-editor-name" style="color:${nameColor}">${name}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace">${exercises.length} ex</span>
+          <span class="tmpl-chevron ${isExpanded?'open':''}">▼</span>
+        </div>
+      </div>
+      ${isExpanded?`
+        <div class="tmpl-ex-list" style="margin-top:6px">
+          ${exercises.length?exercises.map((ex,i)=>`
+            <div class="tmpl-ex-row">
+              ${isEditing?`<div class="tmpl-ex-reorder">
+                <button class="tmpl-reorder-btn" ${i===0?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${key}',${i},-1)`:`moveTemplateEx('${key}',${i},-1)`}">▲</button>
+                <button class="tmpl-reorder-btn" ${i===exercises.length-1?'disabled':''} onclick="event.stopPropagation();${builtin?`moveBuiltinEx('${key}',${i},1)`:`moveTemplateEx('${key}',${i},1)`}">▼</button>
+              </div>`:''}
+              <span class="tmpl-ex-name">${ex}</span>
+              ${isEditing?`<button class="tmpl-ex-del" onclick="event.stopPropagation();${builtin?`removeBuiltinEx('${key}',${i})`:`removeTemplateEx('${key}',${i})`}">×</button>`:''}
+            </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0 8px">No exercises yet.</div>`}
+        </div>
+        ${isEditing?`
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <input type="text" id="tmplExInput_${key}" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value" value="">
+            <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="event.stopPropagation();${builtin?`addBuiltinEx('${key}')`:`addTemplateEx('${key}')`}">+ Add</button>
+          </div>`:''}
+        <div style="display:flex;gap:6px;margin-top:${isEditing?'8px':'10px'};padding-top:${isEditing?'8px':'0'};${isEditing?'border-top:1px solid rgba(255,255,255,.06)':''}">
+          <button class="tmpl-editor-btn" onclick="event.stopPropagation();editingTemplateKey=${isEditing?'null':`'${key}'`};render()">${isEditing?'Done':'Edit'}</button>
+          ${builtin?'':`<button class="tmpl-editor-btn del" onclick="event.stopPropagation();if(confirm('Delete ${name}?'))deleteCustomTemplate('${key}')">Delete</button>`}
+        </div>`:''}
+    </div>`;
+  };
+  const createFormHtml=creatingTemplate?`
+    <div class="tmpl-editor-card" style="border-color:rgba(232,184,75,.25)">
+      <div class="tmpl-editor-header">
+        <input type="text" class="tmpl-name-input" placeholder="Template name…" oninput="newTemplateName=this.value" value="${newTemplateName.replace(/"/g,'&quot;')}" autofocus>
+        <button class="tmpl-editor-btn del" onclick="cancelCreatingTemplate()" style="flex-shrink:0">✕</button>
+      </div>
+      <div class="tmpl-ex-list" style="margin-top:8px;min-height:24px">
+        ${newTemplateExercises.length?newTemplateExercises.map((ex,i)=>`
+          <div class="tmpl-ex-row">
+            <span class="tmpl-ex-name">${ex}</span>
+            <button class="tmpl-ex-del" onclick="removeFromNewTemplate(${i})">×</button>
+          </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0">Add exercises below.</div>`}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <input type="text" id="newTmplExInput" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="newTmplExInput=this.value" value="">
+        <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addToNewTemplate()">+ Add</button>
+      </div>
+      <button class="tmpl-save-btn" onclick="addCustomTemplate()">Save Template</button>
+    </div>`
+    :`<button class="tmpl-create-btn" onclick="startCreatingTemplate()">+ Create Template</button>`;
   const templatesSection=`
     <div class="log-section-hdr log-recent-hdr" style="margin-top:4px">
       <span class="log-section-title"><span style="color:var(--text)">My</span> Templates</span>
     </div>
     <div style="padding:0 12px 16px">
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${['Push','Pull','Legs','Upper'].map(f=>`<div class="split-pill built-in"><span>${f}</span></div>`).join('')}
-      </div>
-      ${customTemplates.map(t=>{
-        const isEditing=editingTemplateId===t.id;
-        return`<div class="tmpl-editor-card">
-          <div class="tmpl-editor-header">
-            <span class="tmpl-editor-name">${t.name}</span>
-            <div style="display:flex;gap:6px">
-              <button class="tmpl-editor-btn" onclick="editingTemplateId=${isEditing?'null':`'${t.id}'`};render()">${isEditing?'Done':'Edit'}</button>
-              <button class="tmpl-editor-btn del" onclick="deleteCustomTemplate('${t.id}')">×</button>
-            </div>
-          </div>
-          ${isEditing?`
-            <div class="tmpl-ex-list">
-              ${t.exercises.length?t.exercises.map((ex,i)=>`
-                <div class="tmpl-ex-row">
-                  <div class="tmpl-ex-reorder">
-                    <button class="tmpl-reorder-btn" ${i===0?'disabled':''} onclick="moveTemplateEx('${t.id}',${i},-1)">▲</button>
-                    <button class="tmpl-reorder-btn" ${i===t.exercises.length-1?'disabled':''} onclick="moveTemplateEx('${t.id}',${i},1)">▼</button>
-                  </div>
-                  <span class="tmpl-ex-name">${ex}</span>
-                  <button class="tmpl-ex-del" onclick="removeTemplateEx('${t.id}',${i})">×</button>
-                </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:6px 0">No exercises yet.</div>`}
-            </div>
-            <div style="display:flex;gap:6px;margin-top:8px">
-              <input type="text" id="tmplExInput_${t.id}" placeholder="Exercise name…" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value">
-              <button class="sched-add-btn" style="width:auto;padding:8px 14px;flex-shrink:0;font-size:12px" onclick="addTemplateEx('${t.id}')">+ Add</button>
-            </div>`:''}
-        </div>`;
-      }).join('')}
-      <div style="display:flex;gap:8px;margin-top:${customTemplates.length?'10px':'0'}">
-        <input type="text" id="newTemplateInput" placeholder="New template name…" class="form-input" style="font-size:14px;padding:10px 12px" oninput="newTemplateName=this.value" value="${newTemplateName.replace(/"/g,'&quot;')}">
-        <button class="sched-add-btn" style="width:auto;padding:10px 18px;flex-shrink:0;white-space:nowrap" onclick="addCustomTemplate()">+ Create</button>
-      </div>
+      ${allTmplEntries.map(renderTmplCard).join('')}
+      <div style="margin-top:10px">${createFormHtml}</div>
     </div>`;
 
   return`
@@ -1242,8 +1311,8 @@ function switchTab(t){
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
 function selectEx(name){selEx=name;render();}
-function openExDetail(name){exDetailName=name;render();}
-function closeExDetail(){exDetailName=null;render();}
+function openExDetail(name){exDetailName=name;render();document.body.classList.add('ex-detail-open');}
+function closeExDetail(){exDetailName=null;render();document.body.classList.remove('ex-detail-open');}
 function toggleSession(id){if(editId===id){cancelEdit();return;}expandedId=expandedId===id?null:id;render();}
 function changeFocus(focus){addForm.focus=focus;loadTemplate(focus);}
 function loadTemplate(focus){
@@ -1253,7 +1322,8 @@ function loadTemplate(focus){
     addForm.templateFrom={date:last.date,id:last.id};
   } else {
     const tmpl=customTemplates.find(t=>t.name===focus);
-    addForm.exercises=tmpl&&tmpl.exercises.length?tmpl.exercises.map(name=>({name,ss:false,sets:[{r:'',w:''}]})):[];
+    const exercises=tmpl&&tmpl.exercises.length?tmpl.exercises:(builtinTemplateExercises[focus]||[]);
+    addForm.exercises=exercises.map(name=>({name,ss:false,sets:[{r:'',w:''}]}));
     addForm.templateFrom=null;showExerciseLibrary=false;
   }
   acActive=null;render();
@@ -1352,7 +1422,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadCustomTemplates();render();
+  loading=true;loadSchedules();loadCustomTemplates();loadBuiltinTemplates();render();
   try{await initDb();await loadSessions();}
   catch(e){toast('Failed to load data',true);}
   loading=false;render();

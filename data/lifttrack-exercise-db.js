@@ -222,7 +222,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Chest_Press_Machine",
+    "id": "Machine_Bench_Press",
     "name": "Chest Press Machine",
     "aliases": [],
     "familyName": "Flat Press",
@@ -230,10 +230,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Chest"
     ],
@@ -258,8 +258,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Sit down on the Chest Press Machine and select the weight.",
+      "Step on the lever provided by the machine since it will help you to bring the handles forward so that you can grab the handles and fully extend the arms.",
+      "Grab the handles with a palms-down grip and lift your elbows so that your upper arms are parallel to the floor to the sides of your torso. Tip: Your forearms will be pointing forward since you are grabbing the handles. Once you bring the handles forward and extend the arms you will be at the starting position.",
+      "Now bring the handles back towards you as you breathe in.",
+      "Push the handles away from you as you flex your pecs and you breathe out. Hold the contraction for a second before going back to the starting position.",
+      "Repeat for the recommended amount of reps.",
+      "When finished step on the lever again and slowly get the handles back to their original place."
+    ],
+    "images": [
+      "Machine_Bench_Press/0.jpg",
+      "Machine_Bench_Press/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Chest_Press",
@@ -302,7 +313,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Feet_Elevated_Push_Up",
+    "id": "Push-Ups_With_Feet_Elevated",
     "name": "Feet-Elevated Push-Up",
     "aliases": [],
     "familyName": "Incline Press",
@@ -310,10 +321,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "bodyweight",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Upper Chest"
     ],
@@ -338,8 +349,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Lie on the floor face down and place your hands about 36 inches apart from each other holding your torso up at arms length.",
+      "Place your toes on top of a flat bench. This will allow your body to be elevated. Note: The higher the elevation of the flat bench, the higher the resistance of the exercise is.",
+      "Lower yourself until your chest almost touches the floor as you inhale.",
+      "Using your pectoral muscles, press your upper body back up to the starting position and squeeze your chest. Breathe out as you perform this step.",
+      "After a second pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
+    ],
+    "images": [
+      "Push-Ups_With_Feet_Elevated/0.jpg",
+      "Push-Ups_With_Feet_Elevated/1.jpg"
+    ]
   },
   {
     "id": "Incline_Dumbbell_Press",
@@ -442,7 +462,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Cable_Incline_Press",
+    "id": "Incline_Cable_Chest_Press",
     "name": "Cable Incline Press",
     "aliases": [],
     "familyName": "Incline Press",
@@ -450,10 +470,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "cable",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Upper Chest"
     ],
@@ -478,11 +498,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the weight to an appropriate amount and be seated, grasping the handles. Your upper arms should be about 45 degrees to the body, with your head and chest up. The elbows should be bent to about 90 degrees. This will be your starting position.",
+      "Begin by extending through the elbow, pressing the handles together straight in front of you. Keep your shoulder blades retracted as you execute the movement.",
+      "After pausing at full extension, return to the starting position, keeping tension on the cables."
+    ],
+    "images": [
+      "Incline_Cable_Chest_Press/0.jpg",
+      "Incline_Cable_Chest_Press/1.jpg"
+    ]
   },
   {
-    "id": "Incline_Press_Machine",
+    "id": "Leverage_Incline_Chest_Press",
     "name": "Incline Press Machine",
     "aliases": [],
     "familyName": "Incline Press",
@@ -490,10 +517,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Upper Chest"
     ],
@@ -518,8 +545,15 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Load an appropriate weight onto the pins and adjust the seat for your height. The handles should be near the top of the pectorals at the beginning of the motion. Your chest and head should be up and your shoulder blades retracted. This will be your starting position.",
+      "Press the handles forward by extending through the elbow.",
+      "After a brief pause at the top, return the weight just above the start position, keeping tension on the muscles by not returning the weight to the stops until the set is complete."
+    ],
+    "images": [
+      "Leverage_Incline_Chest_Press/0.jpg",
+      "Leverage_Incline_Chest_Press/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Incline_Press",
@@ -650,7 +684,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Pec_Deck",
+    "id": "Butterfly",
     "name": "Pec Deck",
     "aliases": [],
     "familyName": "Chest Fly",
@@ -658,10 +692,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Chest"
     ],
@@ -680,8 +714,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Sit on the machine with your back flat on the pad.",
+      "Take hold of the handles. Tip: Your upper arms should be positioned parallel to the floor; adjust the machine accordingly. This will be your starting position.",
+      "Push the handles together slowly as you squeeze your chest in the middle. Breathe out during this part of the motion and hold the contraction for a second.",
+      "Return back to the starting position slowly as you inhale until your chest muscles are fully stretched.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Butterfly/0.jpg",
+      "Butterfly/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Fly",
@@ -766,7 +809,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Weighted_Dip",
+    "id": "Parallel_Bar_Dip",
     "name": "Weighted Dip",
     "aliases": [],
     "familyName": "Chest Dip",
@@ -774,10 +817,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "dumbbells",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Lower Chest"
     ],
@@ -802,11 +845,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand between a set of parallel bars. Place a hand on each bar, and then take a small jump to help you get into the starting position with your arms locked out.",
+      "Begin by flexing the elbow, lowering your body until your arms break 90 degrees. Avoid swinging, and maintain good posture throughout the descent.",
+      "Reverse the motion by extending the elbow, pushing yourself back up into the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "images": [
+      "Parallel_Bar_Dip/0.jpg",
+      "Parallel_Bar_Dip/1.jpg"
+    ]
   },
   {
-    "id": "Assisted_Dip_Machine",
+    "id": "Dip_Machine",
     "name": "Assisted Dip Machine",
     "aliases": [],
     "familyName": "Chest Dip",
@@ -814,10 +865,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Lower Chest"
     ],
@@ -842,8 +893,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Sit securely in a dip machine, select the weight and firmly grasp the handles.",
+      "Now keep your elbows in at your sides in order to place emphasis on the triceps. The elbows should be bent at a 90 degree angle.",
+      "As you contract the triceps, extend your arms downwards as you exhale. Tip: At the bottom of the movement, focus on keeping a little bend in your arms to keep tension on the triceps muscle.",
+      "Now slowly let your arms come back up to the starting position as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Dip_Machine/0.jpg",
+      "Dip_Machine/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Dip",
@@ -1318,7 +1378,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Shoulder_Press_Machine",
+    "id": "Machine_Shoulder_Military_Press",
     "name": "Shoulder Press Machine",
     "aliases": [],
     "familyName": "Vertical Press",
@@ -1326,10 +1386,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Front Delts"
     ],
@@ -1360,8 +1420,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Sit down on the Shoulder Press Machine and select the weight.",
+      "Grab the handles to your sides as you keep the elbows bent and in line with your torso. This will be your starting position.",
+      "Now lift the handles as you exhale and you extend the arms fully. At the top of the position make sure that you hold the contraction for a second.",
+      "Lower the handles slowly back to the starting position as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Machine_Shoulder_Military_Press/0.jpg",
+      "Machine_Shoulder_Military_Press/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Shoulder_Press",
@@ -1497,7 +1566,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Lateral_Raise_Machine",
+    "id": "Seated_Side_Lateral_Raise",
     "name": "Lateral Raise Machine",
     "aliases": [],
     "familyName": "Lateral Raise",
@@ -1505,10 +1574,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Side Delts"
     ],
@@ -1527,8 +1596,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Pick a couple of dumbbells and sit at the end of a flat bench with your feet firmly on the floor. Hold the dumbbells with your palms facing in and your arms straight down at your sides at arms' length. This will be your starting position.",
+      "While maintaining the torso stationary (no swinging), lift the dumbbells to your side with a slight bend on the elbow and the hands slightly tilted forward as if pouring water in a glass. Continue to go up until you arms are parallel to the floor. Exhale as you execute this movement and pause for a second at the top.",
+      "Lower the dumbbells back down slowly to the starting position as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Seated_Side_Lateral_Raise/0.jpg",
+      "Seated_Side_Lateral_Raise/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Lateral_Raise",
@@ -1565,7 +1642,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Dumbbell_Front_Raise",
+    "id": "Front_Dumbbell_Raise",
     "name": "Dumbbell Front Raise",
     "aliases": [],
     "familyName": "Front Raise",
@@ -1573,10 +1650,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Front Delts"
     ],
@@ -1595,8 +1672,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Pick a couple of dumbbells and stand with a straight torso and the dumbbells on front of your thighs at arms length with the palms of the hand facing your thighs. This will be your starting position.",
+      "While maintaining the torso stationary (no swinging), lift the left dumbbell to the front with a slight bend on the elbow and the palms of the hands always facing down. Continue to go up until you arm is slightly above parallel to the floor. Exhale as you execute this portion of the movement and pause for a second at the top. Inhale after the second pause.",
+      "Now lower the dumbbell back down slowly to the starting position as you simultaneously lift the right dumbbell.",
+      "Continue alternating in this fashion until all of the recommended amount of repetitions have been performed for each arm."
+    ],
+    "images": [
+      "Front_Dumbbell_Raise/0.jpg",
+      "Front_Dumbbell_Raise/1.jpg"
+    ]
   },
   {
     "id": "Barbell_Front_Raise",
@@ -1633,7 +1718,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Cable_Front_Raise",
+    "id": "Front_Cable_Raise",
     "name": "Cable Front Raise",
     "aliases": [],
     "familyName": "Front Raise",
@@ -1641,10 +1726,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "cable",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Front Delts"
     ],
@@ -1663,8 +1748,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Select the weight on a low pulley machine and grasp the single hand cable attachment that is attached to the low pulley with your left hand.",
+      "Face away from the pulley and put your arm straight down with the hand cable attachment in front of your thighs at arms' length with the palms of the hand facing your thighs. This will be your starting position.",
+      "While maintaining the torso stationary (no swinging), lift the left arm to the front with a slight bend on the elbow and the palms of the hand always faces down. Continue to go up until you arm is slightly above parallel to the floor. Exhale as you execute this portion of the movement and pause for a second at the top.",
+      "Now as you inhale lower the arm back down slowly to the starting position.",
+      "Once all of the recommended amount of repetitions have been performed for this arm, switch arms and perform the exercise with the right one."
+    ],
+    "images": [
+      "Front_Cable_Raise/0.jpg",
+      "Front_Cable_Raise/1.jpg"
+    ]
   },
   {
     "id": "Front_Raise_Machine",
@@ -1798,7 +1892,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Rear_Delt_Machine",
+    "id": "Reverse_Machine_Flyes",
     "name": "Rear Delt Machine",
     "aliases": [],
     "familyName": "Rear Delt Fly",
@@ -1806,10 +1900,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Rear Delts"
     ],
@@ -1834,8 +1928,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the handles so that they are fully to the rear. Make an appropriate weight selection and adjust the seat height so the handles are at shoulder level. Grasp the handles with your hands facing inwards. This will be your starting position.",
+      "In a semicircular motion, pull your hands out to your side and back, contracting your rear delts.",
+      "Keep your arms slightly bent throughout the movement, with all of the motion occurring at the shoulder joint.",
+      "Pause at the rear of the movement, and slowly return the weight to the starting position."
+    ],
+    "images": [
+      "Reverse_Machine_Flyes/0.jpg",
+      "Reverse_Machine_Flyes/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Rear_Delt_Fly",
@@ -1923,7 +2025,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Reverse_Pec_Deck",
+    "id": "Reverse_Machine_Flyes",
     "name": "Reverse Pec Deck",
     "aliases": [],
     "familyName": "Face Pull",
@@ -1931,10 +2033,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Rear Delts"
     ],
@@ -1959,8 +2061,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the handles so that they are fully to the rear. Make an appropriate weight selection and adjust the seat height so the handles are at shoulder level. Grasp the handles with your hands facing inwards. This will be your starting position.",
+      "In a semicircular motion, pull your hands out to your side and back, contracting your rear delts.",
+      "Keep your arms slightly bent throughout the movement, with all of the motion occurring at the shoulder joint.",
+      "Pause at the rear of the movement, and slowly return the weight to the starting position."
+    ],
+    "images": [
+      "Reverse_Machine_Flyes/0.jpg",
+      "Reverse_Machine_Flyes/1.jpg"
+    ]
   },
   {
     "id": "Scapular_Pull-Up",
@@ -2131,7 +2241,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Shrug_Machine",
+    "id": "Leverage_Shrug",
     "name": "Shrug Machine",
     "aliases": [],
     "familyName": "Shrug",
@@ -2139,10 +2249,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Upper Traps"
     ],
@@ -2161,8 +2271,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Load the pins to an appropriate weight. Position yourself directly between the handles.",
+      "Grasp the top handles with a comfortable grip, and then lower your hips as you take a breath. Look forward with your head and keep your chest up.",
+      "Drive through the floor with your heels, extending your hips and knees as you rise to a standing position. Keep your arms straight throughout the movement, finishing with your shoulders back. This will be your starting position.",
+      "Raise the weight by shrugging the shoulders towards your ears, moving straight up and down.",
+      "Pause at the top of the motion, and then return the weight to the starting position."
+    ],
+    "images": [
+      "Leverage_Shrug/0.jpg",
+      "Leverage_Shrug/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Shrug",
@@ -2298,7 +2417,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Lat_Pulldown_Machine",
+    "id": "Full_Range-Of-Motion_Lat_Pulldown",
     "name": "Lat Pulldown Machine",
     "aliases": [],
     "familyName": "Vertical Pull",
@@ -2306,10 +2425,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Lats"
     ],
@@ -2334,8 +2453,14 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Either standing or seated on a high bench, grasp two stirrup cables that are attached to the high pulleys. Grab with the opposing hand so your arms are crisscrossed about you and your palms are facing forward.",
+      "Keeping your chest up and maintaining a slight arch in your lower back, pull the handles down as if you were doing a regular pulldown. The range of motion will be more of an arc. During the movement, rotate your hands so that in the bottom position your palms face each other rather than forward. Return slowly to the starting position and repeat."
+    ],
+    "images": [
+      "Full_Range-Of-Motion_Lat_Pulldown/0.jpg",
+      "Full_Range-Of-Motion_Lat_Pulldown/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Pulldown",
@@ -2870,7 +2995,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Chest_Supported_Dumbbell_Row",
+    "id": "Dumbbell_Incline_Row",
     "name": "Chest-Supported Dumbbell Row",
     "aliases": [],
     "familyName": "Chest-Supported Row",
@@ -2878,10 +3003,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "dumbbells",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Mid Back"
     ],
@@ -2912,8 +3037,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Using a neutral grip, lean into an incline bench.",
+      "Take a dumbbell in each hand with a neutral grip, beginning with the arms straight. This will be your starting position.",
+      "Retract the shoulder blades and flex the elbows to row the dumbbells to your side.",
+      "Pause at the top of the motion, and then return to the starting position."
+    ],
+    "images": [
+      "Dumbbell_Incline_Row/0.jpg",
+      "Dumbbell_Incline_Row/1.jpg"
+    ]
   },
   {
     "id": "Seal_Row",
@@ -3148,7 +3281,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Dumbbell_Back_Extension",
+    "id": "Hyperextensions_Back_Extensions",
     "name": "Dumbbell Back Extension",
     "aliases": [],
     "familyName": "Back Extension",
@@ -3156,10 +3289,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "dumbbells",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Spinal Erectors"
     ],
@@ -3184,8 +3317,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Lie face down on a hyperextension bench, tucking your ankles securely under the footpads.",
+      "Adjust the upper pad if possible so your upper thighs lie flat across the wide pad, leaving enough room for you to bend at the waist without any restriction.",
+      "With your body straight, cross your arms in front of you (my preference) or behind your head. This will be your starting position. Tip: You can also hold a weight plate for extra resistance in front of you under your crossed arms.",
+      "Start bending forward slowly at the waist as far as you can while keeping your back flat. Inhale as you perform this movement. Keep moving forward until you feel a nice stretch on the hamstrings and you can no longer keep going without a rounding of the back. Tip: Never round the back as you perform this exercise. Also, some people can go farther than others. The key thing is that you go as far as your body allows you to without rounding the back.",
+      "Slowly raise your torso back to the initial position as you inhale. Tip: Avoid the temptation to arch your back past a straight line. Also, do not swing the torso at any time in order to protect the back from injury.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Hyperextensions_Back_Extensions/0.jpg",
+      "Hyperextensions_Back_Extensions/1.jpg"
+    ]
   },
   {
     "id": "Good_Morning",
@@ -3281,7 +3424,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Back_Extension_Machine",
+    "id": "Hyperextensions_Back_Extensions",
     "name": "Back Extension Machine",
     "aliases": [],
     "familyName": "Back Extension",
@@ -3289,10 +3432,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "machine",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Spinal Erectors"
     ],
@@ -3317,8 +3460,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Lie face down on a hyperextension bench, tucking your ankles securely under the footpads.",
+      "Adjust the upper pad if possible so your upper thighs lie flat across the wide pad, leaving enough room for you to bend at the waist without any restriction.",
+      "With your body straight, cross your arms in front of you (my preference) or behind your head. This will be your starting position. Tip: You can also hold a weight plate for extra resistance in front of you under your crossed arms.",
+      "Start bending forward slowly at the waist as far as you can while keeping your back flat. Inhale as you perform this movement. Keep moving forward until you feel a nice stretch on the hamstrings and you can no longer keep going without a rounding of the back. Tip: Never round the back as you perform this exercise. Also, some people can go farther than others. The key thing is that you go as far as your body allows you to without rounding the back.",
+      "Slowly raise your torso back to the initial position as you inhale. Tip: Avoid the temptation to arch your back past a straight line. Also, do not swing the torso at any time in order to protect the back from injury.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Hyperextensions_Back_Extensions/0.jpg",
+      "Hyperextensions_Back_Extensions/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Back_Extension",
@@ -3401,7 +3554,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Dumbbell_Romanian_Deadlift",
+    "id": "Stiff-Legged_Dumbbell_Deadlift",
     "name": "Dumbbell Romanian Deadlift",
     "aliases": [],
     "familyName": "Romanian Deadlift",
@@ -3409,10 +3562,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "dumbbells",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Hamstrings"
     ],
@@ -3437,8 +3590,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Grasp a couple of dumbbells holding them by your side at arm's length.",
+      "Stand with your torso straight and your legs spaced using a shoulder width or narrower stance. The knees should be slightly bent. This is your starting position.",
+      "Keeping the knees stationary, lower the dumbbells to over the top of your feet by bending at the waist while keeping your back straight. Keep moving forward as if you were going to pick something from the floor until you feel a stretch on the hamstrings. Exhale as you perform this movement",
+      "Start bringing your torso up straight again by extending your hips and waist until you are back at the starting position. Inhale as you perform this movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Stiff-Legged_Dumbbell_Deadlift/0.jpg",
+      "Stiff-Legged_Dumbbell_Deadlift/1.jpg"
+    ]
   },
   {
     "id": "Romanian_Deadlift",
@@ -3530,7 +3692,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Smith_Machine_Romanian_Deadlift",
+    "id": "Smith_Machine_Stiff-Legged_Deadlift",
     "name": "Smith Machine Romanian Deadlift",
     "aliases": [],
     "familyName": "Romanian Deadlift",
@@ -3538,10 +3700,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "machine",
     "repRangeCategory": "compound",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Hamstrings"
     ],
@@ -3566,8 +3728,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "To begin, set the bar on the smith machine to a height that is around the middle of your thighs. Once the correct height is chosen and the bar is loaded, grasp the bar using a pronated (palms forward) grip that is shoulder width apart. You may need some wrist wraps if using a significant amount of weight.",
+      "Lift the bar up by fully extending your arms while keeping your back straight. Stand with your torso straight and your legs spaced using a shoulder width or narrower stance. The knees should be slightly bent. This is your starting position.",
+      "Keeping the knees stationary, lower the barbell to over the top of your feet by bending at the waist while keeping your back straight. Keep moving forward as if you were going to pick something from the floor until you feel a stretch on the hamstrings. Exhale as you perform this movement",
+      "Start bringing your torso up straight again as soon as you feel the hamstrings stretch by extending your hips and waist until you are back at the starting position. Inhale as you perform this movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Smith_Machine_Stiff-Legged_Deadlift/0.jpg",
+      "Smith_Machine_Stiff-Legged_Deadlift/1.jpg"
+    ]
   },
   {
     "id": "Dumbbell_Deadlift",
@@ -4430,7 +4601,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Split_Squat",
+    "id": "Split_Squats",
     "name": "Split Squat",
     "aliases": [],
     "familyName": "Split Squat",
@@ -4438,10 +4609,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "bodyweight",
     "repRangeCategory": "controlled",
-    "level": null,
+    "level": "intermediate",
     "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "force": "push",
+    "sourceCategory": "stretching",
     "primaryMuscles": [
       "Quads"
     ],
@@ -4466,11 +4637,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Being in a standing position. Jump into a split leg position, with one leg forward and one leg back, flexing the knees and lowering your hips slightly as you do so.",
+      "As you descend, immediately reverse direction, standing back up and jumping, reversing the position of your legs. Repeat 5-10 times on each leg."
+    ],
+    "images": [
+      "Split_Squats/0.jpg",
+      "Split_Squats/1.jpg"
+    ]
   },
   {
-    "id": "Dumbbell_Bulgarian_Split_Squat",
+    "id": "Split_Squat_with_Dumbbells",
     "name": "Dumbbell Bulgarian Split Squat",
     "aliases": [],
     "familyName": "Split Squat",
@@ -4478,10 +4655,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "dumbbells",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Quads"
     ],
@@ -4506,11 +4683,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Position yourself into a staggered stance with the rear foot elevated and front foot forward.",
+      "Hold a dumbbell in each hand, letting them hang at the sides. This will be your starting position.",
+      "Begin by descending, flexing your knee and hip to lower your body down. Maintain good posture througout the movement. Keep the front knee in line with the foot as you perform the exercise.",
+      "At the bottom of the movement, drive through the heel to extend the knee and hip to return to the starting position."
+    ],
+    "images": [
+      "Split_Squat_with_Dumbbells/0.jpg",
+      "Split_Squat_with_Dumbbells/1.jpg"
+    ]
   },
   {
-    "id": "Barbell_Bulgarian_Split_Squat",
+    "id": "Barbell_Side_Split_Squat",
     "name": "Barbell Bulgarian Split Squat",
     "aliases": [],
     "familyName": "Split Squat",
@@ -4518,10 +4703,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "barbell",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Quads"
     ],
@@ -4546,8 +4731,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand up straight while holding a barbell placed on the back of your shoulders (slightly below the neck). Your feet should be placed wide apart with the foot of the lead leg angled out to the side. This will be your starting position.",
+      "Lower your body towards the side of your angled foot by bending the knee and hip of your lead leg and while keeping the opposite leg only slightly bent. Breathe in as you lower your body.",
+      "Return to the starting position by extending the hip and knee of the lead leg. Breathe out as you perform this movement.",
+      "After performing the recommended amount of reps, repeat the movement with the opposite leg."
+    ],
+    "images": [
+      "Barbell_Side_Split_Squat/0.jpg",
+      "Barbell_Side_Split_Squat/1.jpg"
+    ]
   },
   {
     "id": "Cable_Split_Squat",
@@ -4838,7 +5031,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Step_Up",
+    "id": "Step-up_with_Knee_Raise",
     "name": "Step-Up",
     "aliases": [],
     "familyName": "Step-Up",
@@ -4846,10 +5039,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "bodyweight",
     "repRangeCategory": "controlled",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Quads",
       "Glutes"
@@ -4874,8 +5067,15 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand facing a box or bench of an appropriate height with your feet together. This will be your starting position.",
+      "Begin the movement by stepping up, putting your left foot on the top of the bench. Extend through the hip and knee of your front leg to stand up on the box. As you stand on the box with your left leg, flex your right knee and hip, bringing your knee as high as you can.",
+      "Reverse this motion to step down off the box, and then repeat the sequence on the opposite leg."
+    ],
+    "images": [
+      "Step-up_with_Knee_Raise/0.jpg",
+      "Step-up_with_Knee_Raise/1.jpg"
+    ]
   },
   {
     "id": "Dumbbell_Step_Ups",
@@ -5379,7 +5579,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Glute_Kickback_Machine",
+    "id": "One-Legged_Cable_Kickback",
     "name": "Glute Kickback Machine",
     "aliases": [],
     "familyName": "Glute Kickback",
@@ -5387,10 +5587,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Glutes"
     ],
@@ -5409,8 +5609,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Hook a leather ankle cuff to a low cable pulley and then attach the cuff to your ankle.",
+      "Face the weight stack from a distance of about two feet, grasping the steel frame for support.",
+      "While keeping your knees and hips bent slightly and your abs tight, contract your glutes to slowly \"kick\" the working leg back in a semicircular arc as high as it will comfortably go as you breathe out. Tip: At full extension, squeeze your glutes for a second in order to achieve a peak contraction.",
+      "Now slowly bring your working leg forward, resisting the pull of the cable until you reach the starting position.",
+      "Repeat for the recommended amount of repetitions.",
+      "Switch legs and repeat the movement for the other side."
+    ],
+    "images": [
+      "One-Legged_Cable_Kickback/0.jpg",
+      "One-Legged_Cable_Kickback/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Glute_Kickback",
@@ -5447,7 +5657,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Nordic_Curl",
+    "id": "Natural_Glute_Ham_Raise",
     "name": "Nordic Curl",
     "aliases": [],
     "familyName": "Leg Curl",
@@ -5455,10 +5665,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "bodyweight",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Hamstrings"
     ],
@@ -5477,11 +5687,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Using the leg pad of a lat pulldown machine or a preacher bench, position yourself so that your ankles are under the pads, knees on the seat, and you are facing away from the machine. You should be upright and maintaining good posture.",
+      "This will be your starting position. Lower yourself under control until your knees are almost completely straight.",
+      "Remaining in control, raise yourself back up to the starting position.",
+      "If you are unable to complete a rep, use a band, a partner, or push off of a box to aid in completing a repetition."
+    ],
+    "images": [
+      "Natural_Glute_Ham_Raise/0.jpg",
+      "Natural_Glute_Ham_Raise/1.jpg"
+    ]
   },
   {
-    "id": "Dumbbell_Leg_Curl",
+    "id": "Lying_Leg_Curls",
     "name": "Dumbbell Leg Curl",
     "aliases": [],
     "familyName": "Leg Curl",
@@ -5489,10 +5707,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Hamstrings"
     ],
@@ -5511,11 +5729,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the machine lever to fit your height and lie face down on the leg curl machine with the pad of the lever on the back of your legs (just a few inches under the calves). Tip: Preferably use a leg curl machine that is angled as opposed to flat since an angled position is more favorable for hamstrings recruitment.",
+      "Keeping the torso flat on the bench, ensure your legs are fully stretched and grab the side handles of the machine. Position your toes straight (or you can also use any of the other two stances described on the foot positioning section). This will be your starting position.",
+      "As you exhale, curl your legs up as far as possible without lifting the upper legs from the pad. Once you hit the fully contracted position, hold it for a second.",
+      "As you inhale, bring the legs back to the initial position. Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Lying_Leg_Curls/0.jpg",
+      "Lying_Leg_Curls/1.jpg"
+    ]
   },
   {
-    "id": "Cable_Leg_Curl",
+    "id": "Standing_Leg_Curl",
     "name": "Cable Leg Curl",
     "aliases": [],
     "familyName": "Leg Curl",
@@ -5523,10 +5749,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "cable",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Hamstrings"
     ],
@@ -5545,8 +5771,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the machine lever to fit your height and lie with your torso bent at the waist facing forward around 30-45 degrees (since an angled position is more favorable for hamstrings recruitment) with the pad of the lever on the back of your right leg (just a few inches under the calves) and the front of the right leg on top of the machine pad.",
+      "Keeping the torso bent forward, ensure your leg is fully stretched and grab the side handles of the machine. Position your toes straight. This will be your starting position.",
+      "As you exhale, curl your right leg up as far as possible without lifting the upper leg from the pad. Once you hit the fully contracted position, hold it for a second.",
+      "As you inhale, bring the legs back to the initial position. Repeat for the recommended amount of repetitions.",
+      "Perform the same exercise now for the left leg."
+    ],
+    "images": [
+      "Standing_Leg_Curl/0.jpg",
+      "Standing_Leg_Curl/1.jpg"
+    ]
   },
   {
     "id": "Lying_Leg_Curls",
@@ -5792,7 +6027,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Dumbbell_Standing_Calf_Raise",
+    "id": "Standing_Dumbbell_Calf_Raise",
     "name": "Dumbbell Standing Calf Raise",
     "aliases": [],
     "familyName": "Standing Calf Raise",
@@ -5800,10 +6035,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Gastrocnemius"
     ],
@@ -5822,11 +6057,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand with your torso upright holding two dumbbells in your hands by your sides. Place the ball of the foot on a sturdy and stable wooden board (that is around 2-3 inches tall) while your heels extend off and touch the floor. This will be your starting position.",
+      "With the toes pointing either straight (to hit all parts equally), inwards (for emphasis on the outer head) or outwards (for emphasis on the inner head), raise the heels off the floor as you exhale by contracting the calves. Hold the top contraction for a second.",
+      "As you inhale, go back to the starting position by slowly lowering the heels.",
+      "Repeat for the recommended amount of times."
+    ],
+    "images": [
+      "Standing_Dumbbell_Calf_Raise/0.jpg",
+      "Standing_Dumbbell_Calf_Raise/1.jpg"
+    ]
   },
   {
-    "id": "Barbell_Standing_Calf_Raise",
+    "id": "Standing_Barbell_Calf_Raise",
     "name": "Barbell Standing Calf Raise",
     "aliases": [],
     "familyName": "Standing Calf Raise",
@@ -5834,10 +6077,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "barbell",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Gastrocnemius"
     ],
@@ -5856,8 +6099,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack that best matches your height. Once the correct height is chosen and the bar is loaded, step under the bar and place the bar on the back of your shoulders (slightly below the neck).",
+      "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
+      "Step away from the rack and position your legs using a shoulder width medium stance with the toes slightly pointed out. Keep your head up at all times as looking down will get you off balance and also maintain a straight back. The knees should be kept with a slight bend; never locked. This will be your starting position. Tip: For better range of motion you may also place the ball of your feet on a wooden block but be careful as this option requires more balance and a sturdy block.",
+      "Raise your heels as you breathe out by extending your ankles as high as possible and flexing your calf. Ensure that the knee is kept stationary at all times. There should be no bending at any time. Hold the contracted position by a second before you start to go back down.",
+      "Go back slowly to the starting position as you breathe in by lowering your heels as you bend the ankles until calves are stretched.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Standing_Barbell_Calf_Raise/0.jpg",
+      "Standing_Barbell_Calf_Raise/1.jpg"
+    ]
   },
   {
     "id": "Cable_Standing_Calf_Raise",
@@ -5996,7 +6249,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Dumbbell_Seated_Calf_Raise",
+    "id": "Dumbbell_Seated_One-Leg_Calf_Raise",
     "name": "Dumbbell Seated Calf Raise",
     "aliases": [],
     "familyName": "Seated Calf Raise",
@@ -6004,10 +6257,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Legs",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Soleus"
     ],
@@ -6026,8 +6279,18 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Place a block on the floor about 12 inches from a flat bench.",
+      "Sit on a flat bench and place a dumbbell on your upper left thigh about 3 inches above your knee.",
+      "Now place the ball of your left foot on the block. This will be your starting position.",
+      "Raise your toes up as high as possible as you exhale and you contract your calf muscle. Hold the contraction for a second.",
+      "Slowly return to the starting position, stretching as far down as possible.",
+      "Repeat for your prescribed number of repetitions and then repeat with the right leg."
+    ],
+    "images": [
+      "Dumbbell_Seated_One-Leg_Calf_Raise/0.jpg",
+      "Dumbbell_Seated_One-Leg_Calf_Raise/1.jpg"
+    ]
   },
   {
     "id": "Barbell_Seated_Calf_Raise",
@@ -6272,7 +6535,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Cable_Curl",
+    "id": "Standing_Biceps_Cable_Curl",
     "name": "Cable Curl",
     "aliases": [],
     "familyName": "Curl",
@@ -6280,10 +6543,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "cable",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Biceps"
     ],
@@ -6302,11 +6565,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand up with your torso upright while holding a cable curl bar that is attached to a low pulley. Grab the cable bar at shoulder width and keep the elbows close to the torso. The palm of your hands should be facing up (supinated grip). This will be your starting position.",
+      "While holding the upper arms stationary, curl the weights while contracting the biceps as you breathe out. Only the forearms should move. Continue the movement until your biceps are fully contracted and the bar is at shoulder level. Hold the contracted position for a second as you squeeze the muscle.",
+      "Slowly begin to bring the curl bar back to starting position as your breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Standing_Biceps_Cable_Curl/0.jpg",
+      "Standing_Biceps_Cable_Curl/1.jpg"
+    ]
   },
   {
-    "id": "Biceps_Curl_Machine",
+    "id": "Machine_Bicep_Curl",
     "name": "Biceps Curl Machine",
     "aliases": [],
     "familyName": "Curl",
@@ -6314,10 +6585,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Pull",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Biceps"
     ],
@@ -6336,8 +6607,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the seat to the appropriate height and make your weight selection. Place your upper arms against the pads and grasp the handles. This will be your starting position.",
+      "Perform the movement by flexing the elbow, pulling your lower arm towards your upper arm.",
+      "Pause at the top of the movement, and then slowly return the weight to the starting position.",
+      "Avoid returning the weight all the way to the stops until the set is complete to keep tension on the muscles being worked."
+    ],
+    "images": [
+      "Machine_Bicep_Curl/0.jpg",
+      "Machine_Bicep_Curl/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Curl",
@@ -6794,7 +7073,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Bodyweight_Triceps_Extension",
+    "id": "Body_Tricep_Press",
     "name": "Bodyweight Triceps Extension",
     "aliases": [],
     "familyName": "Overhead Triceps Extension",
@@ -6802,10 +7081,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "bodyweight",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps Long Head"
     ],
@@ -6824,11 +7103,20 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Position a bar in a rack at chest height.",
+      "Standing, take a shoulder width grip on the bar and step a yard or two back, feet together and arms extended so that you are leaning on the bar. This will be your starting position.",
+      "Begin by flexing the elbow, lowering yourself towards the bar.",
+      "Pause, and then reverse the motion by extending the elbows.",
+      "Progress from bodyweight by adding chains over your shoulders."
+    ],
+    "images": [
+      "Body_Tricep_Press/0.jpg",
+      "Body_Tricep_Press/1.jpg"
+    ]
   },
   {
-    "id": "Dumbbell_Overhead_Triceps_Extension",
+    "id": "Standing_Dumbbell_Triceps_Extension",
     "name": "Dumbbell Overhead Triceps Extension",
     "aliases": [],
     "familyName": "Overhead Triceps Extension",
@@ -6836,10 +7124,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps Long Head"
     ],
@@ -6858,11 +7146,20 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "To begin, stand up with a dumbbell held by both hands. Your feet should be about shoulder width apart from each other. Slowly use both hands to grab the dumbbell and lift it over your head until both arms are fully extended.",
+      "The resistance should be resting in the palms of your hands with your thumbs around it. The palm of the hands should be facing up towards the ceiling. This will be your starting position.",
+      "Keeping your upper arms close to your head with elbows in and perpendicular to the floor, lower the resistance in a semicircular motion behind your head until your forearms touch your biceps. Tip: The upper arms should remain stationary and only the forearms should move. Breathe in as you perform this step.",
+      "Go back to the starting position by using the triceps to raise the dumbbell. Breathe out as you perform this step.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Standing_Dumbbell_Triceps_Extension/0.jpg",
+      "Standing_Dumbbell_Triceps_Extension/1.jpg"
+    ]
   },
   {
-    "id": "Barbell_Overhead_Triceps_Extension",
+    "id": "Standing_Overhead_Barbell_Triceps_Extension",
     "name": "Barbell Overhead Triceps Extension",
     "aliases": [],
     "familyName": "Overhead Triceps Extension",
@@ -6870,10 +7167,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "barbell",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps Long Head"
     ],
@@ -6892,8 +7189,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "To begin, stand up holding a barbell or e-z bar using a pronated grip (palms facing forward) with your hands closer than shoulder width apart from each other. Your feet should be about shoulder width apart.",
+      "Now elevate the barbell above your head until your arms are fully extended. Keep your elbows in. This will be your starting position.",
+      "Keeping your upper arms close to your head and elbows in, perpendicular to the floor, lower the resistance in a semicircular motion behind your head until your forearms touch your biceps. Tip: The upper arms should remain stationary and only the forearms should move. Breathe in as you perform this step.",
+      "Go back to the starting position by using the triceps to raise the barbell. Breathe out as you perform this step.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Standing_Overhead_Barbell_Triceps_Extension/0.jpg",
+      "Standing_Overhead_Barbell_Triceps_Extension/1.jpg"
+    ]
   },
   {
     "id": "Cable_Rope_Overhead_Triceps_Extension",
@@ -6939,7 +7245,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Triceps_Extension_Machine",
+    "id": "Machine_Triceps_Extension",
     "name": "Triceps Extension Machine",
     "aliases": [],
     "familyName": "Overhead Triceps Extension",
@@ -6947,10 +7253,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps Long Head"
     ],
@@ -6969,11 +7275,19 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Adjust the seat to the appropriate height and make your weight selection. Place your upper arms against the pads and grasp the handles. This will be your starting position.",
+      "Perform the movement by extending the elbow, pulling your lower arm away from your upper arm.",
+      "Pause at the completion of the movement, and then slowly return the weight to the starting position.",
+      "Avoid returning the weight all the way to the stops until the set is complete to keep tension on the muscles being worked."
+    ],
+    "images": [
+      "Machine_Triceps_Extension/0.jpg",
+      "Machine_Triceps_Extension/1.jpg"
+    ]
   },
   {
-    "id": "Dumbbell_Skull_Crusher",
+    "id": "Lying_Dumbbell_Tricep_Extension",
     "name": "Dumbbell Skull Crusher",
     "aliases": [],
     "familyName": "Skull Crusher",
@@ -6981,10 +7295,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "dumbbells",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps"
     ],
@@ -6996,8 +7310,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "primary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Lie on a flat bench while holding two dumbbells directly in front of you. Your arms should be fully extended at a 90-degree angle from your torso and the floor. The palms should be facing in and the elbows should be tucked in. This is the starting position.",
+      "As you breathe in and you keep the upper arms stationary with the elbows in, slowly lower the weight until the dumbbells are near your ears.",
+      "At that point, while keeping the elbows in and the upper arms stationary, use the triceps to bring the weight back up to the starting position as you breathe out.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Lying_Dumbbell_Tricep_Extension/0.jpg",
+      "Lying_Dumbbell_Tricep_Extension/1.jpg"
+    ]
   },
   {
     "id": "EZ-Bar_Skullcrusher",
@@ -7035,7 +7357,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Cable_Skull_Crusher",
+    "id": "Cable_Lying_Triceps_Extension",
     "name": "Cable Skull Crusher",
     "aliases": [],
     "familyName": "Skull Crusher",
@@ -7043,10 +7365,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Push",
     "equipment": "cable",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Triceps"
     ],
@@ -7058,8 +7380,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "primary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Lie on a flat bench and grasp the straight bar attachment of a low pulley with a narrow overhand grip. Tip: The easiest way to do this is to have someone hand you the bar as you lay down.",
+      "With your arms extended, position the bar over your torso. Your arms and your torso should create a 90-degree angle. This will be your starting position.",
+      "Lower the bar by bending at the elbow while keeping the upper arms stationary and elbows in. Go down until the bar lightly touches your forehead. Breathe in as you perform this portion of the movement.",
+      "Flex the triceps as you lift the bar back to its starting position. Exhale as you perform this portion of the movement.",
+      "Hold for a second at the contracted position and repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Cable_Lying_Triceps_Extension/0.jpg",
+      "Cable_Lying_Triceps_Extension/1.jpg"
+    ]
   },
   {
     "id": "Crunches",
@@ -7226,10 +7557,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Core",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Abs"
     ],
@@ -7248,8 +7579,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Select a light resistance and sit down on the ab machine placing your feet under the pads provided and grabbing the top handles. Your arms should be bent at a 90 degree angle as you rest the triceps on the pads provided. This will be your starting position.",
+      "At the same time, begin to lift the legs up as you crunch your upper torso. Breathe out as you perform this movement. Tip: Be sure to use a slow and controlled motion. Concentrate on using your abs to move the weight while relaxing your legs and feet.",
+      "After a second pause, slowly return to the starting position as you breathe in.",
+      "Repeat the movement for the prescribed amount of repetitions."
+    ],
+    "images": [
+      "Ab_Crunch_Machine/0.jpg",
+      "Ab_Crunch_Machine/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Ab_Crunch",
@@ -7362,7 +7701,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Vertical_Knee_Raise_Machine",
+    "id": "Knee_Hip_Raise_On_Parallel_Bars",
     "name": "Vertical Knee Raise Machine",
     "aliases": [],
     "familyName": "Leg Raise",
@@ -7370,10 +7709,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Core",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Abs"
     ],
@@ -7392,8 +7731,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Position your body on the vertical leg raise bench so that your forearms are resting on the pads next to the torso and holding on to the handles. Your arms will be bent at a 90 degree angle.",
+      "The torso should be straight with the lower back pressed against the pad of the machine and the legs extended pointing towards the floor. This will be your starting position.",
+      "Now as you breathe out, lift your legs up as you keep them extended. Continue this movement until your legs are roughly parallel to the floor and then hold the contraction for a second. Tip: Do not use any momentum or swinging as you perform this exercise.",
+      "Slowly go back to the starting position as you breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Knee_Hip_Raise_On_Parallel_Bars/0.jpg",
+      "Knee_Hip_Raise_On_Parallel_Bars/1.jpg"
+    ]
   },
   {
     "id": "Side_Plank_Rotation",
@@ -7485,7 +7833,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Landmine_Rotation",
+    "id": "Landmine_180s",
     "name": "Landmine Rotation",
     "aliases": [],
     "familyName": "Rotation Core",
@@ -7493,10 +7841,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Core",
     "equipment": "barbell",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Obliques"
     ],
@@ -7521,8 +7869,17 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Position a bar into a landmine or securely anchor it in a corner. Load the bar to an appropriate weight.",
+      "Raise the bar from the floor, taking it to shoulder height with both hands with your arms extended in front of you. Adopt a wide stance. This will be your starting position.",
+      "Perform the movement by rotating the trunk and hips as you swing the weight all the way down to one side. Keep your arms extended throughout the exercise.",
+      "Reverse the motion to swing the weight all the way to the opposite side.",
+      "Continue alternating the movement until the set is complete."
+    ],
+    "images": [
+      "Landmine_180s/0.jpg",
+      "Landmine_180s/1.jpg"
+    ]
   },
   {
     "id": "Standing_Cable_Wood_Chop",
@@ -7577,7 +7934,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     ]
   },
   {
-    "id": "Rotary_Torso_Machine",
+    "id": "Torso_Rotation",
     "name": "Rotary Torso Machine",
     "aliases": [],
     "familyName": "Rotation Core",
@@ -7585,10 +7942,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Core",
     "equipment": "machine",
     "repRangeCategory": "isolation_pump",
-    "level": null,
+    "level": "beginner",
     "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "force": "pull",
+    "sourceCategory": "stretching",
     "primaryMuscles": [
       "Obliques"
     ],
@@ -7613,8 +7970,14 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "Stand upright holding an exercise ball with both hands. Extend your arms so the ball is straight out in front of you. This will be your starting position.",
+      "Rotate your torso to one side, keeping your eyes on the ball as you move. Now, rotate back to the opposite direction. Repeat for 10-20 repetitions."
+    ],
+    "images": [
+      "Torso_Rotation/0.jpg",
+      "Torso_Rotation/1.jpg"
+    ]
   },
   {
     "id": "Plate_Loaded_Rotary_Torso",
@@ -7755,7 +8118,7 @@ window.LIFTTRACK_EXERCISE_DB = [
     "images": []
   },
   {
-    "id": "Barbell_Rollout",
+    "id": "Barbell_Ab_Rollout",
     "name": "Barbell Rollout",
     "aliases": [],
     "familyName": "Plank",
@@ -7763,10 +8126,10 @@ window.LIFTTRACK_EXERCISE_DB = [
     "split": "Core",
     "equipment": "barbell",
     "repRangeCategory": "isolation_pump",
-    "level": null,
-    "mechanic": null,
-    "force": null,
-    "sourceCategory": null,
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
     "primaryMuscles": [
       "Deep Core"
     ],
@@ -7797,8 +8160,16 @@ window.LIFTTRACK_EXERCISE_DB = [
         "role": "secondary"
       }
     ],
-    "instructions": [],
-    "images": []
+    "instructions": [
+      "For this exercise you will need to get into a pushup position, but instead of having your hands of the floor, you will be grabbing on to an Olympic barbell (loaded with 5-10 lbs on each side) instead. This will be your starting position.",
+      "While keeping a slight arch on your back, lift your hips and roll the barbell towards your feet as you exhale. Tip: As you perform the movement, your glutes should be coming up, you should be keeping the abs tight and should maintain your back posture at all times. Also your arms should be staying perpendicular to the floor throughout the movement. If you don't, you will work out your shoulders and back more than the abs.",
+      "After a second contraction at the top, start to roll the barbell back forward to the starting position slowly as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Barbell_Ab_Rollout/0.jpg",
+      "Barbell_Ab_Rollout/1.jpg"
+    ]
   },
   {
     "id": "Cable_Iso_Hold",
