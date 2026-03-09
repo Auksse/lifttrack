@@ -525,6 +525,14 @@ function addBuiltinExByName(focus,name){
   builtinTemplateExercises[focus].push(name);saveBuiltinTemplates();tmplExInput='';render();
   setTimeout(()=>{const inp=document.getElementById('tmplExInput_'+focus);if(inp){inp.value='';inp.focus();}},0);
 }
+function addToCurrentTemplate(name){
+  if(!name)return;
+  if(creatingTemplate){addToNewTemplateByName(name);return;}
+  if(!editingTemplateKey)return;
+  const BUILTIN=['Push','Pull','Legs','Upper'];
+  if(BUILTIN.includes(editingTemplateKey))addBuiltinExByName(editingTemplateKey,name);
+  else addTemplateExByName(editingTemplateKey,name);
+}
 function removeFromNewTemplate(idx){newTemplateExercises.splice(idx,1);render();}
 function deleteCustomTemplate(id){
   const removed=customTemplates.find(t=>t.id===id);
@@ -1141,7 +1149,7 @@ function renderScheduleTab(){
     </div>`;
 
   const allFocuses=getAllFocuses();
-  const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus=${JSON.stringify(f)};render()">${tFocus(f)}</button>`).join('');
+  const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus='${f.replace(/'/g,"\\'")}';render()">${tFocus(f)}</button>`).join('');
 
   const addPanel=schedSelectedDay?`
     <div class="sched-add-panel">
@@ -1193,7 +1201,7 @@ function renderScheduleTab(){
     const nameColor=color||'var(--text2)';
     const builtinKey=rawKey||key;
     return`<div class="tmpl-editor-card ${isExpanded?'tmpl-expanded':''}">
-      <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;schedFocus=${JSON.stringify(focusId)};render()`}">
+      <div class="tmpl-editor-header" style="cursor:pointer" onclick="${isExpanded?`expandedTemplateKey=null;editingTemplateKey=null;render()`:`expandedTemplateKey='${key}';editingTemplateKey=null;schedFocus='${focusId.replace(/'/g,"\\'")}';render()`}">
         <span class="tmpl-editor-name" style="color:${nameColor}">${name}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace">${exercises.length} ${t('ex_lbl')}</span>
@@ -1212,13 +1220,7 @@ function renderScheduleTab(){
               ${isEditing?`<button class="tmpl-ex-del" onclick="event.stopPropagation();${builtin?`removeBuiltinEx('${builtinKey}',${i})`:`removeTemplateEx('${key}',${i})`}">×</button>`:''}
             </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0 8px">${t('no_ex_yet')}</div>`}
         </div>
-        ${isEditing?`
-          <div style="display:flex;gap:6px;margin-top:10px">
-            <input type="text" id="tmplExInput_${key}" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px" oninput="tmplExInput=this.value;render();setTimeout(()=>{const e=document.getElementById('tmplExInput_${key}');if(e){e.focus();const l=e.value.length;e.setSelectionRange(l,l);}},0)" value="${tmplExInput}">
-          </div>
-          <div class="tmpl-ex-library">
-            ${getTmplExSuggestions(tmplExInput).map(n=>`<button class="tmpl-lib-btn" onmousedown="event.preventDefault();event.stopPropagation();${builtin?`addBuiltinExByName('${builtinKey}'`:`addTemplateExByName('${key}'`},'${n.replace(/'/g,"\\'")}')">` + n + `</button>`).join('')}
-          </div>`:''}
+        ${isEditing?renderExerciseBrowser('addToCurrentTemplate'):''}
         ${isEditing?`
           <div class="tmpl-color-row">
             ${TMPL_COLORS.map(c=>`<button class="tmpl-color-swatch${(color||'')==c?' active':''}" style="background:${c}" onclick="event.stopPropagation();setTemplateColor('${builtin?builtinKey:key}','${c}',${builtin})"></button>`).join('')}
@@ -1244,12 +1246,7 @@ function renderScheduleTab(){
             <button class="tmpl-ex-del" onclick="removeFromNewTemplate(${i})">×</button>
           </div>`).join(''):`<div style="font-size:12px;color:var(--dim);padding:4px 0">${t('add_ex_below')}</div>`}
       </div>
-      <div style="margin-top:10px">
-        <input type="text" id="newTmplExInput" placeholder="${t('ex_name_ph')}" class="form-input" style="font-size:13px;padding:8px 10px;width:100%;box-sizing:border-box" oninput="newTmplExInput=this.value;render();setTimeout(()=>{const e=document.getElementById('newTmplExInput');if(e){e.focus();const l=e.value.length;e.setSelectionRange(l,l);}},0)" value="${newTmplExInput}">
-      </div>
-      <div class="tmpl-ex-library">
-        ${getTmplExSuggestions(newTmplExInput).map(n=>`<button class="tmpl-lib-btn" onmousedown="event.preventDefault();addToNewTemplateByName('${n.replace(/'/g,"\\'")}')">` + n + `</button>`).join('')}
-      </div>
+      ${renderExerciseBrowser('addToCurrentTemplate')}
       <div class="tmpl-color-row" style="margin-top:10px">
         ${TMPL_COLORS.map(c=>`<button class="tmpl-color-swatch${newTemplateColor===c?' active':''}" style="background:${c}" onclick="newTemplateColor='${c}';render()"></button>`).join('')}
       </div>
@@ -1326,7 +1323,8 @@ function getCatLabels(){const o={};Object.entries(DB_CAT_KEYS).forEach(([k,v])=>
 const DB_CAT_COLORS={chest:'#c96b4a',shoulders:'#b85a90',back:'#4a90b8',legs_glutes:'#5a9e62',arms:'#4aabab',core:'#8860b8'};
 const DB_CAT_ORDER=['chest','shoulders','back','legs_glutes','arms','core'];
 
-function renderExerciseBrowser(){
+function renderExerciseBrowser(addFn){
+  addFn=addFn||'addExerciseFromLibrary';
   const byCategory={};
   for(const family of exerciseDatabase){
     const name=family[dbEquipment];
@@ -1351,7 +1349,7 @@ function renderExerciseBrowser(){
             <div class="db-cat-group">
               <div class="db-cat-label" style="color:${c}">${(getCatLabels()[cat]||cat).toUpperCase()}</div>
               <div class="db-cat-exercises">
-                ${exs.map(name=>`<button class="db-ex-btn" onclick="addExerciseFromLibrary('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
+                ${exs.map(name=>`<button class="db-ex-btn" onclick="${addFn}('${name.replace(/'/g,"\\'")}')">${name}</button>`).join('')}
               </div>
             </div>`;
         }).join('')}
