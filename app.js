@@ -409,7 +409,7 @@ function renderSessions(){
   return`
     <div class="log-next-section">
       <div class="log-section-hdr"><span class="log-section-title">Next Up</span></div>
-      <div class="next-hero-card gold-dust" onclick="switchTab('add')">
+      <div class="next-hero-card" onclick="switchTab('add')">
         <div class="next-hero-bg" style="background:radial-gradient(ellipse at 78% 40%,${nc}38 0%,transparent 62%),radial-gradient(ellipse at 18% 90%,${nc}18 0%,transparent 55%)"></div>
         <div class="next-hero-content">
           <div class="next-hero-name" style="color:${nc}">${next.focus}</div>
