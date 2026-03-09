@@ -359,6 +359,43 @@ function tMuscle(m){
   const M={'Chest':'Pectoraux','Back':'Dos','Shoulders':'Épaules','Arms':'Bras','Core':'Abdominaux','Legs & Glutes':'Jambes & Fessiers','Lats':'Dorsaux','Upper Back':'Haut du dos','Mid Back':'Dos moyen','Traps':'Trapèzes','Spinal Erectors':'Érecteurs spinaux','Front Delts':'Deltoïdes ant.','Side Delts':'Deltoïdes lat.','Rear Delts':'Deltoïdes post.','Rotator Cuff':'Coiffe rotateurs','Biceps':'Biceps','Triceps':'Triceps','Forearms':'Avant-bras','Brachialis':'Brachial','Brachioradialis':'Brachio-radial','Abs':'Abdominaux','Obliques':'Obliques','Deep Core':'Profond','Hip Flexors':'Fléch. hanche','Serratus':'Serratus','Quads':'Quadriceps','Hamstrings':'Ischio-jamb.','Glutes':'Fessiers','Adductors':'Adducteurs','Calves':'Mollets','Gastrocnemius':'Gastrocnémien','Soleus':'Soléaire','Upper Traps':'Trapèzes sup.','Mid Traps':'Trapèzes moy.','Mid/Lower Traps':'Trap. moy./inf.','Rhomboids':'Rhomboïdes','Lower Chest':'Pec inf.','Upper Chest':'Pec sup.','Triceps Long Head':'Chef long tri.','Other Triceps Heads':'Autres chefs','Shoulders':'Épaules'};
   return M[m]||m;
 }
+function tTag(v){
+  if(lang!=='fr'||!v)return v;
+  const T={beginner:'débutant',intermediate:'intermédiaire',expert:'expert',compound:'composé',isolation:'isolation'};
+  return T[v.toLowerCase()]||v;
+}
+function tInstruction(s){
+  if(lang!=='fr')return s;
+  // phrase-level replacements first, then word-level
+  return s
+    .replace(/\bKeep your\b/gi,'Gardez votre').replace(/\bKeep the\b/gi,'Gardez le').replace(/\bKeep your back straight\b/gi,'Gardez le dos droit')
+    .replace(/\bLower the\b/gi,'Descendez le').replace(/\bLower your\b/gi,'Descendez votre')
+    .replace(/\bLift the\b/gi,'Soulevez le').replace(/\bLift your\b/gi,'Soulevez votre')
+    .replace(/\bPress the\b/gi,'Poussez le').replace(/\bPress your\b/gi,'Poussez votre')
+    .replace(/\bPull the\b/gi,'Tirez le').replace(/\bPull your\b/gi,'Tirez votre')
+    .replace(/\bPush the\b/gi,'Poussez le').replace(/\bPush your\b/gi,'Poussez votre')
+    .replace(/\bGrab the\b/gi,'Saisissez le').replace(/\bGrasp the\b/gi,'Saisissez le')
+    .replace(/\bHold the\b/gi,'Tenez le').replace(/\bHold your\b/gi,'Tenez votre')
+    .replace(/\bBend your\b/gi,'Fléchissez votre').replace(/\bBend the\b/gi,'Fléchissez le')
+    .replace(/\bExtend your\b/gi,'Étendez votre').replace(/\bExtend the\b/gi,'Étendez le')
+    .replace(/\bReturn to\b/gi,'Revenez à').replace(/\bReturn the\b/gi,'Ramenez le')
+    .replace(/\bBreathe in\b/gi,'Inspirez').replace(/\bBreathe out\b/gi,'Expirez')
+    .replace(/\bInhale\b/gi,'Inspirez').replace(/\bExhale\b/gi,'Expirez')
+    .replace(/\bSlowly\b/gi,'Lentement').replace(/\bSqueeze\b/gi,'Contractez')
+    .replace(/\bRepeat\b/gi,'Répétez').replace(/\bMaintain\b/gi,'Maintenez')
+    .replace(/\bEnsure\b/gi,'Veillez à ce que').replace(/\bMake sure\b/gi,'Assurez-vous')
+    .replace(/\bPosition yourself\b/gi,'Positionnez-vous').replace(/\bStand\b/gi,'Debout')
+    .replace(/\bSit\b/gi,'Asseyez-vous').replace(/\bLie\b/gi,'Allongez-vous')
+    .replace(/\bPlace your\b/gi,'Placez votre').replace(/\bPlace the\b/gi,'Placez le')
+    .replace(/\bshoulder[\-\s]width apart\b/gi,'à largeur d\'épaules')
+    .replace(/\bbarbell\b/gi,'barre').replace(/\bdumbbell\b/gi,'haltère').replace(/\bdumbbells\b/gi,'haltères')
+    .replace(/\bcable\b/gi,'poulie').replace(/\bmachine\b/gi,'machine')
+    .replace(/\bknees\b/gi,'genoux').replace(/\belbow(s)?\b/gi,'coude$1').replace(/\bwrist(s)?\b/gi,'poignet$1')
+    .replace(/\bshoulder(s)?\b/gi,'épaule$1').replace(/\bchest\b/gi,'poitrine').replace(/\bback\b/gi,'dos')
+    .replace(/\bcore\b/gi,'abdos').replace(/\bhips\b/gi,'hanches').replace(/\bglutes\b/gi,'fessiers')
+    .replace(/\bfoot\b/gi,'pied').replace(/\bfeet\b/gi,'pieds').replace(/\bfloor\b/gi,'sol')
+    .replace(/\brepetitions\b/gi,'répétitions').replace(/\bsets\b/gi,'séries');
+}
 function setLang(l){lang=l;localStorage.setItem('lifttrack_lang',l);showSettings=false;render();}
 
 function defaultForm(){return{date:new Date().toISOString().split('T')[0],focus:'Push',exercises:[],templateFrom:null};}
@@ -1334,7 +1371,7 @@ function renderExDetailModal(){
         <div class="ex-detail-title">${exDetailName}</div>
         <button class="ex-detail-close" onclick="closeExDetail()">✕</button>
       </div>
-      ${(level||mechanic)?`<div class="ex-detail-meta">${[level,mechanic].filter(Boolean).map(tag=>`<span class="ex-detail-tag">${tag}</span>`).join('')}</div>`:''}
+      ${(level||mechanic)?`<div class="ex-detail-meta">${[level,mechanic].filter(Boolean).map(tag=>`<span class="ex-detail-tag">${tTag(tag)}</span>`).join('')}</div>`:''}
       ${imgs.length?`
         <div class="ex-detail-imgs">
           ${imgs.map(img=>`<img class="ex-detail-img" src="exercise-assets/exercises/${img}" alt="" loading="lazy" onerror="this.style.display='none'">`).join('')}
@@ -1353,7 +1390,7 @@ function renderExDetailModal(){
         <div class="ex-detail-section">
           <div class="ex-detail-section-lbl">${t('instructions')}</div>
           <ol class="ex-detail-steps">
-            ${steps.map(s=>`<li class="ex-detail-step">${s}</li>`).join('')}
+            ${steps.map(s=>`<li class="ex-detail-step">${tInstruction(s)}</li>`).join('')}
           </ol>
         </div>`:(!e?`<div class="ex-detail-empty">${t('no_details')}</div>`:'')}
     </div>`;
