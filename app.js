@@ -227,7 +227,7 @@ const SEED=[
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
 let progressGroup=null,progressMuscle=null;
 let muscleSubTab='exercises';
-let schedules=[],schedFocus='Push',schedSelectedDay=null;
+let schedules=[],schedFocus='Push',schedSelectedDay=null,recurringSchedules=[];
 let schedViewYear=new Date().getFullYear(),schedViewMonth=new Date().getMonth();
 let customTemplates=[],newTemplateName='',tmplExInput='';
 let builtinTemplateExercises={},builtinTemplateColors={},hiddenBuiltins=[];
@@ -353,7 +353,7 @@ const STRINGS={
   }
 };
 function t(key){return(STRINGS[lang]||STRINGS.en)[key]||STRINGS.en[key]||key;}
-function tFocus(f){return t('f_'+f)||f;}
+function tFocus(f){const k='f_'+f;const s=(STRINGS[lang]||STRINGS.en)[k];return s||f;}
 function tMuscle(m){
   if(lang!=='fr')return m;
   const M={'Chest':'Pectoraux','Back':'Dos','Shoulders':'Épaules','Arms':'Bras','Core':'Abdominaux','Legs & Glutes':'Jambes & Fessiers','Lats':'Dorsaux','Upper Back':'Haut du dos','Mid Back':'Dos moyen','Traps':'Trapèzes','Spinal Erectors':'Érecteurs spinaux','Front Delts':'Deltoïdes ant.','Side Delts':'Deltoïdes lat.','Rear Delts':'Deltoïdes post.','Rotator Cuff':'Coiffe rotateurs','Biceps':'Biceps','Triceps':'Triceps','Forearms':'Avant-bras','Brachialis':'Brachial','Brachioradialis':'Brachio-radial','Abs':'Abdominaux','Obliques':'Obliques','Deep Core':'Profond','Hip Flexors':'Fléch. hanche','Serratus':'Serratus','Quads':'Quadriceps','Hamstrings':'Ischio-jamb.','Glutes':'Fessiers','Adductors':'Adducteurs','Calves':'Mollets','Gastrocnemius':'Gastrocnémien','Soleus':'Soléaire','Upper Traps':'Trapèzes sup.','Mid Traps':'Trapèzes moy.','Mid/Lower Traps':'Trap. moy./inf.','Rhomboids':'Rhomboïdes','Lower Chest':'Pec inf.','Upper Chest':'Pec sup.','Triceps Long Head':'Chef long tri.','Other Triceps Heads':'Autres chefs','Shoulders':'Épaules'};
@@ -447,6 +447,8 @@ function getMuscleStats(){
 // ═══════════════════════════════════════════════
 function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_schedules')||'[]');}
 function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
+function loadRecurringSchedules(){recurringSchedules=JSON.parse(localStorage.getItem('lifttrack_recurring')||'[]');}
+function saveRecurringSchedules(){localStorage.setItem('lifttrack_recurring',JSON.stringify(recurringSchedules));}
 function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem('lifttrack_templates')||'[]');}
 function saveCustomTemplates(){localStorage.setItem('lifttrack_templates',JSON.stringify(customTemplates));}
 
@@ -529,13 +531,43 @@ function deleteBuiltinTemplate(key){
   if(!hiddenBuiltins.includes(key))hiddenBuiltins.push(key);
   saveHiddenBuiltins();expandedTemplateKey=null;editingTemplateKey=null;render();
 }
-function getNextScheduled(){const today=new Date().toISOString().split('T')[0];return schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;}
+// dow: 0=Mon … 6=Sun (matches calendar convention)
+const DOW_NAMES_EN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DOW_NAMES_FR=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+function dowName(dow){return(lang==='fr'?DOW_NAMES_FR:DOW_NAMES_EN)[dow]||'';}
+function dateDow(dateStr){const d=new Date(dateStr+'T12:00:00');return(d.getDay()+6)%7;}// Mon=0
+function nextDateForDow(dow){
+  const today=new Date();today.setHours(12,0,0,0);
+  const todayDow=(today.getDay()+6)%7;
+  const diff=(dow-todayDow+7)%7||7;// at least 1 day ahead
+  const d=new Date(today);d.setDate(d.getDate()+diff);
+  return d.toISOString().split('T')[0];
+}
+function addRecurring(dow,focus){
+  recurringSchedules.push({id:crypto.randomUUID(),dow,focus});
+  saveRecurringSchedules();render();toast('Recurring session added');
+}
+function deleteRecurring(id){recurringSchedules=recurringSchedules.filter(r=>r.id!==id);saveRecurringSchedules();render();}
+function getNextScheduled(){
+  const today=new Date().toISOString().split('T')[0];
+  const oneOff=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
+  const recurring=recurringSchedules.map(r=>({date:nextDateForDow(r.dow),focus:r.focus,recurring:true})).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
+  if(!oneOff&&!recurring)return null;
+  if(!oneOff)return recurring;
+  if(!recurring)return oneOff;
+  return oneOff.date<=recurring.date?oneOff:recurring;
+}
 function getAllFocuses(){return['Push','Pull','Legs','Upper',...customTemplates.map(t=>t.name)];}
 function confirmAddSchedule(){
   if(!schedSelectedDay)return toast(t('select_day'),true);
   schedules.push({id:crypto.randomUUID(),date:schedSelectedDay,focus:schedFocus});
   schedules.sort((a,b)=>a.date.localeCompare(b.date));
   saveSchedules();render();toast(t('session_planned'));
+}
+function confirmAddRecurring(){
+  if(!schedSelectedDay)return toast(t('select_day'),true);
+  const dow=dateDow(schedSelectedDay);
+  addRecurring(dow,schedFocus);
 }
 function deleteSchedule(id){schedules=schedules.filter(s=>s.id!==id);saveSchedules();render();}
 function addCustomTemplate(){
@@ -1167,16 +1199,20 @@ function renderScheduleTab(){
   const firstDow=new Date(schedViewYear,schedViewMonth,1).getDay();
   const startCol=(firstDow+6)%7; // Mon=0, Sun=6
 
-  // Map this month's scheduled dates → focus colors
+  // Map this month's scheduled dates → focus colors (one-off + recurring)
   const dotMap={};
+  const addDot=(ds,focus)=>{if(!dotMap[ds])dotMap[ds]=[];const fc=getFocusColor(focus);if(!dotMap[ds].includes(fc))dotMap[ds].push(fc);};
   schedules.forEach(s=>{
     const [sy,sm]=s.date.split('-').map(Number);
-    if(sy===schedViewYear&&sm-1===schedViewMonth){
-      if(!dotMap[s.date])dotMap[s.date]=[];
-      const fc=getFocusColor(s.focus);
-      if(!dotMap[s.date].includes(fc))dotMap[s.date].push(fc);
-    }
+    if(sy===schedViewYear&&sm-1===schedViewMonth) addDot(s.date,s.focus);
   });
+  // Add recurring dots for every matching weekday in the month
+  const daysInMonthR=new Date(schedViewYear,schedViewMonth+1,0).getDate();
+  for(let d=1;d<=daysInMonthR;d++){
+    const ds=`${schedViewYear}-${String(schedViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow=dateDow(ds);
+    recurringSchedules.forEach(r=>{if(r.dow===dow)addDot(ds,r.focus);});
+  }
 
   const cells=[];
   for(let i=0;i<startCol;i++)cells.push(null);
@@ -1206,18 +1242,21 @@ function renderScheduleTab(){
   const allFocuses=getAllFocuses();
   const focusPills=allFocuses.map(f=>`<button class="muscle-subtab ${schedFocus===f?'active':''}" onclick="schedFocus='${f.replace(/'/g,"\\'")}';render()">${tFocus(f)}</button>`).join('');
 
+  const selDow=schedSelectedDay?dateDow(schedSelectedDay):null;
   const addPanel=schedSelectedDay?`
     <div class="sched-add-panel">
       <div class="sched-add-panel-date">${fmtDate(schedSelectedDay)}</div>
       <div class="muscle-subtab-bar" style="flex-wrap:wrap;margin-bottom:14px">${focusPills}</div>
-      <button class="sched-add-btn" onclick="confirmAddSchedule()">${t('add_to_plan')}</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="sched-add-btn" onclick="confirmAddSchedule()">${t('add_to_plan')}</button>
+        <button class="sched-add-btn" style="background:var(--card2);color:var(--text2);border:1px solid var(--border)" onclick="confirmAddRecurring()">↻ Every ${dowName(selDow)}</button>
+      </div>
     </div>`:`
     <div style="padding:8px 16px 14px;text-align:center;font-size:12px;color:var(--dim)">${t('tap_day')}</div>`;
 
   const upcoming=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
-  const past=[...schedules.filter(s=>s.date<today)].sort((a,b)=>b.date.localeCompare(a.date));
 
-  const schedList=(upcoming.length||past.length)?`
+  const schedList=upcoming.length?`
     <div class="log-section-hdr log-recent-hdr">
       <span class="log-section-title"><span style="color:var(--text)">${t('sched_sessions_pre')}</span> ${t('sched_sessions_post')}</span>
     </div>
@@ -1232,16 +1271,21 @@ function renderScheduleTab(){
         </div>
         <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
       </div>`;
-    }).join('')}
-    ${past.map(s=>{
-      const fc=getFocusColor(s.focus);
-      return`<div class="sched-card cal-past" style="opacity:.45">
-        <div class="sched-card-stripe" style="background:${fc}44"></div>
+    }).join('')}`:'';
+
+  const recurringList=recurringSchedules.length?`
+    <div class="log-section-hdr log-recent-hdr" style="margin-top:8px">
+      <span class="log-section-title"><span style="color:var(--text)">↻</span> Weekly</span>
+    </div>
+    ${recurringSchedules.map(r=>{
+      const fc=getFocusColor(r.focus);
+      return`<div class="sched-card">
+        <div class="sched-card-stripe" style="background:linear-gradient(180deg,${fc},${fc}55)"></div>
         <div class="sched-card-main">
-          <div class="sched-card-focus" style="color:${fc}88">${tFocus(s.focus)}</div>
-          <div class="sched-card-date" style="color:var(--dim)">${fmtDate(s.date)}</div>
+          <div class="sched-card-focus" style="color:${fc}">${tFocus(r.focus)}</div>
+          <div class="sched-card-date">Every ${dowName(r.dow)}</div>
         </div>
-        <button class="sched-del-btn" onclick="deleteSchedule('${s.id}')">×</button>
+        <button class="sched-del-btn" onclick="deleteRecurring('${r.id}')">×</button>
       </div>`;
     }).join('')}`:'';
 
@@ -1325,6 +1369,7 @@ function renderScheduleTab(){
     <div style="padding:14px 16px 0">${calGrid}</div>
     ${addPanel}
     ${schedList}
+    ${recurringList}
     ${templatesSection}`;
 }
 
@@ -1529,7 +1574,7 @@ function renderAdd(){
                   <button class="reorder-btn-add" ${ei===f.exercises.length-1?'disabled':''} onclick="moveEx(${ei},1)">▼</button>
                 </div>
                 <div class="ex-name-wrap" style="flex:1;margin:0 6px">
-                  <input class="ex-name-input" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
+                  <input id="ex-name-${ei}" class="ex-name-input" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
                   ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">${t('similar')}</span></div>`).join('')}</div>`:''}
                 </div>
                 ${ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
@@ -1631,7 +1676,14 @@ async function saveEdit(){
 }
 
 // Add form
-function onExIn(ei,val){addForm.exercises[ei].name=val;acActive=val.length>=2?ei:null;render();}
+function onExIn(ei,val){
+  addForm.exercises[ei].name=val;acActive=val.length>=2?ei:null;
+  const inp=document.getElementById('ex-name-'+ei);
+  const pos=inp?inp.selectionStart:null;
+  render();
+  const restored=document.getElementById('ex-name-'+ei);
+  if(restored){restored.focus();if(pos!==null)restored.setSelectionRange(pos,pos);}
+}
 function onExFocus(ei){if(addForm.exercises[ei].name.length>=2)acActive=ei;}
 function onExBlur(){setTimeout(()=>{acActive=null;render();},150);}
 function pickAc(ei,name){addForm.exercises[ei].name=name;acActive=null;render();}
@@ -1689,7 +1741,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
+  loading=true;loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();
