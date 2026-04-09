@@ -943,11 +943,17 @@ function render(){
     ${tab==='add'?`
     <div class="dock" style="background:transparent;border:none;box-shadow:none">
       <div class="dock-inner" style="justify-content:center">
-        ${showTimerDock?`<div style="display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 16px">
-          <span style="font-size:11px;color:var(--dim)">Rest:</span>
-          ${[60,90,120,150,180].map(s=>`<button class="timer-preset-btn" onclick="showTimerDock=false;startRestTimer(${s})">${fmtTimer(s)}</button>`).join('')}
-          <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;padding:0 4px">×</button>
-        </div>`:`<button onclick="showTimerDock=!showTimerDock;render()" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5d47a,#c89830);border:none;cursor:pointer;font-size:22px;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center">⏱</button>`}
+        ${showTimerDock
+          ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 16px;box-shadow:0 4px 20px rgba(245,212,122,.4)">
+              ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 10px;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em">${fmtTimer(s)}</button>`).join('')}
+              <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:#0b0b0a;font-size:16px;cursor:pointer;opacity:.6;padding:0 2px;margin-left:2px">×</button>
+            </div>`
+          :`<button onclick="${restTimerEnd?'cancelRestTimer()':'showTimerDock=true;render()'}" style="background:linear-gradient(135deg,#f5d47a,#c89830);border:none;border-radius:999px;padding:12px 28px;cursor:pointer;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center;gap:8px">
+              ${restTimerEnd
+                ?`<span style="font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:#0b0b0a" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>`
+                :`<span style="font-size:13px;font-weight:900;font-family:'DM Sans',sans-serif;color:#0b0b0a;letter-spacing:.08em">TIMER</span>`}
+            </button>`
+        }
       </div>
     </div>`:`
     <div class="dock">
@@ -967,10 +973,6 @@ function render(){
     </div>`}
     ${renderExDetailModal()}
     ${renderSettingsModal()}
-    ${restTimerEnd?`<div style="position:fixed;bottom:calc(env(safe-area-inset-bottom)+72px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent);border-radius:999px;padding:10px 20px;display:flex;align-items:center;gap:14px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.5)">
-      <span style="font-size:22px;font-weight:900;font-family:'IBM Plex Mono',monospace;color:var(--accent);min-width:48px;text-align:center" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>
-      <button onclick="cancelRestTimer()" style="background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0">×</button>
-    </div>`:''}
   `;
 
   const c=document.getElementById('content');
