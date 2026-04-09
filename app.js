@@ -228,6 +228,7 @@ const SEED=[
 let allUsers=JSON.parse(localStorage.getItem('lifttrack_users')||'[]');
 let currentUser=null; // set by selectUser()
 let newUserNameInput='';
+let newUserSeed=false;
 
 function uKey(key){return currentUser?`lifttrack_${currentUser.id}_${key}`:`lifttrack_${key}`;}
 
@@ -238,12 +239,14 @@ function selectUser(id){
   if(currentUser)localStorage.setItem('lifttrack_current_user',id);
 }
 
-function createUser(name){
+function createUser(name,hasSeed=false){
   if(!name.trim())return;
+  if(allUsers.some(u=>u.name.toLowerCase()===name.trim().toLowerCase())){toast('A user with that name already exists',true);return false;}
   const id=crypto.randomUUID();
-  allUsers.push({id,name:name.trim(),hasSeed:false});
+  allUsers.push({id,name:name.trim(),hasSeed});
   saveUsers();
   selectUser(id);
+  return true;
 }
 
 function switchUser(){
@@ -254,12 +257,18 @@ function switchUser(){
 }
 
 async function migrateOldDb(){
-  // Read all sessions from legacy 'lifttrack' IndexedDB and write to current user's DB
+  // Read sessions from legacy 'lifttrack' IndexedDB (any version) into current user's DB
   return new Promise((resolve)=>{
-    const req=indexedDB.open('lifttrack',1);
+    // Open without specifying version so we don't accidentally create or downgrade it
+    const req=indexedDB.open('lifttrack');
+    let dbExisted=true;
+    req.onupgradeneeded=()=>{
+      // onupgradeneeded fires only when DB is being CREATED — means no old data exists
+      dbExisted=false;
+    };
     req.onsuccess=e=>{
       const oldDb=e.target.result;
-      if(!oldDb.objectStoreNames.contains('sessions')){oldDb.close();resolve(0);return;}
+      if(!dbExisted||!oldDb.objectStoreNames.contains('sessions')){oldDb.close();resolve(0);return;}
       const tx=oldDb.transaction('sessions','readonly');
       const req2=tx.objectStore('sessions').getAll();
       req2.onsuccess=async e2=>{
@@ -269,7 +278,7 @@ async function migrateOldDb(){
         // only import sessions not already present (dedup by id)
         const existingIds=new Set(sessions.map(s=>s.id));
         const toImport=rows.filter(s=>s.id&&!existingIds.has(s.id));
-        if(!toImport.length){resolve(0);return;}
+        if(!toImport.length){resolve(-1);return;}// -1 = existed but all already imported
         const writeTx=db.transaction('sessions','readwrite');
         const store=writeTx.objectStore('sessions');
         toImport.forEach(s=>store.put(s));
@@ -286,9 +295,45 @@ async function handleMigrate(){
   loading=true;render();
   const count=await migrateOldDb();
   loading=false;
-  if(count>0)toast(`Imported ${count} new sessions`);
-  else toast('Nothing new to import — already up to date',false);
+  if(count>0)toast(`Imported ${count} sessions`);
+  else if(count===-1)toast('Already up to date — no new sessions to import');
+  else toast('No previous data found in this browser',true);
   render();
+}
+
+function exportSessions(){
+  if(!sessions.length){toast('No sessions to export',true);return;}
+  const data=JSON.stringify(sessions,null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`lifttrack-${currentUser?currentUser.name.replace(/\s+/g,'_'):'sessions'}-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function triggerImportFile(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='application/json,.json';
+  inp.onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const text=await file.text();
+      const rows=JSON.parse(text);
+      if(!Array.isArray(rows))throw new Error('Invalid format');
+      loading=true;render();
+      const existingIds=new Set(sessions.map(s=>s.id));
+      const toImport=rows.filter(s=>s.id&&s.date&&s.exercises&&!existingIds.has(s.id));
+      if(!toImport.length){loading=false;toast('Nothing new — all sessions already present');render();return;}
+      const writeTx=db.transaction('sessions','readwrite');
+      const store=writeTx.objectStore('sessions');
+      toImport.forEach(s=>store.put(s));
+      writeTx.oncomplete=async()=>{await loadSessions();loading=false;toast(`Imported ${toImport.length} sessions`);render();};
+      writeTx.onerror=()=>{loading=false;toast('Import failed',true);render();};
+    }catch(err){loading=false;toast('Could not read file: '+err.message,true);render();}
+  };
+  inp.click();
 }
 
 function renderUserPicker(){
@@ -305,6 +350,10 @@ function renderUserPicker(){
     <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:4px">
       <div style="font-size:12px;color:var(--dim);text-align:center">${allUsers.length?'Or add a new user':'Create your profile'}</div>
       <input id="newUserNameInput" placeholder="Your name…" value="${newUserNameInput}" oninput="newUserNameInput=this.value" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none" onkeydown="if(event.key==='Enter')createUserAndInit()">
+      <label style="display:flex;align-items:center;gap:10px;padding:4px 2px;cursor:pointer;font-size:13px;color:var(--dim)">
+        <input type="checkbox" ${newUserSeed?'checked':''} onchange="newUserSeed=this.checked" style="width:16px;height:16px;accent-color:var(--accent)">
+        Load sample workout history
+      </label>
       <button onclick="createUserAndInit()" style="background:var(--accent);color:#0b0b0a;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer">Create Profile</button>
     </div>
   </div>`;
@@ -314,7 +363,9 @@ async function createUserAndInit(){
   const inp=document.getElementById('newUserNameInput');
   const name=(inp?inp.value:newUserNameInput).trim();
   if(!name){toast('Enter a name',true);return;}
-  createUser(name);
+  const ok=createUser(name,newUserSeed);
+  if(!ok)return;
+  newUserNameInput='';newUserSeed=false;
   await initUserData();
 }
 
@@ -1589,7 +1640,11 @@ function renderSettingsModal(){
         <span class="settings-label" style="font-weight:700">${currentUser?currentUser.name:'—'}</span>
         <button class="lang-btn" onclick="showSettings=false;switchUser()">Switch user</button>
       </div>
-      ${sessions.length===0?`<div style="padding:8px 0 4px"><button onclick="handleMigrate()" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import sessions from previous version</button></div>`:''}
+      <div style="display:flex;gap:8px;padding:8px 0 4px">
+        <button onclick="exportSessions()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↑ Export</button>
+        <button onclick="triggerImportFile()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import</button>
+      </div>
+      ${sessions.length===0?`<button onclick="handleMigrate()" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import from same-browser previous version</button>`:''}
     </div>`;
 }
 
