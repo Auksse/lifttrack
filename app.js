@@ -256,6 +256,19 @@ function switchUser(){
   render();
 }
 
+function renameUser(){
+  if(!currentUser)return;
+  const newName=prompt(t('rename_user_prompt'),currentUser.name);
+  if(!newName||!newName.trim())return;
+  const trimmed=newName.trim();
+  if(allUsers.some(u=>u.id!==currentUser.id&&u.name.toLowerCase()===trimmed.toLowerCase())){toast('A user with that name already exists',true);return;}
+  currentUser.name=trimmed;
+  const idx=allUsers.findIndex(u=>u.id===currentUser.id);
+  if(idx>=0)allUsers[idx].name=trimmed;
+  saveUsers();
+  render();
+}
+
 async function deleteUser(id){
   if(!confirm('Delete this user and all their data? This cannot be undone.'))return;
   // Remove their localStorage keys
@@ -416,7 +429,6 @@ let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
 let exDetailName=null;
 let collapsedExercises=new Set();
-let timerPickerEx=null;
 let restTimerEnd=null,restTimerInterval=null;
 let selectingTemplate=false;
 let showTimerDock=false;
@@ -426,6 +438,10 @@ let showSettings=false;
 const STRINGS={
   en:{
     rest:'d rest',sessions:'Sessions',volume:'Volume',prs:'PRs',
+    this_week:'This week',streak:'Streak',streak_unit:'wk',
+    rename_user:'Rename',rename_user_prompt:'New name:',
+    discard_confirm:'Discard this session? Changes will be lost.',
+    onboard_title:'Welcome to LiftTrack',onboard_sub:'Start by picking a template and logging your first session.',onboard_cta:'Log a session',
     scheduled:'Scheduled',next_up:'Next up',
     tab_log:'Log',tab_plan:'Plan',tab_muscles:'Muscles',tab_stats:'Stats',
     no_sessions:'No sessions yet.',
@@ -481,6 +497,10 @@ const STRINGS={
   },
   fr:{
     rest:'j repos',sessions:'Séances',volume:'Volume',prs:'PRs',
+    this_week:'Cette sem.',streak:'Série',streak_unit:'sem',
+    rename_user:'Renommer',rename_user_prompt:'Nouveau nom :',
+    discard_confirm:'Abandonner cette séance ? Les changements seront perdus.',
+    onboard_title:'Bienvenue sur LiftTrack',onboard_sub:'Commence par choisir un modèle et enregistrer ta première séance.',onboard_cta:'Enregistrer une séance',
     scheduled:'Planifié',next_up:'Prochaine',
     tab_log:'Journal',tab_plan:'Planning',tab_muscles:'Muscles',tab_stats:'Stats',
     no_sessions:'Aucune séance.',
@@ -572,6 +592,38 @@ function nextSugg(){if(!sessions.length)return{focus:'Push',reason:'First sessio
 function lastByFocus(focus){return[...sessions].reverse().find(s=>s.focus===focus)||null;}
 function isNewPR(session,exName){const ex=session.exercises.find(e=>e.name===exName);if(!ex)return false;const mw=Math.max(...ex.sets.map(s=>s.w));const prev=sessions.filter(s=>s.date<session.date||(s.date===session.date&&s.id!==session.id)).flatMap(s=>s.exercises.filter(e=>e.name===exName)).flatMap(e=>e.sets.map(s=>s.w));if(!prev.length)return false;return mw>Math.max(...prev);}
 function countPRs(){let n=0;sessions.forEach(s=>s.exercises.forEach(ex=>{if(isNewPR(s,ex.name))n++;}));return n;}
+
+function weekMonday(date){
+  const d=new Date(date+'T12:00:00');
+  const dow=d.getDay();
+  d.setDate(d.getDate()-(dow===0?6:dow-1));
+  return d.toISOString().split('T')[0];
+}
+function thisWeekCount(){
+  const wk=weekMonday(new Date().toISOString().split('T')[0]);
+  const sun=new Date(wk+'T12:00:00');sun.setDate(sun.getDate()+6);
+  const sunStr=sun.toISOString().split('T')[0];
+  return sessions.filter(s=>s.date>=wk&&s.date<=sunStr).length;
+}
+function thisWeekTarget(){
+  const days=new Set(recurringSchedules.map(r=>r.dow));
+  return days.size||3;
+}
+function calcStreak(){
+  if(!sessions.length)return 0;
+  const sessionWeeks=new Set(sessions.map(s=>weekMonday(s.date)));
+  const todayStr=new Date().toISOString().split('T')[0];
+  const curWk=weekMonday(todayStr);
+  let streak=0;
+  for(let i=0;i<104;i++){
+    const d=new Date(curWk+'T12:00:00');d.setDate(d.getDate()-i*7);
+    const wkStr=d.toISOString().split('T')[0];
+    if(sessionWeeks.has(wkStr)){streak++;}
+    else if(i===0){continue;} // current week not done yet — don't break
+    else{break;}
+  }
+  return streak;
+}
 function progressFor(name){return sessions.filter(s=>s.exercises.some(e=>e.name===name)).map(s=>{const ex=s.exercises.find(e=>e.name===name);const vs=ex.sets.filter(s=>s.w>0&&s.r>0);const e1rm=vs.length?+(Math.max(...vs.map(s=>s.w*(1+s.r/30))).toFixed(1)):0;return{date:fmtDate(s.date),mw:Math.max(...ex.sets.map(s=>s.w)),vol:Math.round(ex.sets.reduce((t,set)=>t+set.r*Math.max(set.w,0),0)),e1rm};});}
 
 // Groups logged exercises by database family; returns [{label, exName}] sorted by total family log count.
@@ -926,8 +978,12 @@ function render(){
         <div class="stat-cell-val" style="color:var(--pull)">${(totalVol/1000).toFixed(1)}<span style="font-size:11px;color:var(--muted)">t</span></div>
       </div>
       <div class="stat-cell">
-        <div class="stat-cell-label">${t('prs')}</div>
-        <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
+        <div class="stat-cell-label">${t('this_week')}</div>
+        <div class="stat-cell-val" style="color:var(--accent)">${thisWeekCount()}<span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:600"> / ${thisWeekTarget()}</span></div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">${t('streak')}</div>
+        <div class="stat-cell-val" style="color:var(--gold2)">${calcStreak()}<span style="font-size:11px;color:var(--muted)"> ${t('streak_unit')}</span></div>
       </div>
       <div class="stat-cell next stat-cell-wide" onclick="switchTab('schedule')">
         <div class="stat-cell-label" style="color:${nc}aa">${sched?t('scheduled'):t('next_up')}</div>
@@ -982,7 +1038,13 @@ function render(){
 // SESSIONS TAB
 // ═══════════════════════════════════════════════
 function renderSessions(){
-  if(!sessions.length)return`<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:13px">${t('no_sessions')}</div>`;
+  if(!sessions.length)return`
+    <div style="padding:48px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+      <div style="font-size:40px;line-height:1">🏋️</div>
+      <div style="font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:.08em;color:var(--text)">${t('onboard_title')}</div>
+      <div style="font-size:14px;color:var(--dim);max-width:260px;line-height:1.5">${t('onboard_sub')}</div>
+      <button onclick="switchTab('add')" style="margin-top:8px;background:var(--accent);color:#0b0b0a;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.04em">${t('onboard_cta')}</button>
+    </div>`;
   const sorted=[...sessions].reverse();
   const groups=groupByMonth(sorted);
   const maxExVol={};
@@ -1685,6 +1747,7 @@ function renderSettingsModal(){
       <div class="settings-row" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border)">
         <span class="settings-label" style="font-weight:700">${currentUser?currentUser.name:'—'}</span>
         <div style="display:flex;gap:6px">
+          <button class="lang-btn" onclick="renameUser()">${t('rename_user')}</button>
           <button class="lang-btn" onclick="showSettings=false;switchUser()">Switch</button>
           <button class="lang-btn" style="color:#e05555" onclick="showSettings=false;deleteUser('${currentUser?currentUser.id:''}')">Delete</button>
         </div>
@@ -1799,7 +1862,6 @@ function renderAdd(){
           const fuzzy=ex.name?fuzzyMatch(ex.name,allCandidates,0.5):[];
           const isAcOpen=acActive===ei&&fuzzy.length>0;
           const isCollapsed=collapsedExercises.has(ei);
-          const showTimerPick=timerPickerEx===ei;
           // Summary for collapsed view
           const filledSets=ex.sets.filter(s=>s.r||s.w);
           const summary=filledSets.length?filledSets.map(s=>`${s.r||'?'}×${s.w||'?'}`).join(', '):`${ex.sets.length} set${ex.sets.length>1?'s':''}`;
@@ -1865,7 +1927,7 @@ function switchTab(tb){
     const draft=loadDraft();
     if(draft){addForm=draft;tab='add';selectingTemplate=false;}
     else{tab='add';selectingTemplate=true;addForm=defaultForm();}
-    showExerciseLibrary=false;collapsedExercises=new Set();timerPickerEx=null;showTimerDock=false;
+    showExerciseLibrary=false;collapsedExercises=new Set();showTimerDock=false;
   } else {
     tab=tb;
     if(tb!=='muscles'){selMuscle=null;selGroup=null;progressGroup=null;progressMuscle=null;}
@@ -1879,7 +1941,11 @@ function pickTemplate(focus){
   addForm.focus=focus;
   loadTemplate(focus);
 }
-function leaveAndDiscard(){clearDraft();tab='sessions';addForm=defaultForm();selectingTemplate=false;render();}
+function leaveAndDiscard(){
+  const hasWork=addForm.exercises.some(e=>e.name||e.sets.some(s=>s.r||s.w));
+  if(hasWork&&!confirm(t('discard_confirm')))return;
+  clearDraft();tab='sessions';addForm=defaultForm();selectingTemplate=false;render();
+}
 function leaveAndSaveDraft(){saveDraft();tab='sessions';render();}
 function selectEx(name){selEx=name;render();}
 function openExDetail(name){exDetailName=name;render();document.body.classList.add('ex-detail-open');}
@@ -1940,7 +2006,7 @@ function fmtTimer(s){const m=Math.floor(s/60);return m>0?`${m}:${String(s%60).pa
 function startRestTimer(seconds){
   if(restTimerInterval)clearInterval(restTimerInterval);
   restTimerEnd=Date.now()+seconds*1000;
-  timerPickerEx=null;render();
+  render();
   restTimerInterval=setInterval(()=>{
     const rem=Math.ceil((restTimerEnd-Date.now())/1000);
     const el=document.getElementById('rest-timer-num');
@@ -1953,7 +2019,6 @@ function startRestTimer(seconds){
   },250);
 }
 function cancelRestTimer(){clearInterval(restTimerInterval);restTimerInterval=null;restTimerEnd=null;render();}
-function toggleTimerPicker(ei){timerPickerEx=timerPickerEx===ei?null:ei;render();}
 function toggleExCollapse(ei){if(collapsedExercises.has(ei))collapsedExercises.delete(ei);else collapsedExercises.add(ei);render();}
 // Save session as template
 function saveSessionAsTemplate(id){
