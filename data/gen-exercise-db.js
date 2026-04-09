@@ -409,6 +409,185 @@ const families = [
       { name: "Glutes", score: 4, role: "secondary" },
       { name: "Hamstrings", score: 2, role: "secondary" }
     ]
+  },
+
+  // ── Boxing S&C additions ──────────────────────────────────────────────────
+  {
+    familyName: "Trap Bar Deadlift", category: "legs_glutes", repRangeCategory: "heavy",
+    bodyweight: null, dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: "Trap Bar Deadlift",
+    muscles: [
+      { name: "Glutes", score: 5, role: "primary" },
+      { name: "Hamstrings", score: 4, role: "secondary" },
+      { name: "Quads", score: 4, role: "secondary" },
+      { name: "Spinal Erectors", score: 3, role: "secondary" },
+      { name: "Upper Back", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Rear-Foot Elevated Split Squat", category: "legs_glutes", repRangeCategory: "controlled",
+    bodyweight: "Bodyweight RFESS", dumbbells: "Rear-Foot Elevated Split Squat", barbell: "Barbell RFESS",
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Quads", score: 5, role: "primary" },
+      { name: "Glutes", score: 5, role: "primary" },
+      { name: "Adductors", score: 3, role: "secondary" },
+      { name: "Hamstrings", score: 2, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Single-Leg Hip Thrust", category: "legs_glutes", repRangeCategory: "controlled",
+    bodyweight: "Single-Leg Hip Thrust", dumbbells: null, barbell: "Barbell Single-Leg Hip Thrust",
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Glutes", score: 5, role: "primary" },
+      { name: "Hamstrings", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Pallof Press", category: "core", repRangeCategory: "controlled",
+    bodyweight: "Band Pallof Press", dumbbells: null, barbell: null,
+    cable: "Pallof Press", machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Obliques", score: 5, role: "primary" },
+      { name: "Deep Core", score: 4, role: "secondary" },
+      { name: "Abs", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Dead Bug", category: "core", repRangeCategory: "controlled",
+    bodyweight: "Dead Bug", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Deep Core", score: 5, role: "primary" },
+      { name: "Abs", score: 4, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Ab Wheel Rollout", category: "core", repRangeCategory: "controlled",
+    bodyweight: "Ab Wheel Rollout", dumbbells: null, barbell: "Barbell Rollout",
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Abs", score: 5, role: "primary" },
+      { name: "Deep Core", score: 5, role: "primary" },
+      { name: "Lats", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Hanging Knee Raise", category: "core", repRangeCategory: "isolation_pump",
+    bodyweight: "Hanging Knee Raise", dumbbells: null, barbell: null,
+    cable: null, machine: "Vertical Knee Raise Machine", plateLoaded: null,
+    muscles: [
+      { name: "Abs", score: 4, role: "primary" },
+      { name: "Hip Flexors", score: 4, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Neutral-Grip Dumbbell Bench Press", category: "chest", repRangeCategory: "compound",
+    bodyweight: null, dumbbells: "Neutral-Grip Dumbbell Bench Press", barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Chest", score: 5, role: "primary" },
+      { name: "Front Delts", score: 3, role: "secondary" },
+      { name: "Triceps", score: 4, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Landmine Press", category: "shoulders", repRangeCategory: "compound",
+    bodyweight: null, dumbbells: null, barbell: "Landmine Press",
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Front Delts", score: 5, role: "primary" },
+      { name: "Upper Chest", score: 4, role: "secondary" },
+      { name: "Triceps", score: 3, role: "secondary" },
+      { name: "Core", score: 2, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Pendlay Row", category: "back", repRangeCategory: "heavy",
+    bodyweight: null, dumbbells: null, barbell: "Pendlay Row",
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Mid Back", score: 5, role: "primary" },
+      { name: "Lats", score: 4, role: "secondary" },
+      { name: "Rear Delts", score: 3, role: "secondary" },
+      { name: "Biceps", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Weighted Pull-Up", category: "back", repRangeCategory: "heavy",
+    bodyweight: "Weighted Pull-Up", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Lats", score: 5, role: "primary" },
+      { name: "Biceps", score: 3, role: "secondary" },
+      { name: "Upper Back", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Med Ball Rotational Throw", category: "core", repRangeCategory: "heavy",
+    bodyweight: "Med Ball Rotational Throw", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Obliques", score: 5, role: "primary" },
+      { name: "Glutes", score: 4, role: "secondary" },
+      { name: "Shoulders", score: 3, role: "secondary" },
+      { name: "Core", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Med Ball Overhead Slam", category: "core", repRangeCategory: "heavy",
+    bodyweight: "Med Ball Overhead Slam", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Lats", score: 4, role: "primary" },
+      { name: "Abs", score: 4, role: "primary" },
+      { name: "Shoulders", score: 3, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Isometric Neck Hold", category: "shoulders", repRangeCategory: "controlled",
+    bodyweight: "Isometric Neck Hold", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Neck", score: 5, role: "primary" }
+    ]
+  },
+  {
+    familyName: "Band Neck Flexion/Extension", category: "shoulders", repRangeCategory: "controlled",
+    bodyweight: "Band Neck Flexion/Extension", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Neck", score: 5, role: "primary" }
+    ]
+  },
+  {
+    familyName: "Wrist Roller", category: "arms", repRangeCategory: "isolation_pump",
+    bodyweight: "Wrist Roller", dumbbells: "Dumbbell Wrist Curl", barbell: "Barbell Wrist Curl",
+    cable: "Cable Wrist Curl", machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Forearms", score: 5, role: "primary" }
+    ]
+  },
+  {
+    familyName: "DB Shadow Boxing", category: "shoulders", repRangeCategory: "isolation_pump",
+    bodyweight: "Shadow Boxing", dumbbells: "DB Shadow Boxing", barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Shoulders", score: 4, role: "primary" },
+      { name: "Core", score: 3, role: "secondary" },
+      { name: "Forearms", score: 2, role: "secondary" }
+    ]
+  },
+  {
+    familyName: "Conditioning Circuit", category: "core", repRangeCategory: "compound",
+    bodyweight: "Conditioning Circuit", dumbbells: null, barbell: null,
+    cable: null, machine: null, plateLoaded: null,
+    muscles: [
+      { name: "Core", score: 4, role: "primary" },
+      { name: "Shoulders", score: 3, role: "secondary" },
+      { name: "Calves", score: 3, role: "secondary" }
+    ]
   }
 ];
 
@@ -572,6 +751,23 @@ const ID_MAP = {
   "Barbell Rollout":                     "Barbell_Ab_Rollout",
   // Leg Press
   "Leg Press Machine":                  "Leg_Press",
+
+  // Boxing S&C additions
+  "Trap Bar Deadlift":                  "Trap_Bar_Deadlift",
+  "Rear-Foot Elevated Split Squat":     "Split_Squat_with_Dumbbells",
+  "Single-Leg Hip Thrust":              "Single_Leg_Glute_Bridge",
+  "Pallof Press":                       "Pallof_Press",
+  "Dead Bug":                           "Dead_Bug",
+  "Ab Wheel Rollout":                   "Ab_Roller",
+  "Hanging Knee Raise":                 "Hanging_Leg_Raise",
+  "Neutral-Grip Dumbbell Bench Press":  "Dumbbell_Bench_Press_with_Neutral_Grip",
+  "Pendlay Row":                        "Bent_Over_Barbell_Row",
+  "Weighted Pull-Up":                   "Weighted_Pull_Ups",
+  "Med Ball Overhead Slam":             "Overhead_Slam",
+  "Med Ball Rotational Throw":          "Medicine_Ball_Scoop_Throw",
+  "Isometric Neck Hold":                "Isometric_Neck_Exercise_-_Front_And_Back",
+  "Band Neck Flexion/Extension":        "Lying_Face_Down_Plate_Neck_Resistance",
+  "Wrist Roller":                       "Wrist_Roller",
 };
 
 // ─── Category → Split mapping ─────────────────────────────────────────────────

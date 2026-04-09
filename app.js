@@ -449,6 +449,61 @@ function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_sc
 function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
 function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem('lifttrack_templates')||'[]');}
 function saveCustomTemplates(){localStorage.setItem('lifttrack_templates',JSON.stringify(customTemplates));}
+
+const BOXING_TEMPLATES=[
+  {
+    name:'Boxing A — Power + Lower',
+    color:'#c0392b',
+    exercises:[
+      'Trap Bar Deadlift',
+      'Barbell Back Squat',
+      'Barbell Romanian Deadlift',
+      'Rear-Foot Elevated Split Squat',
+      'Pallof Press',
+      'Barbell Hip Thrust',
+      'Barbell Standing Calf Raise'
+    ]
+  },
+  {
+    name:'Boxing B — Push + Core',
+    color:'#2980b9',
+    exercises:[
+      'Med Ball Rotational Throw',
+      'Neutral-Grip Dumbbell Bench Press',
+      'Landmine Press',
+      'Dumbbell Overhead Press',
+      'Dead Bug',
+      'Hanging Knee Raise',
+      'Ab Wheel Rollout',
+      'Isometric Neck Hold'
+    ]
+  },
+  {
+    name:'Boxing C — Pull + Conditioning',
+    color:'#27ae60',
+    exercises:[
+      'Weighted Pull-Up',
+      'Pendlay Row',
+      'One-Arm Dumbbell Row',
+      'Dumbbell Step-Up',
+      'Cable Face Pull',
+      'Dumbbell Hammer Curl',
+      'Wrist Roller',
+      'Conditioning Circuit',
+      'Isometric Neck Hold'
+    ]
+  }
+];
+function seedBoxingTemplates(){
+  let changed=false;
+  for(const tmpl of BOXING_TEMPLATES){
+    if(!customTemplates.some(t=>t.name===tmpl.name)){
+      customTemplates.push({id:crypto.randomUUID(),name:tmpl.name,exercises:[...tmpl.exercises],color:tmpl.color});
+      changed=true;
+    }
+  }
+  if(changed)saveCustomTemplates();
+}
 const BUILTIN_TEMPLATE_DEFAULTS={
   Push:['Barbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Cable Lateral Raise','Pec Deck','Cable Overhead Triceps Extension'],
   Pull:['Lat Pulldown Machine','Seated Row Machine','Rear Delt Machine','Cable Face Pull','Biceps Curl Machine','Dumbbell Curl'],
@@ -1634,7 +1689,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadCustomTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
+  loading=true;loadSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();

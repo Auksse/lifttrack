@@ -2,7 +2,7 @@
 // LIFTTRACK UNIFIED EXERCISE DATABASE
 // Auto-generated — do NOT edit manually. Run: node data/gen-exercise-db.js
 // Merges LiftTrack exercise families with free-exercise-db enrichment.
-// 188 exercises total.
+// 216 exercises total.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -8300,6 +8300,1209 @@ window.LIFTTRACK_EXERCISE_DB = [
       {
         "name": "Hamstrings",
         "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Trap_Bar_Deadlift",
+    "name": "Trap Bar Deadlift",
+    "aliases": [],
+    "familyName": "Trap Bar Deadlift",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "plateLoaded",
+    "repRangeCategory": "heavy",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Hamstrings",
+      "Quads",
+      "Spinal Erectors",
+      "Upper Back"
+    ],
+    "muscles": [
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Quads",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Spinal Erectors",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Upper Back",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "For this exercise load a trap bar, also known as a hex bar, to an appropriate weight resting on the ground. Stand in the center of the apparatus and grasp both handles.",
+      "Lower your hips, look forward with your head and keep your chest up.",
+      "Begin the movement by driving through the heels and extend your hips and knees. Avoid rounding your back at all times.",
+      "At the completion of the movement, lower the weight back to the ground under control."
+    ],
+    "images": [
+      "Trap_Bar_Deadlift/0.jpg",
+      "Trap_Bar_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Bodyweight_RFESS",
+    "name": "Bodyweight RFESS",
+    "aliases": [],
+    "familyName": "Rear-Foot Elevated Split Squat",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Adductors",
+      "Hamstrings"
+    ],
+    "muscles": [
+      {
+        "name": "Quads",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Adductors",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Split_Squat_with_Dumbbells",
+    "name": "Rear-Foot Elevated Split Squat",
+    "aliases": [],
+    "familyName": "Rear-Foot Elevated Split Squat",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "dumbbells",
+    "repRangeCategory": "controlled",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Adductors",
+      "Hamstrings"
+    ],
+    "muscles": [
+      {
+        "name": "Quads",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Adductors",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Position yourself into a staggered stance with the rear foot elevated and front foot forward.",
+      "Hold a dumbbell in each hand, letting them hang at the sides. This will be your starting position.",
+      "Begin by descending, flexing your knee and hip to lower your body down. Maintain good posture througout the movement. Keep the front knee in line with the foot as you perform the exercise.",
+      "At the bottom of the movement, drive through the heel to extend the knee and hip to return to the starting position."
+    ],
+    "images": [
+      "Split_Squat_with_Dumbbells/0.jpg",
+      "Split_Squat_with_Dumbbells/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_RFESS",
+    "name": "Barbell RFESS",
+    "aliases": [],
+    "familyName": "Rear-Foot Elevated Split Squat",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "barbell",
+    "repRangeCategory": "controlled",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Adductors",
+      "Hamstrings"
+    ],
+    "muscles": [
+      {
+        "name": "Quads",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Adductors",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Single_Leg_Glute_Bridge",
+    "name": "Single-Leg Hip Thrust",
+    "aliases": [],
+    "familyName": "Single-Leg Hip Thrust",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "push",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Hamstrings"
+    ],
+    "muscles": [
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Lay on the floor with your feet flat and knees bent.",
+      "Raise one leg off of the ground, pulling the knee to your chest. This will be your starting position.",
+      "Execute the movement by driving through the heel, extending your hip upward and raising your glutes off of the ground.",
+      "Extend as far as possible, pause and then return to the starting position."
+    ],
+    "images": [
+      "Single_Leg_Glute_Bridge/0.jpg",
+      "Single_Leg_Glute_Bridge/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Single_Leg_Hip_Thrust",
+    "name": "Barbell Single-Leg Hip Thrust",
+    "aliases": [],
+    "familyName": "Single-Leg Hip Thrust",
+    "category": "legs_glutes",
+    "split": "Legs",
+    "equipment": "barbell",
+    "repRangeCategory": "controlled",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Glutes"
+    ],
+    "secondaryMuscles": [
+      "Hamstrings"
+    ],
+    "muscles": [
+      {
+        "name": "Glutes",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Hamstrings",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Band_Pallof_Press",
+    "name": "Band Pallof Press",
+    "aliases": [],
+    "familyName": "Pallof Press",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Obliques"
+    ],
+    "secondaryMuscles": [
+      "Deep Core",
+      "Abs"
+    ],
+    "muscles": [
+      {
+        "name": "Obliques",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Deep Core",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Abs",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Pallof_Press",
+    "name": "Pallof Press",
+    "aliases": [],
+    "familyName": "Pallof Press",
+    "category": "core",
+    "split": "Core",
+    "equipment": "cable",
+    "repRangeCategory": "controlled",
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Obliques"
+    ],
+    "secondaryMuscles": [
+      "Deep Core",
+      "Abs"
+    ],
+    "muscles": [
+      {
+        "name": "Obliques",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Deep Core",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Abs",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Connect a standard handle to a tower, and—if possible—position the cable to shoulder height. If not, a low pulley will suffice.",
+      "With your side to the cable, grab the handle with both hands and step away from the tower. You should be approximately arm's length away from the pulley, with the tension of the weight on the cable.",
+      "With your feet positioned hip-width apart and knees slightly bent, hold the cable to the middle of your chest. This will be your starting position.",
+      "Press the cable away from your chest, fully extending both arms. You core should be tight and engaged.",
+      "Hold the repetition for several seconds before returning to the starting position.",
+      "At the conclusion of the set, repeat facing the other direction."
+    ],
+    "images": [
+      "Pallof_Press/0.jpg",
+      "Pallof_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Dead_Bug",
+    "name": "Dead Bug",
+    "aliases": [],
+    "familyName": "Dead Bug",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Deep Core"
+    ],
+    "secondaryMuscles": [
+      "Abs"
+    ],
+    "muscles": [
+      {
+        "name": "Deep Core",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Abs",
+        "score": 4,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Begin lying on your back with your hands extended above you toward the ceiling.",
+      "Bring your feet, knees, and hips up to 90 degrees.",
+      "Exhale hard to bring your ribcage down and flatten your back onto the floor, rotating your pelvis up and squeezing your glutes. Hold this position throughout the movement. This will be your starting position.",
+      "Initiate the exercise by extending one leg, straightening the knee and hip to bring the leg just above the ground.",
+      "Maintain the position of your lumbar and pelvis as you perform the movement, as your back is going to want to arch.",
+      "Stay tight and return the working leg to the starting position.",
+      "Repeat on the opposite side, alternating until the set is complete."
+    ],
+    "images": [
+      "Dead_Bug/0.jpg",
+      "Dead_Bug/1.jpg"
+    ]
+  },
+  {
+    "id": "Ab_Roller",
+    "name": "Ab Wheel Rollout",
+    "aliases": [],
+    "familyName": "Ab Wheel Rollout",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Abs",
+      "Deep Core"
+    ],
+    "secondaryMuscles": [
+      "Lats"
+    ],
+    "muscles": [
+      {
+        "name": "Abs",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Deep Core",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Lats",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Hold the Ab Roller with both hands and kneel on the floor.",
+      "Now place the ab roller on the floor in front of you so that you are on all your hands and knees (as in a kneeling push up position). This will be your starting position.",
+      "Slowly roll the ab roller straight forward, stretching your body into a straight position. Tip: Go down as far as you can without touching the floor with your body. Breathe in during this portion of the movement.",
+      "After a pause at the stretched position, start pulling yourself back to the starting position as you breathe out. Tip: Go slowly and keep your abs tight at all times."
+    ],
+    "images": [
+      "Ab_Roller/0.jpg",
+      "Ab_Roller/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Ab_Rollout",
+    "name": "Barbell Rollout",
+    "aliases": [],
+    "familyName": "Ab Wheel Rollout",
+    "category": "core",
+    "split": "Core",
+    "equipment": "barbell",
+    "repRangeCategory": "controlled",
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Abs",
+      "Deep Core"
+    ],
+    "secondaryMuscles": [
+      "Lats"
+    ],
+    "muscles": [
+      {
+        "name": "Abs",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Deep Core",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Lats",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "For this exercise you will need to get into a pushup position, but instead of having your hands of the floor, you will be grabbing on to an Olympic barbell (loaded with 5-10 lbs on each side) instead. This will be your starting position.",
+      "While keeping a slight arch on your back, lift your hips and roll the barbell towards your feet as you exhale. Tip: As you perform the movement, your glutes should be coming up, you should be keeping the abs tight and should maintain your back posture at all times. Also your arms should be staying perpendicular to the floor throughout the movement. If you don't, you will work out your shoulders and back more than the abs.",
+      "After a second contraction at the top, start to roll the barbell back forward to the starting position slowly as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Barbell_Ab_Rollout/0.jpg",
+      "Barbell_Ab_Rollout/1.jpg"
+    ]
+  },
+  {
+    "id": "Hanging_Leg_Raise",
+    "name": "Hanging Knee Raise",
+    "aliases": [],
+    "familyName": "Hanging Knee Raise",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "isolation_pump",
+    "level": "expert",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Abs"
+    ],
+    "secondaryMuscles": [
+      "Hip Flexors"
+    ],
+    "muscles": [
+      {
+        "name": "Abs",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Hip Flexors",
+        "score": 4,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Hang from a chin-up bar with both arms extended at arms length in top of you using either a wide grip or a medium grip. The legs should be straight down with the pelvis rolled slightly backwards. This will be your starting position.",
+      "Raise your legs until the torso makes a 90-degree angle with the legs. Exhale as you perform this movement and hold the contraction for a second or so.",
+      "Go back slowly to the starting position as you breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Hanging_Leg_Raise/0.jpg",
+      "Hanging_Leg_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Knee_Hip_Raise_On_Parallel_Bars",
+    "name": "Vertical Knee Raise Machine",
+    "aliases": [],
+    "familyName": "Hanging Knee Raise",
+    "category": "core",
+    "split": "Core",
+    "equipment": "machine",
+    "repRangeCategory": "isolation_pump",
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Abs"
+    ],
+    "secondaryMuscles": [
+      "Hip Flexors"
+    ],
+    "muscles": [
+      {
+        "name": "Abs",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Hip Flexors",
+        "score": 4,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Position your body on the vertical leg raise bench so that your forearms are resting on the pads next to the torso and holding on to the handles. Your arms will be bent at a 90 degree angle.",
+      "The torso should be straight with the lower back pressed against the pad of the machine and the legs extended pointing towards the floor. This will be your starting position.",
+      "Now as you breathe out, lift your legs up as you keep them extended. Continue this movement until your legs are roughly parallel to the floor and then hold the contraction for a second. Tip: Do not use any momentum or swinging as you perform this exercise.",
+      "Slowly go back to the starting position as you breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Knee_Hip_Raise_On_Parallel_Bars/0.jpg",
+      "Knee_Hip_Raise_On_Parallel_Bars/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Bench_Press_with_Neutral_Grip",
+    "name": "Neutral-Grip Dumbbell Bench Press",
+    "aliases": [],
+    "familyName": "Neutral-Grip Dumbbell Bench Press",
+    "category": "chest",
+    "split": "Push",
+    "equipment": "dumbbells",
+    "repRangeCategory": "compound",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Chest"
+    ],
+    "secondaryMuscles": [
+      "Front Delts",
+      "Triceps"
+    ],
+    "muscles": [
+      {
+        "name": "Chest",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Front Delts",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Triceps",
+        "score": 4,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Take a dumbbell in each hand and lay back onto a flat bench. Your feet should be flat on the floor and your shoulder blades retracted.",
+      "Maintaining a neutral grip, palms facing each other, begin with your arms extended directly above you, perpendicular to the floor. This will be your starting position.",
+      "Begin the movement by flexing the elbow, lowering the upper arms to the side. Descend until the dumbbells are to your torso.",
+      "Pause, then extend the elbow and return to the starting position."
+    ],
+    "images": [
+      "Dumbbell_Bench_Press_with_Neutral_Grip/0.jpg",
+      "Dumbbell_Bench_Press_with_Neutral_Grip/1.jpg"
+    ]
+  },
+  {
+    "id": "Landmine_Press",
+    "name": "Landmine Press",
+    "aliases": [],
+    "familyName": "Landmine Press",
+    "category": "shoulders",
+    "split": "Push",
+    "equipment": "barbell",
+    "repRangeCategory": "compound",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Front Delts"
+    ],
+    "secondaryMuscles": [
+      "Upper Chest",
+      "Triceps",
+      "Core"
+    ],
+    "muscles": [
+      {
+        "name": "Front Delts",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Upper Chest",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Triceps",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Core",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Bent_Over_Barbell_Row",
+    "name": "Pendlay Row",
+    "aliases": [],
+    "familyName": "Pendlay Row",
+    "category": "back",
+    "split": "Pull",
+    "equipment": "barbell",
+    "repRangeCategory": "heavy",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Mid Back"
+    ],
+    "secondaryMuscles": [
+      "Lats",
+      "Rear Delts",
+      "Biceps"
+    ],
+    "muscles": [
+      {
+        "name": "Mid Back",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Lats",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Rear Delts",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Biceps",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Holding a barbell with a pronated grip (palms facing down), bend your knees slightly and bring your torso forward, by bending at the waist, while keeping the back straight until it is almost parallel to the floor. Tip: Make sure that you keep the head up. The barbell should hang directly in front of you as your arms hang perpendicular to the floor and your torso. This is your starting position.",
+      "Now, while keeping the torso stationary, breathe out and lift the barbell to you. Keep the elbows close to the body and only use the forearms to hold the weight. At the top contracted position, squeeze the back muscles and hold for a brief pause.",
+      "Then inhale and slowly lower the barbell back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Bent_Over_Barbell_Row/0.jpg",
+      "Bent_Over_Barbell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Weighted_Pull_Ups",
+    "name": "Weighted Pull-Up",
+    "aliases": [],
+    "familyName": "Weighted Pull-Up",
+    "category": "back",
+    "split": "Pull",
+    "equipment": "bodyweight",
+    "repRangeCategory": "heavy",
+    "level": "intermediate",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Lats"
+    ],
+    "secondaryMuscles": [
+      "Biceps",
+      "Upper Back"
+    ],
+    "muscles": [
+      {
+        "name": "Lats",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Biceps",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Upper Back",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Attach a weight to a dip belt and secure it around your waist. Grab the pull-up bar with the palms of your hands facing forward. For a medium grip, your hands should be spaced at shoulder width. Both arms should be extended in front of you holding the bar at the chosen grip.",
+      "You'll want to bring your torso back about 30 degrees while creating a curvature in your lower back and sticking your chest out. This will be your starting position.",
+      "Now, exhale and pull your torso up until your head is above your hands. Concentrate on squeezing yourshoulder blades back and down as you reach the top contracted position.",
+      "After a brief moment at the top contracted position, inhale and slowly lower your torso back to the starting position with your arms extended and your lats fully stretched."
+    ],
+    "images": [
+      "Weighted_Pull_Ups/0.jpg",
+      "Weighted_Pull_Ups/1.jpg"
+    ]
+  },
+  {
+    "id": "Medicine_Ball_Scoop_Throw",
+    "name": "Med Ball Rotational Throw",
+    "aliases": [],
+    "familyName": "Med Ball Rotational Throw",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "heavy",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "push",
+    "sourceCategory": "plyometrics",
+    "primaryMuscles": [
+      "Obliques"
+    ],
+    "secondaryMuscles": [
+      "Glutes",
+      "Shoulders",
+      "Core"
+    ],
+    "muscles": [
+      {
+        "name": "Obliques",
+        "score": 5,
+        "role": "primary"
+      },
+      {
+        "name": "Glutes",
+        "score": 4,
+        "role": "secondary"
+      },
+      {
+        "name": "Shoulders",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Core",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Assume a semisquat stance with a medicine ball in your hands. Your arms should hang so the ball is near your feet.",
+      "Begin by thrusting the hips forward as you extend through the legs, jumping up.",
+      "As you do, swing your arms up and over your head, keeping them extended, releasing the ball at the peak of your movement. The goal is to throw the ball the greatest distance behind you."
+    ],
+    "images": [
+      "Medicine_Ball_Scoop_Throw/0.jpg",
+      "Medicine_Ball_Scoop_Throw/1.jpg"
+    ]
+  },
+  {
+    "id": "Overhead_Slam",
+    "name": "Med Ball Overhead Slam",
+    "aliases": [],
+    "familyName": "Med Ball Overhead Slam",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "heavy",
+    "level": "beginner",
+    "mechanic": "compound",
+    "force": "pull",
+    "sourceCategory": "plyometrics",
+    "primaryMuscles": [
+      "Lats",
+      "Abs"
+    ],
+    "secondaryMuscles": [
+      "Shoulders"
+    ],
+    "muscles": [
+      {
+        "name": "Lats",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Abs",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Shoulders",
+        "score": 3,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [
+      "Hold a medine ball with both hands and stand with your feet at shoulder width. This will be your starting position.",
+      "Initiate the countermovement by raising the ball above your head and fully extending your body.",
+      "Reverse the motion, slamming the ball into the ground directly in front of you as hard as you can.",
+      "Receive the ball with both hands on the bounce and repeat the movement."
+    ],
+    "images": [
+      "Overhead_Slam/0.jpg",
+      "Overhead_Slam/1.jpg"
+    ]
+  },
+  {
+    "id": "Isometric_Neck_Exercise_-_Front_And_Back",
+    "name": "Isometric Neck Hold",
+    "aliases": [],
+    "familyName": "Isometric Neck Hold",
+    "category": "shoulders",
+    "split": "Push",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "static",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Neck"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Neck",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [
+      "With your head and neck in a neutral position (normal position with head erect facing forward), place both of your hands on the front side of your head.",
+      "Now gently push forward as you contract the neck muscles but resisting any movement of your head. Start with slow tension and increase slowly. Keep breathing normally as you execute this contraction.",
+      "Hold for the recommended number of seconds.",
+      "Now release the tension slowly.",
+      "Rest for the recommended amount of time and repeat with your hands placed on the back side of your head."
+    ],
+    "images": [
+      "Isometric_Neck_Exercise_-_Front_And_Back/0.jpg",
+      "Isometric_Neck_Exercise_-_Front_And_Back/1.jpg"
+    ]
+  },
+  {
+    "id": "Lying_Face_Down_Plate_Neck_Resistance",
+    "name": "Band Neck Flexion/Extension",
+    "aliases": [],
+    "familyName": "Band Neck Flexion/Extension",
+    "category": "shoulders",
+    "split": "Push",
+    "equipment": "bodyweight",
+    "repRangeCategory": "controlled",
+    "level": "intermediate",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Neck"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Neck",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [
+      "Lie face down with your whole body straight on a flat bench while holding a weight plate behind your head. Tip: You will need to position yourself so that your shoulders are slightly above the end of a flat bench in order for the upper chest, neck and face to be off the bench. This will be your starting position.",
+      "While keeping the plate secure on the back of your head slowly lower your head (as in saying \"yes\") as you breathe in.",
+      "Raise your head back up to the starting position in a semi-circular motion as you breathe out. Hold the contraction for a second.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "images": [
+      "Lying_Face_Down_Plate_Neck_Resistance/0.jpg",
+      "Lying_Face_Down_Plate_Neck_Resistance/1.jpg"
+    ]
+  },
+  {
+    "id": "Wrist_Roller",
+    "name": "Wrist Roller",
+    "aliases": [],
+    "familyName": "Wrist Roller",
+    "category": "arms",
+    "split": "Push",
+    "equipment": "bodyweight",
+    "repRangeCategory": "isolation_pump",
+    "level": "beginner",
+    "mechanic": "isolation",
+    "force": "pull",
+    "sourceCategory": "strength",
+    "primaryMuscles": [
+      "Forearms"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Forearms",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [
+      "To begin, stand straight up grabbing a wrist roller using a pronated grip (palms facing down). Your feet should be shoulder width apart.",
+      "Slowly lift both arms until they are fully extended and parallel to the floor in front of you. Note: Make sure the rope is not wrapped around the roller. Your entire body should be stationary except for the forearms. This is the starting position.",
+      "Rotate one wrist at a time in an upward motion to bring the weight up to the bar by rolling the rope around the roller.",
+      "Once the weight has reached the bar, slowly begin to lower the weight back down by rotating the wrist in a downward motion until the weight reaches the starting position.",
+      "Repeat for the prescribed amount of repetitions in your program."
+    ],
+    "images": [
+      "Wrist_Roller/0.jpg",
+      "Wrist_Roller/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Wrist_Curl",
+    "name": "Dumbbell Wrist Curl",
+    "aliases": [],
+    "familyName": "Wrist Roller",
+    "category": "arms",
+    "split": "Push",
+    "equipment": "dumbbells",
+    "repRangeCategory": "isolation_pump",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Forearms"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Forearms",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Barbell_Wrist_Curl",
+    "name": "Barbell Wrist Curl",
+    "aliases": [],
+    "familyName": "Wrist Roller",
+    "category": "arms",
+    "split": "Push",
+    "equipment": "barbell",
+    "repRangeCategory": "isolation_pump",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Forearms"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Forearms",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Cable_Wrist_Curl",
+    "name": "Cable Wrist Curl",
+    "aliases": [],
+    "familyName": "Wrist Roller",
+    "category": "arms",
+    "split": "Push",
+    "equipment": "cable",
+    "repRangeCategory": "isolation_pump",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Forearms"
+    ],
+    "secondaryMuscles": [],
+    "muscles": [
+      {
+        "name": "Forearms",
+        "score": 5,
+        "role": "primary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Shadow_Boxing",
+    "name": "Shadow Boxing",
+    "aliases": [],
+    "familyName": "DB Shadow Boxing",
+    "category": "shoulders",
+    "split": "Push",
+    "equipment": "bodyweight",
+    "repRangeCategory": "isolation_pump",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Shoulders"
+    ],
+    "secondaryMuscles": [
+      "Core",
+      "Forearms"
+    ],
+    "muscles": [
+      {
+        "name": "Shoulders",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Core",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Forearms",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "DB_Shadow_Boxing",
+    "name": "DB Shadow Boxing",
+    "aliases": [],
+    "familyName": "DB Shadow Boxing",
+    "category": "shoulders",
+    "split": "Push",
+    "equipment": "dumbbells",
+    "repRangeCategory": "isolation_pump",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Shoulders"
+    ],
+    "secondaryMuscles": [
+      "Core",
+      "Forearms"
+    ],
+    "muscles": [
+      {
+        "name": "Shoulders",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Core",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Forearms",
+        "score": 2,
+        "role": "secondary"
+      }
+    ],
+    "instructions": [],
+    "images": []
+  },
+  {
+    "id": "Conditioning_Circuit",
+    "name": "Conditioning Circuit",
+    "aliases": [],
+    "familyName": "Conditioning Circuit",
+    "category": "core",
+    "split": "Core",
+    "equipment": "bodyweight",
+    "repRangeCategory": "compound",
+    "level": null,
+    "mechanic": null,
+    "force": null,
+    "sourceCategory": null,
+    "primaryMuscles": [
+      "Core"
+    ],
+    "secondaryMuscles": [
+      "Shoulders",
+      "Calves"
+    ],
+    "muscles": [
+      {
+        "name": "Core",
+        "score": 4,
+        "role": "primary"
+      },
+      {
+        "name": "Shoulders",
+        "score": 3,
+        "role": "secondary"
+      },
+      {
+        "name": "Calves",
+        "score": 3,
         "role": "secondary"
       }
     ],
