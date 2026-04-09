@@ -1009,6 +1009,7 @@ function render(){
             <div class="rest-badge ${da>4?'warn':''}">${da}${t('rest')}</div>
           </div>
         </div>
+        <button onclick="showDebug()" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:4px 6px;font-family:monospace">dbg</button>
         <button class="settings-btn" onclick="showSettings=!showSettings;render()" title="${t('settings')}">⚙</button>
       </div>
     </div>
@@ -2140,6 +2141,29 @@ async function confirmDelete(id){
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
+function showDebug(){
+  const existing=document.getElementById('_dbg');
+  if(existing){existing.remove();return;}
+  const d=document.createElement('div');
+  d.id='_dbg';
+  d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.92);color:#f7d98a;font-size:11px;font-family:monospace;padding:8px 10px;z-index:99999;line-height:1.7;border-top:1px solid #f7d98a';
+  const si=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'n/a';
+  d.innerHTML=`
+    window.innerHeight: <b>${window.innerHeight}px</b><br>
+    screen.height: <b>${screen.height}px</b><br>
+    documentElement.clientHeight: <b>${document.documentElement.clientHeight}px</b><br>
+    #app offsetHeight: <b>${(document.getElementById('app')||{}).offsetHeight||'?'}px</b><br>
+    safe-area top: <b>${si('--sat')||si('padding-top')||'use CSS'}</b><br>
+    safe-area bottom: <b>${si('--sab')||'use CSS'}</b><br>
+    <span style="color:#aaa;font-size:10px">tap here to close</span>
+  `;
+  // inject CSS vars so we can read safe-area values
+  document.documentElement.style.setProperty('--sat','env(safe-area-inset-top)');
+  document.documentElement.style.setProperty('--sab','env(safe-area-inset-bottom)');
+  d.onclick=()=>d.remove();
+  document.body.appendChild(d);
+}
+
 async function init(){
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).then(reg => reg.update()).catch(()=>{});
   // Try to restore saved user
