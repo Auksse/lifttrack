@@ -222,6 +222,111 @@ const SEED=[
 ];
 
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════
+let allUsers=JSON.parse(localStorage.getItem('lifttrack_users')||'[]');
+let currentUser=null; // set by selectUser()
+let newUserNameInput='';
+
+function uKey(key){return currentUser?`lifttrack_${currentUser.id}_${key}`:`lifttrack_${key}`;}
+
+function saveUsers(){localStorage.setItem('lifttrack_users',JSON.stringify(allUsers));}
+
+function selectUser(id){
+  currentUser=allUsers.find(u=>u.id===id)||null;
+  if(currentUser)localStorage.setItem('lifttrack_current_user',id);
+}
+
+function createUser(name){
+  if(!name.trim())return;
+  const id=crypto.randomUUID();
+  allUsers.push({id,name:name.trim(),hasSeed:false});
+  saveUsers();
+  selectUser(id);
+}
+
+function switchUser(){
+  currentUser=null;
+  localStorage.removeItem('lifttrack_current_user');
+  sessions=[];schedules=[];recurringSchedules=[];customTemplates=[];
+  render();
+}
+
+async function migrateOldDb(){
+  // Read all sessions from legacy 'lifttrack' IndexedDB and write to current user's DB
+  return new Promise((resolve)=>{
+    const req=indexedDB.open('lifttrack',1);
+    req.onsuccess=e=>{
+      const oldDb=e.target.result;
+      if(!oldDb.objectStoreNames.contains('sessions')){oldDb.close();resolve(0);return;}
+      const tx=oldDb.transaction('sessions','readonly');
+      const req2=tx.objectStore('sessions').getAll();
+      req2.onsuccess=async e2=>{
+        const rows=e2.target.result||[];
+        oldDb.close();
+        if(!rows.length){resolve(0);return;}
+        // only import sessions not already present (dedup by id)
+        const existingIds=new Set(sessions.map(s=>s.id));
+        const toImport=rows.filter(s=>s.id&&!existingIds.has(s.id));
+        if(!toImport.length){resolve(0);return;}
+        const writeTx=db.transaction('sessions','readwrite');
+        const store=writeTx.objectStore('sessions');
+        toImport.forEach(s=>store.put(s));
+        writeTx.oncomplete=async()=>{await loadSessions();resolve(toImport.length);};
+        writeTx.onerror=()=>resolve(0);
+      };
+      req2.onerror=()=>{oldDb.close();resolve(0);};
+    };
+    req.onerror=()=>resolve(0);
+  });
+}
+
+async function handleMigrate(){
+  loading=true;render();
+  const count=await migrateOldDb();
+  loading=false;
+  if(count>0)toast(`Imported ${count} new sessions`);
+  else toast('Nothing new to import — already up to date',false);
+  render();
+}
+
+function renderUserPicker(){
+  const savedId=localStorage.getItem('lifttrack_current_user');
+  // Try auto-select if saved user still exists
+  if(savedId&&allUsers.find(u=>u.id===savedId)){selectUser(savedId);return null;}
+  // Show picker
+  return`<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px;background:var(--bg)">
+    <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:900;letter-spacing:.05em;color:var(--accent)">LIFTTRACK</div>
+    <div style="font-size:14px;color:var(--dim);margin-top:-16px">Who's training?</div>
+    ${allUsers.length?`<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px">
+      ${allUsers.map(u=>`<button onclick="selectUser('${u.id}');initUserData()" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif">${u.name}</button>`).join('')}
+    </div>`:''}
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:4px">
+      <div style="font-size:12px;color:var(--dim);text-align:center">${allUsers.length?'Or add a new user':'Create your profile'}</div>
+      <input id="newUserNameInput" placeholder="Your name…" value="${newUserNameInput}" oninput="newUserNameInput=this.value" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none" onkeydown="if(event.key==='Enter')createUserAndInit()">
+      <button onclick="createUserAndInit()" style="background:var(--accent);color:#0b0b0a;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer">Create Profile</button>
+    </div>
+  </div>`;
+}
+
+async function createUserAndInit(){
+  const inp=document.getElementById('newUserNameInput');
+  const name=(inp?inp.value:newUserNameInput).trim();
+  if(!name){toast('Enter a name',true);return;}
+  createUser(name);
+  await initUserData();
+}
+
+async function initUserData(){
+  loading=true;render();
+  loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
+  try{await initDb();await loadSessions();}
+  catch(e){toast(t('failed_load'),true);}
+  loading=false;render();
+}
+
+// ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
 let sessions=[],tab='sessions',expandedId=null,selEx=null,loading=false;
@@ -445,12 +550,12 @@ function getMuscleStats(){
 // ═══════════════════════════════════════════════
 // SCHEDULE
 // ═══════════════════════════════════════════════
-function loadSchedules(){schedules=JSON.parse(localStorage.getItem('lifttrack_schedules')||'[]');}
-function saveSchedules(){localStorage.setItem('lifttrack_schedules',JSON.stringify(schedules));}
-function loadRecurringSchedules(){recurringSchedules=JSON.parse(localStorage.getItem('lifttrack_recurring')||'[]');}
-function saveRecurringSchedules(){localStorage.setItem('lifttrack_recurring',JSON.stringify(recurringSchedules));}
-function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem('lifttrack_templates')||'[]');}
-function saveCustomTemplates(){localStorage.setItem('lifttrack_templates',JSON.stringify(customTemplates));}
+function loadSchedules(){schedules=JSON.parse(localStorage.getItem(uKey('schedules'))||'[]');}
+function saveSchedules(){localStorage.setItem(uKey('schedules'),JSON.stringify(schedules));}
+function loadRecurringSchedules(){recurringSchedules=JSON.parse(localStorage.getItem(uKey('recurring'))||'[]');}
+function saveRecurringSchedules(){localStorage.setItem(uKey('recurring'),JSON.stringify(recurringSchedules));}
+function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem(uKey('templates'))||'[]');}
+function saveCustomTemplates(){localStorage.setItem(uKey('templates'),JSON.stringify(customTemplates));}
 
 const BOXING_TEMPLATES=[
   {
@@ -513,15 +618,15 @@ const BUILTIN_TEMPLATE_DEFAULTS={
   Upper:['Barbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Lat Pulldown Machine','Seated Row Machine','Barbell Curl','Cable Triceps Pushdown']
 };
 function loadBuiltinTemplates(){
-  const stored=localStorage.getItem('lifttrack_builtin_tmpl');
+  const stored=localStorage.getItem(uKey('builtin_tmpl'));
   builtinTemplateExercises=stored?JSON.parse(stored):Object.fromEntries(Object.entries(BUILTIN_TEMPLATE_DEFAULTS).map(([k,v])=>[k,[...v]]));
   if(!stored)saveBuiltinTemplates();
 }
-function saveBuiltinTemplates(){localStorage.setItem('lifttrack_builtin_tmpl',JSON.stringify(builtinTemplateExercises));}
-function loadBuiltinColors(){builtinTemplateColors=JSON.parse(localStorage.getItem('lifttrack_builtin_colors')||'{}');}
-function saveBuiltinColors(){localStorage.setItem('lifttrack_builtin_colors',JSON.stringify(builtinTemplateColors));}
-function loadHiddenBuiltins(){hiddenBuiltins=JSON.parse(localStorage.getItem('lifttrack_hidden_builtins')||'[]');}
-function saveHiddenBuiltins(){localStorage.setItem('lifttrack_hidden_builtins',JSON.stringify(hiddenBuiltins));}
+function saveBuiltinTemplates(){localStorage.setItem(uKey('builtin_tmpl'),JSON.stringify(builtinTemplateExercises));}
+function loadBuiltinColors(){builtinTemplateColors=JSON.parse(localStorage.getItem(uKey('builtin_colors'))||'{}');}
+function saveBuiltinColors(){localStorage.setItem(uKey('builtin_colors'),JSON.stringify(builtinTemplateColors));}
+function loadHiddenBuiltins(){hiddenBuiltins=JSON.parse(localStorage.getItem(uKey('hidden_builtins'))||'[]');}
+function saveHiddenBuiltins(){localStorage.setItem(uKey('hidden_builtins'),JSON.stringify(hiddenBuiltins));}
 function setTemplateColor(key,color,isBuiltin){
   if(isBuiltin){builtinTemplateColors[key]=color;saveBuiltinColors();}
   else{const tc=customTemplates.find(tc=>tc.id===key);if(tc){tc.color=color;saveCustomTemplates();}}
@@ -668,9 +773,9 @@ function nextSchedMonth(){schedViewMonth++;if(schedViewMonth>11){schedViewMonth=
 // ═══════════════════════════════════════════════
 // INDEXEDDB
 // ═══════════════════════════════════════════════
-function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open('lifttrack',1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('sessions')){const store=d.createObjectStore('sessions',{keyPath:'id'});store.createIndex('date','date',{unique:false});}};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
+function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(currentUser?'lifttrack_'+currentUser.id:'lifttrack',1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('sessions')){const store=d.createObjectStore('sessions',{keyPath:'id'});store.createIndex('date','date',{unique:false});}};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
 async function initDb(){db=await openDb();}
-async function loadSessions(){return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readonly');const req=tx.objectStore('sessions').getAll();req.onsuccess=e=>{sessions=(e.target.result||[]).map(r=>({...r,exercises:r.exercises||[]})).sort((a,b)=>a.date.localeCompare(b.date));if(!sessions.length)seedData().then(resolve).catch(reject);else resolve();};req.onerror=e=>reject(e.target.error);});}
+async function loadSessions(){return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readonly');const req=tx.objectStore('sessions').getAll();req.onsuccess=e=>{sessions=(e.target.result||[]).map(r=>({...r,exercises:r.exercises||[]})).sort((a,b)=>a.date.localeCompare(b.date));if(!sessions.length&&currentUser&&currentUser.hasSeed)seedData().then(resolve).catch(reject);else resolve();};req.onerror=e=>reject(e.target.error);});}
 async function seedData(){const withIds=SEED.map(s=>({...s,id:crypto.randomUUID()}));return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');const store=tx.objectStore('sessions');withIds.forEach(s=>store.put(s));tx.oncomplete=()=>{sessions=withIds;resolve();};tx.onerror=e=>reject(e.target.error);});}
 async function addSession(s){const session={...s,id:crypto.randomUUID()};return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');tx.objectStore('sessions').put(session);tx.oncomplete=()=>{sessions=[...sessions,session].sort((a,b)=>a.date.localeCompare(b.date));resolve();};tx.onerror=e=>reject(e.target.error);});}
 async function updateSession(id,s){const updated={...sessions.find(x=>x.id===id),...s,id};return new Promise((resolve,reject)=>{const tx=db.transaction('sessions','readwrite');tx.objectStore('sessions').put(updated);tx.oncomplete=()=>{sessions=sessions.map(x=>x.id===id?updated:x);resolve();};tx.onerror=e=>reject(e.target.error);});}
@@ -700,6 +805,12 @@ if('serviceWorker' in navigator){
 // ═══════════════════════════════════════════════
 function render(){
   const savedScroll=document.getElementById('content')?.scrollTop||0;
+  // Show user picker if no user selected
+  if(!currentUser){
+    const pickerHtml=renderUserPicker();
+    if(pickerHtml){document.getElementById('app').innerHTML=pickerHtml;setTimeout(()=>{const inp=document.getElementById('newUserNameInput');if(inp)inp.focus();},50);return;}
+    // renderUserPicker() returned null = auto-selected, fall through
+  }
   const totalVol=Math.round(sessions.reduce((t,s)=>t+sVol(s),0));
   const last=sessions[sessions.length-1];
   const da=last?daysSince(last.date):0;
@@ -1474,6 +1585,11 @@ function renderSettingsModal(){
           <button class="lang-btn ${lang==='fr'?'active':''}" onclick="setLang('fr')">FR</button>
         </div>
       </div>
+      <div class="settings-row" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border)">
+        <span class="settings-label" style="font-weight:700">${currentUser?currentUser.name:'—'}</span>
+        <button class="lang-btn" onclick="showSettings=false;switchUser()">Switch user</button>
+      </div>
+      ${sessions.length===0?`<div style="padding:8px 0 4px"><button onclick="handleMigrate()" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import sessions from previous version</button></div>`:''}
     </div>`;
 }
 
@@ -1741,10 +1857,14 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  loading=true;loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();render();
-  try{await initDb();await loadSessions();}
-  catch(e){toast(t('failed_load'),true);}
-  loading=false;render();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).catch(()=>{});
+  // Try to restore saved user
+  const savedId=localStorage.getItem('lifttrack_current_user');
+  if(savedId&&allUsers.find(u=>u.id===savedId)){
+    selectUser(savedId);
+    await initUserData();
+  } else {
+    render(); // shows user picker
+  }
 }
 init();
