@@ -256,6 +256,25 @@ function switchUser(){
   render();
 }
 
+async function deleteUser(id){
+  if(!confirm('Delete this user and all their data? This cannot be undone.'))return;
+  // Remove their localStorage keys
+  const prefix=`lifttrack_${id}_`;
+  Object.keys(localStorage).filter(k=>k.startsWith(prefix)).forEach(k=>localStorage.removeItem(k));
+  // Delete their IndexedDB
+  indexedDB.deleteDatabase('lifttrack_'+id);
+  // Remove from users list
+  allUsers=allUsers.filter(u=>u.id!==id);
+  saveUsers();
+  // If deleting current user, switch to picker
+  if(currentUser&&currentUser.id===id){
+    currentUser=null;
+    localStorage.removeItem('lifttrack_current_user');
+    sessions=[];schedules=[];recurringSchedules=[];customTemplates=[];
+  }
+  render();
+}
+
 async function migrateOldDb(){
   // Read sessions from legacy 'lifttrack' IndexedDB (any version) into current user's DB
   return new Promise((resolve)=>{
@@ -345,7 +364,10 @@ function renderUserPicker(){
     <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:900;letter-spacing:.05em;color:var(--accent)">LIFTTRACK</div>
     <div style="font-size:14px;color:var(--dim);margin-top:-16px">Who's training?</div>
     ${allUsers.length?`<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px">
-      ${allUsers.map(u=>`<button onclick="selectUser('${u.id}');initUserData()" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif">${u.name}</button>`).join('')}
+      ${allUsers.map(u=>`<div style="display:flex;gap:8px;align-items:center">
+        <button onclick="selectUser('${u.id}');initUserData()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif">${u.name}</button>
+        <button onclick="deleteUser('${u.id}')" style="background:none;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--dim);font-size:16px;cursor:pointer;flex-shrink:0">🗑</button>
+      </div>`).join('')}
     </div>`:''}
     <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:4px">
       <div style="font-size:12px;color:var(--dim);text-align:center">${allUsers.length?'Or add a new user':'Create your profile'}</div>
@@ -371,7 +393,7 @@ async function createUserAndInit(){
 
 async function initUserData(){
   loading=true;render();
-  loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
+  loadSchedules();loadRecurringSchedules();loadCustomTemplates();if(currentUser&&currentUser.hasSeed)seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();
@@ -393,6 +415,9 @@ let addForm=defaultForm(),editId=null,editForm=null,acActive=null,selMuscle=null
 let dbEquipment='dumbbells';
 let showExerciseLibrary=false;
 let exDetailName=null;
+let collapsedExercises=new Set();
+let timerPickerEx=null;
+let restTimerEnd=null,restTimerInterval=null;
 let lang=localStorage.getItem('lifttrack_lang')||'en';
 let showSettings=false;
 
@@ -927,6 +952,10 @@ function render(){
     </div>
     ${renderExDetailModal()}
     ${renderSettingsModal()}
+    ${restTimerEnd?`<div style="position:fixed;bottom:calc(env(safe-area-inset-bottom)+72px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent);border-radius:999px;padding:10px 20px;display:flex;align-items:center;gap:14px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+      <span style="font-size:22px;font-weight:900;font-family:'IBM Plex Mono',monospace;color:var(--accent);min-width:48px;text-align:center" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>
+      <button onclick="cancelRestTimer()" style="background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0">×</button>
+    </div>`:''}
   `;
 
   const c=document.getElementById('content');
@@ -1023,6 +1052,7 @@ function renderSessions(){
                     <div class="s-actions">
                       <button class="s-act-btn" onclick="event.stopPropagation();startEdit('${s.id}')">${t('edit')}</button>
                       <button class="s-act-btn" onclick="event.stopPropagation();useAsTemplate('${s.id}')">${t('use_as_template')}</button>
+                      <button class="s-act-btn" onclick="event.stopPropagation();saveSessionAsTemplate('${s.id}')">Save as template</button>
                       <button class="s-act-btn danger" onclick="event.stopPropagation();confirmDelete('${s.id}')">${t('delete')}</button>
                     </div>
                   </div>`}
@@ -1638,13 +1668,12 @@ function renderSettingsModal(){
       </div>
       <div class="settings-row" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border)">
         <span class="settings-label" style="font-weight:700">${currentUser?currentUser.name:'—'}</span>
-        <button class="lang-btn" onclick="showSettings=false;switchUser()">Switch user</button>
+        <div style="display:flex;gap:6px">
+          <button class="lang-btn" onclick="showSettings=false;switchUser()">Switch</button>
+          <button class="lang-btn" style="color:#e05555" onclick="showSettings=false;deleteUser('${currentUser?currentUser.id:''}')">Delete</button>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;padding:8px 0 4px">
-        <button onclick="exportSessions()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↑ Export</button>
-        <button onclick="triggerImportFile()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import</button>
-      </div>
-      ${sessions.length===0?`<button onclick="handleMigrate()" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import from same-browser previous version</button>`:''}
+      ${sessions.length===0?`<button onclick="handleMigrate()" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">↓ Import from previous version</button>`:''}
     </div>`;
 }
 
@@ -1737,40 +1766,50 @@ function renderAdd(){
           const alts=ex.name?getAlts(ex.name,currentNames):[];
           const fuzzy=ex.name?fuzzyMatch(ex.name,allCandidates,0.5):[];
           const isAcOpen=acActive===ei&&fuzzy.length>0;
+          const isCollapsed=collapsedExercises.has(ei);
+          const showTimerPick=timerPickerEx===ei;
+          // Summary for collapsed view
+          const filledSets=ex.sets.filter(s=>s.r||s.w);
+          const summary=filledSets.length?filledSets.map(s=>`${s.r||'?'}×${s.w||'?'}`).join(', '):`${ex.sets.length} set${ex.sets.length>1?'s':''}`;
           return`
-            <div class="ex-card">
+            <div class="ex-card${isCollapsed?' ex-card-collapsed':''}">
               <div class="ex-card-header">
-                <div class="reorder-wrap">
-                  <button class="reorder-btn-add" ${ei===0?'disabled':''} onclick="moveEx(${ei},-1)">▲</button>
-                  <button class="reorder-btn-add" ${ei===f.exercises.length-1?'disabled':''} onclick="moveEx(${ei},1)">▼</button>
+                <button class="ex-collapse-btn" onclick="toggleExCollapse(${ei})" title="${isCollapsed?'Expand':'Collapse'}">${isCollapsed?'▶':'▼'}</button>
+                <div class="ex-name-wrap" style="flex:1;margin:0 4px">
+                  ${isCollapsed
+                    ? `<div class="ex-collapsed-row"><span class="ex-name-lbl" style="font-size:13px;font-weight:700;color:var(--text)">${ex.name||t('exercise_ph')}</span><span style="font-size:11px;color:var(--dim);margin-left:8px">${summary}</span></div>`
+                    : `<input id="ex-name-${ei}" class="ex-name-input" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
+                       ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">${t('similar')}</span></div>`).join('')}</div>`:''}`
+                  }
                 </div>
-                <div class="ex-name-wrap" style="flex:1;margin:0 6px">
-                  <input id="ex-name-${ei}" class="ex-name-input" placeholder="${t('exercise_ph')}" value="${ex.name}" oninput="onExIn(${ei},this.value)" onfocus="onExFocus(${ei})" onblur="onExBlur()" autocomplete="off">
-                  ${isAcOpen?`<div class="autocomplete">${fuzzy.map(name=>`<div class="ac-item" onmousedown="pickAc(${ei},'${name.replace(/'/g,"\\'")}')"><span>${name}</span><span class="ac-match">${t('similar')}</span></div>`).join('')}</div>`:''}
-                </div>
-                ${ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
+                ${!isCollapsed&&ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
+                <button class="ex-info-btn" onclick="toggleTimerPicker(${ei})" title="Rest timer">⏱</button>
                 <button class="rm-ex-btn-add" onclick="removeEx(${ei})">×</button>
               </div>
 
-              ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">${t('apply')}</button></div>`:''}
-              ${alts.length?`<div class="alt-row"><button class="alt-toggle" onclick="toggleAlts(${ei})" aria-expanded="false" id="alt-toggle-${ei}"><span class="alt-label">${t('alt_lbl')}</span><span class="alt-arrow">▶</span></button><div class="alt-chips" id="alt-chips-${ei}" style="display:none">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
+              ${showTimerPick?`<div class="timer-picker-row"><span style="font-size:11px;color:var(--dim);margin-right:6px">Rest:</span>${[60,90,120,150,180].map(s=>`<button class="timer-preset-btn" onclick="startRestTimer(${s})">${fmtTimer(s)}</button>`).join('')}</div>`:''}
 
-              ${ex.sets.map((set,si)=>{
-                const prevSet=lastSets&&lastSets[si];
-                const wNum=parseFloat(set.w)||0;
-                const wd=wNum&&prevSet?wNum-prevSet.w:null;
-                return`
-                  <div class="set-form-row">
-                    <span class="set-num">${si+1}</span>
-                    <input class="set-input" type="number" placeholder="${t('reps_ph')}" value="${set.r}" oninput="addForm.exercises[${ei}].sets[${si}].r=this.value">
-                    <span class="set-sep">×</span>
-                    <input class="set-input" type="number" placeholder="kg" step="0.5" value="${set.w}" oninput="addForm.exercises[${ei}].sets[${si}].w=this.value">
-                    ${prevSet?`<span class="prev-ref ${wd===null?'':wd>0?'prev-up':wd<0?'prev-dn':''}">${prevSet.r}×${prevSet.w}</span>`:''}
-                    ${ex.sets.length>1?`<button class="rm-set-btn" onclick="removeSet(${ei},${si})">×</button>`:''}
-                  </div>`;
-              }).join('')}
+              ${isCollapsed?'':`
+                ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">${t('apply')}</button></div>`:''}
+                ${alts.length?`<div class="alt-row"><button class="alt-toggle" onclick="toggleAlts(${ei})" aria-expanded="false" id="alt-toggle-${ei}"><span class="alt-label">${t('alt_lbl')}</span><span class="alt-arrow">▶</span></button><div class="alt-chips" id="alt-chips-${ei}" style="display:none">${alts.map(a=>`<button class="alt-chip" onclick="addAlt('${a.replace(/'/g,"\\'")}',${ei})">${a}</button>`).join('')}</div></div>`:''}
 
-              <button class="add-set-btn" onclick="addSet(${ei})">${t('add_set')}</button>
+                ${ex.sets.map((set,si)=>{
+                  const prevSet=lastSets&&lastSets[si];
+                  const wNum=parseFloat(set.w)||0;
+                  const wd=wNum&&prevSet?wNum-prevSet.w:null;
+                  return`
+                    <div class="set-form-row">
+                      <span class="set-num">${si+1}</span>
+                      <input class="set-input" type="number" placeholder="${t('reps_ph')}" value="${set.r}" oninput="addForm.exercises[${ei}].sets[${si}].r=this.value">
+                      <span class="set-sep">×</span>
+                      <input class="set-input" type="number" placeholder="kg" step="0.5" value="${set.w}" oninput="addForm.exercises[${ei}].sets[${si}].w=this.value">
+                      ${prevSet?`<span class="prev-ref ${wd===null?'':wd>0?'prev-up':wd<0?'prev-dn':''}">${prevSet.r}×${prevSet.w}</span>`:''}
+                      ${ex.sets.length>1?`<button class="rm-set-btn" onclick="removeSet(${ei},${si})">×</button>`:''}
+                    </div>`;
+                }).join('')}
+
+                <button class="add-set-btn" onclick="addSet(${ei})">${t('add_set')}</button>
+              `}
             </div>`;
         }).join('')}
       </div>
@@ -1789,7 +1828,7 @@ function renderAdd(){
 // ═══════════════════════════════════════════════
 function switchTab(t){
   tab=t; acActive=null;
-  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;loadTemplate(addForm.focus);}
+  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;collapsedExercises=new Set();timerPickerEx=null;loadTemplate(addForm.focus);}
   else{if(t!=='muscles'){selMuscle=null;selGroup=null;progressGroup=null;progressMuscle=null;}render();}
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
@@ -1847,6 +1886,40 @@ async function saveEdit(){
 }
 
 // Add form
+// Rest timer
+function fmtTimer(s){const m=Math.floor(s/60);return m>0?`${m}:${String(s%60).padStart(2,'0')}`:`${s}s`;}
+function startRestTimer(seconds){
+  if(restTimerInterval)clearInterval(restTimerInterval);
+  restTimerEnd=Date.now()+seconds*1000;
+  timerPickerEx=null;render();
+  restTimerInterval=setInterval(()=>{
+    const rem=Math.ceil((restTimerEnd-Date.now())/1000);
+    const el=document.getElementById('rest-timer-num');
+    if(el)el.textContent=fmtTimer(Math.max(0,rem));
+    if(rem<=0){
+      clearInterval(restTimerInterval);restTimerInterval=null;restTimerEnd=null;
+      if(navigator.vibrate)navigator.vibrate([200,100,200,100,200]);
+      render();
+    }
+  },250);
+}
+function cancelRestTimer(){clearInterval(restTimerInterval);restTimerInterval=null;restTimerEnd=null;render();}
+function toggleTimerPicker(ei){timerPickerEx=timerPickerEx===ei?null:ei;render();}
+function toggleExCollapse(ei){if(collapsedExercises.has(ei))collapsedExercises.delete(ei);else collapsedExercises.add(ei);render();}
+// Save session as template
+function saveSessionAsTemplate(id){
+  const s=sessions.find(x=>x.id===id);if(!s)return;
+  const base=s.focus||'Session';
+  let name=base;let n=2;
+  while(getAllFocuses().some(f=>f.toLowerCase()===name.toLowerCase()))name=`${base} ${n++}`;
+  const prompted=window.prompt('Template name:',name);
+  if(!prompted||!prompted.trim())return;
+  const finalName=prompted.trim();
+  if(getAllFocuses().some(f=>f.toLowerCase()===finalName.toLowerCase())){toast('A template with that name already exists',true);return;}
+  const color=TMPL_COLORS[customTemplates.length%TMPL_COLORS.length];
+  customTemplates.push({id:crypto.randomUUID(),name:finalName,exercises:s.exercises.map(e=>e.name),color});
+  saveCustomTemplates();toast('Template saved');render();
+}
 function onExIn(ei,val){
   addForm.exercises[ei].name=val;acActive=val.length>=2?ei:null;
   const inp=document.getElementById('ex-name-'+ei);

@@ -586,6 +586,14 @@ body{
   background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 35%);
 }
 
+.ex-card-collapsed{padding:8px 12px;}
+.ex-card-collapsed .ex-card-header{margin-bottom:0;}
+.ex-collapsed-row{display:flex;align-items:center;padding:2px 0;}
+.ex-collapse-btn{background:none;border:none;color:var(--dim);font-size:10px;cursor:pointer;padding:4px 2px;flex-shrink:0;opacity:.7;}
+.ex-collapse-btn:active{opacity:1;}
+.timer-picker-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 0 8px;position:relative;z-index:1;}
+.timer-preset-btn{background:var(--card2);border:1px solid var(--border);border-radius:999px;color:var(--text2);font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:5px 12px;cursor:pointer;}
+.timer-preset-btn:active{background:var(--accent);color:#0b0b0a;border-color:var(--accent);}
 .ex-card-header{display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;position:relative;z-index:1;}
 .ex-name-wrap{flex:1;position:relative;}
 .ex-name-input{
