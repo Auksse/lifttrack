@@ -88,7 +88,12 @@ const VISIBLE_MUSCLE_DB_NAMES={
 
 // Returns a {muscle:score} map for an exercise name.
 // Checks MUSCLE_MAP first; falls back to exerciseDatabase for new canonical names.
-function getMuscleMap(name){return MUSCLE_MAP[name]||getDbMuscleMap(name)||null;}
+function getMuscleMap(name){
+  if(MUSCLE_MAP[name])return MUSCLE_MAP[name];
+  const fam=getDbFamilyFor(name);
+  if(fam&&fam.muscles&&fam.muscles.length){const m={};fam.muscles.forEach(e=>m[e.name]=e.score);return m;}
+  return null;
+}
 
 // Maps normalized legacy/abbreviated exercise names → database familyName.
 // Covers old IndexedDB data that predates canonical name standardisation.
@@ -985,7 +990,7 @@ function render(){
 
     ${tab==='add'&&!selectingTemplate?`
     <div class="dock" style="background:transparent;border:none;box-shadow:none">
-      <div class="dock-inner" style="width:100%;box-sizing:border-box;padding:10px 10px;border-radius:18px">
+      <div style="pointer-events:auto;padding:10px 14px;">
         ${showTimerDock
           ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 12px;width:100%;box-sizing:border-box">
               ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 0;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em;flex:1;text-align:center">${fmtTimer(s)}</button>`).join('')}
@@ -1102,7 +1107,7 @@ function renderSessions(){
                   <div class="s-body-inner">
                     ${s.exercises.map(ex=>{
                       const isPR=prExNames.includes(ex.name);
-                      const mw=Math.max(...ex.sets.map(s=>s.w));
+                      const mw=Math.max(...ex.sets.map(st=>st.w));
                       return`
                         <div class="ex-row">
                           <div class="ex-name-row">
