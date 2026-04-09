@@ -80,8 +80,7 @@ html{
 }
 
 body{
-  height:100svh;
-  height:100dvh;
+  height:100%;
   overflow:hidden;
   overscroll-behavior:none;
   background-color:var(--bg1);
@@ -100,8 +99,8 @@ body{
 #app{
   display:flex;
   flex-direction:column;
-  position:fixed;
-  inset:0;
+  height:100%;
+  overflow:hidden;
   padding-top:env(safe-area-inset-top);
   z-index:1;
   background:
@@ -110,7 +109,6 @@ body{
     radial-gradient(820px 680px at 65% 120%, rgba(103,176,111,.07), transparent 58%),
     radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,0), rgba(0,0,0,.05) 72%, rgba(0,0,0,.12) 100%),
     linear-gradient(180deg, var(--bg0), var(--bg2));
-  position:relative;
 }
 
 /* ============================================================
