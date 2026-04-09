@@ -372,24 +372,56 @@ function triggerImportFile(){
   inp.click();
 }
 
+const USER_AVATAR_COLORS=['#cf7451','#4ea0c8','#67b06f','#9b78d2','#e8b84b','#c84b6e','#4bbfb4'];
+function userAvatarColor(id){const n=id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);return USER_AVATAR_COLORS[n%USER_AVATAR_COLORS.length];}
+
 function renderUserPicker(){
   const savedId=localStorage.getItem('lifttrack_current_user');
-  // Try auto-select if saved user still exists
   if(savedId&&allUsers.find(u=>u.id===savedId)){selectUser(savedId);return null;}
-  // Show picker
-  return`<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px;background:var(--bg)">
-    <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:900;letter-spacing:.05em;color:var(--accent)">LIFTTRACK</div>
-    <div style="font-size:14px;color:var(--dim);margin-top:-16px">Who's training?</div>
-    ${allUsers.length?`<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px">
-      ${allUsers.map(u=>`<div style="display:flex;gap:8px;align-items:center">
-        <button onclick="selectUser('${u.id}');initUserData()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif">${u.name}</button>
-        <button onclick="deleteUser('${u.id}')" style="background:none;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--dim);font-size:16px;cursor:pointer;flex-shrink:0">🗑</button>
-      </div>`).join('')}
-    </div>`:''}
-    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:4px">
-      <div style="font-size:12px;color:var(--dim);text-align:center">${allUsers.length?'Or add a new user':'Create your profile'}</div>
-      <input id="newUserNameInput" placeholder="Your name…" value="${newUserNameInput}" oninput="newUserNameInput=this.value" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none" onkeydown="if(event.key==='Enter')createUserAndInit()">
-      <button onclick="createUserAndInit()" style="background:var(--accent);color:#0b0b0a;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer">Create Profile</button>
+  return`
+  <div style="position:fixed;inset:0;display:flex;flex-direction:column;background:
+    radial-gradient(900px 650px at 15% -10%,rgba(232,184,75,.12),transparent 56%),
+    radial-gradient(820px 600px at 95% 10%,rgba(78,160,200,.07),transparent 54%),
+    linear-gradient(180deg,var(--bg0),var(--bg2));overflow-y:auto;padding-top:env(safe-area-inset-top)">
+
+    <!-- Brand hero -->
+    <div style="display:flex;flex-direction:column;align-items:center;padding:56px 24px 32px;gap:10px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:48px;letter-spacing:.12em;line-height:1;color:var(--text)">LIFT<em style="color:var(--gold);font-style:normal">TRACK</em></div>
+      <div style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:600">Track · Progress · Repeat</div>
+    </div>
+
+    <!-- Body -->
+    <div style="flex:1;display:flex;flex-direction:column;padding:0 20px calc(40px + env(safe-area-inset-bottom));gap:10px;max-width:400px;width:100%;margin:0 auto">
+
+      ${allUsers.length?`
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:0 4px 4px">Who's training?</div>
+        ${allUsers.map(u=>{
+          const col=userAvatarColor(u.id);
+          const initials=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          return`<button onclick="selectUser('${u.id}');initUserData()" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(36,30,24,.98),rgba(28,24,20,.98));border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;background:radial-gradient(160px 100px at 0% 50%,${col}22,transparent 60%);pointer-events:none"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:${col}33;border:1.5px solid ${col}88;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:.06em;color:${col};flex-shrink:0">${initials}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:16px;font-weight:800;color:var(--text);font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.name}</div>
+              <div style="font-size:11px;color:var(--dim);margin-top:1px;font-family:'DM Sans',sans-serif">Tap to continue</div>
+            </div>
+            <div style="color:${col};font-size:18px;opacity:.7;flex-shrink:0">›</div>
+          </button>`;
+        }).join('')}
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:6px 0"></div>
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:0 4px 4px">New user</div>
+      `:`<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:0 4px 4px">Create your profile</div>`}
+
+      <input id="newUserNameInput" placeholder="Your name…" value="${newUserNameInput}"
+        oninput="newUserNameInput=this.value"
+        onkeydown="if(event.key==='Enter')createUserAndInit()"
+        style="background:rgba(36,30,24,.95);border:1.5px solid rgba(255,255,255,.18);border-radius:14px;padding:14px 16px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;width:100%">
+
+      <button onclick="createUserAndInit()"
+        style="background:linear-gradient(135deg,#f7d98a,#c8922e);color:#0b0b0a;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:900;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.04em;box-shadow:0 4px 24px rgba(232,184,75,.35)">
+        Create Profile →
+      </button>
+
     </div>
   </div>`;
 }
@@ -406,7 +438,7 @@ async function createUserAndInit(){
 
 async function initUserData(){
   loading=true;render();
-  loadSchedules();loadRecurringSchedules();loadCustomTemplates();if(currentUser&&currentUser.hasSeed)seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
+  loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedDefaultTemplates();if(currentUser&&currentUser.hasSeed)seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();
@@ -737,6 +769,22 @@ const BOXING_TEMPLATES=[
 function seedBoxingTemplates(){
   let changed=false;
   for(const tmpl of BOXING_TEMPLATES){
+    if(!customTemplates.some(t=>t.name===tmpl.name)){
+      customTemplates.push({id:crypto.randomUUID(),name:tmpl.name,exercises:[...tmpl.exercises],color:tmpl.color});
+      changed=true;
+    }
+  }
+  if(changed)saveCustomTemplates();
+}
+
+const DEFAULT_TEMPLATES=[
+  {name:'Push',color:'#cf7451',exercises:['Dumbbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Cable Lateral Raise','Cable Overhead Triceps Extension']},
+  {name:'Pull',color:'#4ea0c8',exercises:['Lat Pulldown Machine','Seated Row Machine','Cable Face Pull','Dumbbell Curl']},
+  {name:'Legs',color:'#67b06f',exercises:['Leg Press Machine','Leg Extension Machine','Leg Curl Machine','Dumbbell Bulgarian Split Squat','Standing Calf Raise Machine']},
+];
+function seedDefaultTemplates(){
+  let changed=false;
+  for(const tmpl of DEFAULT_TEMPLATES){
     if(!customTemplates.some(t=>t.name===tmpl.name)){
       customTemplates.push({id:crypto.randomUUID(),name:tmpl.name,exercises:[...tmpl.exercises],color:tmpl.color});
       changed=true;
