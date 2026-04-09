@@ -929,9 +929,9 @@ function render(){
         <div class="stat-cell-label">${t('prs')}</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${countPRs()}</div>
       </div>
-      <div class="stat-cell next" onclick="switchTab('schedule')">
+      <div class="stat-cell next stat-cell-wide" onclick="switchTab('schedule')">
         <div class="stat-cell-label" style="color:${nc}aa">${sched?t('scheduled'):t('next_up')}</div>
-        <div class="stat-cell-val" style="color:${nc};font-size:18px">${tFocus((sched||next).focus)}</div>
+        <div class="stat-cell-val" style="color:${nc};font-size:18px;white-space:normal;line-height:1.1">${tFocus((sched||next).focus)}</div>
         ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:''}
       </div>
     </div>
@@ -940,21 +940,19 @@ function render(){
       ${tab==='sessions'?renderSessions():tab==='schedule'?renderScheduleTab():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
     </div>
 
-    ${tab==='add'?`
-    <div class="dock" style="background:transparent;border:none;box-shadow:none">
-      <div class="dock-inner" style="justify-content:center">
-        ${showTimerDock
-          ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 16px;box-shadow:0 4px 20px rgba(245,212,122,.4)">
-              ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 10px;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em">${fmtTimer(s)}</button>`).join('')}
-              <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:#0b0b0a;font-size:16px;cursor:pointer;opacity:.6;padding:0 2px;margin-left:2px">×</button>
-            </div>`
-          :`<button onclick="${restTimerEnd?'cancelRestTimer()':'showTimerDock=true;render()'}" style="background:linear-gradient(135deg,#f5d47a,#c89830);border:none;border-radius:999px;padding:12px 28px;cursor:pointer;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center;gap:8px">
-              ${restTimerEnd
-                ?`<span style="font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:#0b0b0a" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>`
-                :`<span style="font-size:13px;font-weight:900;font-family:'DM Sans',sans-serif;color:#0b0b0a;letter-spacing:.08em">TIMER</span>`}
-            </button>`
-        }
-      </div>
+    ${tab==='add'&&!selectingTemplate?`
+    <div class="dock" style="background:var(--bg);border-top:1px solid rgba(255,255,255,.07);box-shadow:none;padding:10px 14px">
+      ${showTimerDock
+        ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 14px;box-shadow:0 4px 20px rgba(245,212,122,.4);width:100%;box-sizing:border-box">
+            ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 0;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em;flex:1;text-align:center">${fmtTimer(s)}</button>`).join('')}
+            <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:#0b0b0a;font-size:18px;cursor:pointer;opacity:.6;padding:0 4px;flex-shrink:0">×</button>
+          </div>`
+        :`<button onclick="${restTimerEnd?'cancelRestTimer()':'showTimerDock=true;render()'}" style="background:linear-gradient(135deg,#f5d47a,#c89830);border:none;border-radius:999px;padding:13px 0;cursor:pointer;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center;width:100%">
+            ${restTimerEnd
+              ?`<span style="font-size:14px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:#0b0b0a" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>`
+              :`<span style="font-size:13px;font-weight:900;font-family:'DM Sans',sans-serif;color:#0b0b0a;letter-spacing:.08em">TIMER</span>`}
+          </button>`
+      }
     </div>`:`
     <div class="dock">
       <div class="dock-inner">
@@ -2000,10 +1998,10 @@ function toggleAlts(ei){
   btn.querySelector('.alt-arrow').textContent=open?'▼':'▶';
   btn.setAttribute('aria-expanded',open);
 }
-function addAlt(name,afterIdx){
+function addAlt(name,idx){
   const ls=[...sessions].reverse().find(s=>s.exercises.some(e=>e.name===name));
   const sets=ls?ls.exercises.find(e=>e.name===name).sets.map(s=>({r:String(s.r),w:String(s.w)})):[{r:'',w:''}];
-  addForm.exercises.splice(afterIdx+1,0,{name,sets});
+  addForm.exercises.splice(idx,1,{name,sets});
   render();
 }
 function addDbExercise(name){

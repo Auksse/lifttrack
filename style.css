@@ -234,11 +234,14 @@ body{
    ============================================================ */
 .stat-strip{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:10px;
   padding:10px 12px 12px;
   border-bottom:1px solid rgba(255,255,255,.06);
   flex-shrink:0;
+}
+.stat-cell-wide{
+  grid-column:1/-1;
 }
 
 .stat-cell{
@@ -1728,7 +1731,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
 .rw-chevron.open{transform:rotate(180deg);}
 
 @media (max-width:380px){
-  .stat-strip{grid-template-columns:repeat(2,1fr);}
+  .stat-strip{grid-template-columns:repeat(3,1fr);}
 }
 
 /* ─── Exercise Info Button ─────────────────────────────────────── */
