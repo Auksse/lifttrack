@@ -120,7 +120,7 @@ const LEGACY_FAMILY_MAP={
 
 // Finds the ExerciseFamily for any exercise name — canonical or legacy.
 function getDbFamilyFor(name){
-  return getDbFamily(name)||(()=>{const fn=LEGACY_FAMILY_MAP[normName(name)];return fn?exerciseDatabase.find(f=>f.familyName===fn)||null:null;})();
+  return exerciseDatabase.find(f=>f.familyName===name)||(()=>{const fn=LEGACY_FAMILY_MAP[normName(name)];return fn?exerciseDatabase.find(f=>f.familyName===fn)||null:null;})();
 }
 
 // Returns all ExerciseFamily entries that target a given muscle name.
@@ -228,7 +228,6 @@ const SEED=[
 let allUsers=JSON.parse(localStorage.getItem('lifttrack_users')||'[]');
 let currentUser=null; // set by selectUser()
 let newUserNameInput='';
-let newUserSeed=false;
 
 function uKey(key){return currentUser?`lifttrack_${currentUser.id}_${key}`:`lifttrack_${key}`;}
 
@@ -385,10 +384,6 @@ function renderUserPicker(){
     <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:4px">
       <div style="font-size:12px;color:var(--dim);text-align:center">${allUsers.length?'Or add a new user':'Create your profile'}</div>
       <input id="newUserNameInput" placeholder="Your name…" value="${newUserNameInput}" oninput="newUserNameInput=this.value" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none" onkeydown="if(event.key==='Enter')createUserAndInit()">
-      <label style="display:flex;align-items:center;gap:10px;padding:4px 2px;cursor:pointer;font-size:13px;color:var(--dim)">
-        <input type="checkbox" ${newUserSeed?'checked':''} onchange="newUserSeed=this.checked" style="width:16px;height:16px;accent-color:var(--accent)">
-        Load sample workout history
-      </label>
       <button onclick="createUserAndInit()" style="background:var(--accent);color:#0b0b0a;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer">Create Profile</button>
     </div>
   </div>`;
@@ -398,9 +393,9 @@ async function createUserAndInit(){
   const inp=document.getElementById('newUserNameInput');
   const name=(inp?inp.value:newUserNameInput).trim();
   if(!name){toast('Enter a name',true);return;}
-  const ok=createUser(name,newUserSeed);
+  const ok=createUser(name);
   if(!ok)return;
-  newUserNameInput='';newUserSeed=false;
+  newUserNameInput='';
   await initUserData();
 }
 
@@ -947,9 +942,6 @@ function render(){
   const totalVol=Math.round(sessions.reduce((t,s)=>t+sVol(s),0));
   const last=sessions[sessions.length-1];
   const da=last?daysSince(last.date):0;
-  const next=nextSugg();
-  const sched=getNextScheduled();
-  const nc=getFocusColor((sched||next).focus);
   const exList=allExNames();
   if(!selEx&&exList.length)selEx=exList[0];
 
@@ -985,11 +977,6 @@ function render(){
         <div class="stat-cell-label">${t('streak')}</div>
         <div class="stat-cell-val" style="color:var(--gold2)">${calcStreak()}<span style="font-size:11px;color:var(--muted)"> ${t('streak_unit')}</span></div>
       </div>
-      <div class="stat-cell next stat-cell-wide" onclick="switchTab('schedule')">
-        <div class="stat-cell-label" style="color:${nc}aa">${sched?t('scheduled'):t('next_up')}</div>
-        <div class="stat-cell-val" style="color:${nc};font-size:18px;white-space:normal;line-height:1.1">${tFocus((sched||next).focus)}</div>
-        ${sched?`<div class="stat-cell-sub">${fmtDate(sched.date)}</div>`:''}
-      </div>
     </div>
 
     <div class="content" id="content">
@@ -997,18 +984,20 @@ function render(){
     </div>
 
     ${tab==='add'&&!selectingTemplate?`
-    <div class="dock" style="background:var(--bg);border-top:1px solid rgba(255,255,255,.07);box-shadow:none;padding:10px 14px">
-      ${showTimerDock
-        ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 14px;box-shadow:0 4px 20px rgba(245,212,122,.4);width:100%;box-sizing:border-box">
-            ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 0;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em;flex:1;text-align:center">${fmtTimer(s)}</button>`).join('')}
-            <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:#0b0b0a;font-size:18px;cursor:pointer;opacity:.6;padding:0 4px;flex-shrink:0">×</button>
-          </div>`
-        :`<button onclick="${restTimerEnd?'cancelRestTimer()':'showTimerDock=true;render()'}" style="background:linear-gradient(135deg,#f5d47a,#c89830);border:none;border-radius:999px;padding:13px 0;cursor:pointer;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center;width:100%">
-            ${restTimerEnd
-              ?`<span style="font-size:14px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:#0b0b0a" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>`
-              :`<span style="font-size:13px;font-weight:900;font-family:'DM Sans',sans-serif;color:#0b0b0a;letter-spacing:.08em">TIMER</span>`}
-          </button>`
-      }
+    <div class="dock" style="background:transparent;border:none;box-shadow:none">
+      <div class="dock-inner" style="width:100%;box-sizing:border-box;padding:10px 10px;border-radius:18px">
+        ${showTimerDock
+          ?`<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f5d47a,#c89830);border-radius:999px;padding:10px 12px;width:100%;box-sizing:border-box">
+              ${[60,90,120,150,180].map(s=>`<button onclick="showTimerDock=false;startRestTimer(${s})" style="background:rgba(0,0,0,.15);border:none;border-radius:999px;padding:6px 0;color:#0b0b0a;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;cursor:pointer;letter-spacing:.02em;flex:1;text-align:center">${fmtTimer(s)}</button>`).join('')}
+              <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:#0b0b0a;font-size:18px;cursor:pointer;opacity:.6;padding:0 4px;flex-shrink:0">×</button>
+            </div>`
+          :`<button onclick="${restTimerEnd?'cancelRestTimer()':'showTimerDock=true;render()'}" style="background:linear-gradient(135deg,#f5d47a,#c89830);border:none;border-radius:999px;padding:13px 0;cursor:pointer;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center;width:100%">
+              ${restTimerEnd
+                ?`<span style="font-size:14px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:#0b0b0a" id="rest-timer-num">${fmtTimer(Math.max(0,Math.ceil((restTimerEnd-Date.now())/1000)))}</span>`
+                :`<span style="font-size:13px;font-weight:900;font-family:'DM Sans',sans-serif;color:#0b0b0a;letter-spacing:.08em">TIMER</span>`}
+            </button>`
+        }
+      </div>
     </div>`:`
     <div class="dock">
       <div class="dock-inner">

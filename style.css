@@ -234,8 +234,8 @@ body{
    ============================================================ */
 .stat-strip{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
   padding:10px 12px 12px;
   border-bottom:1px solid rgba(255,255,255,.06);
   flex-shrink:0;
@@ -246,7 +246,7 @@ body{
 
 .stat-cell{
   border-radius: var(--r16);
-  padding:10px 12px;
+  padding:8px 8px;
   border:1px solid rgba(255,255,255,.10);
   background:
     radial-gradient(180px 90px at 35% 0%, rgba(232,184,75,.08), transparent 60%),
@@ -273,7 +273,7 @@ body{
 }
 .stat-cell-val{
   font-family:'Bebas Neue', cursive;
-  font-size:24px;
+  font-size:20px;
   line-height:1;
 }
 .stat-cell-sub{
@@ -1731,7 +1731,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.62);}
 .rw-chevron.open{transform:rotate(180deg);}
 
 @media (max-width:380px){
-  .stat-strip{grid-template-columns:repeat(2,1fr);}
+  .stat-strip{grid-template-columns:repeat(4,1fr);}
 }
 
 /* ─── Exercise Info Button ─────────────────────────────────────── */
