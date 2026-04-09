@@ -2036,7 +2036,7 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).catch(()=>{});
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/lifttrack/sw.js', { scope: '/lifttrack/' }).then(reg => reg.update()).catch(()=>{});
   // Try to restore saved user
   const savedId=localStorage.getItem('lifttrack_current_user');
   if(savedId&&allUsers.find(u=>u.id===savedId)){
