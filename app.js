@@ -418,6 +418,8 @@ let exDetailName=null;
 let collapsedExercises=new Set();
 let timerPickerEx=null;
 let restTimerEnd=null,restTimerInterval=null;
+let selectingTemplate=false;
+let showTimerDock=false;
 let lang=localStorage.getItem('lifttrack_lang')||'en';
 let showSettings=false;
 
@@ -628,6 +630,9 @@ function getMuscleStats(){
 // ═══════════════════════════════════════════════
 function loadSchedules(){schedules=JSON.parse(localStorage.getItem(uKey('schedules'))||'[]');}
 function saveSchedules(){localStorage.setItem(uKey('schedules'),JSON.stringify(schedules));}
+function saveDraft(){localStorage.setItem(uKey('draft'),JSON.stringify(addForm));}
+function loadDraft(){return JSON.parse(localStorage.getItem(uKey('draft'))||'null');}
+function clearDraft(){localStorage.removeItem(uKey('draft'));}
 function loadRecurringSchedules(){recurringSchedules=JSON.parse(localStorage.getItem(uKey('recurring'))||'[]');}
 function saveRecurringSchedules(){localStorage.setItem(uKey('recurring'),JSON.stringify(recurringSchedules));}
 function loadCustomTemplates(){customTemplates=JSON.parse(localStorage.getItem(uKey('templates'))||'[]');}
@@ -935,6 +940,16 @@ function render(){
       ${tab==='sessions'?renderSessions():tab==='schedule'?renderScheduleTab():tab==='muscles'?renderMusclesTab():tab==='overview'?renderOverview():renderAdd()}
     </div>
 
+    ${tab==='add'?`
+    <div class="dock" style="background:transparent;border:none;box-shadow:none">
+      <div class="dock-inner" style="justify-content:center">
+        ${showTimerDock?`<div style="display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 16px">
+          <span style="font-size:11px;color:var(--dim)">Rest:</span>
+          ${[60,90,120,150,180].map(s=>`<button class="timer-preset-btn" onclick="showTimerDock=false;startRestTimer(${s})">${fmtTimer(s)}</button>`).join('')}
+          <button onclick="showTimerDock=false;render()" style="background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;padding:0 4px">×</button>
+        </div>`:`<button onclick="showTimerDock=!showTimerDock;render()" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5d47a,#c89830);border:none;cursor:pointer;font-size:22px;box-shadow:0 4px 20px rgba(245,212,122,.4);display:flex;align-items:center;justify-content:center">⏱</button>`}
+      </div>
+    </div>`:`
     <div class="dock">
       <div class="dock-inner">
         ${[['sessions','📋',t('tab_log')],['schedule','📅',t('tab_plan')]].map(([tb,ic,lb])=>`
@@ -949,7 +964,7 @@ function render(){
             <span class="tab-icon">${ic}</span><span class="tab-label">${lb}</span><span class="tab-dot"></span>
           </button>`).join('')}
       </div>
-    </div>
+    </div>`}
     ${renderExDetailModal()}
     ${renderSettingsModal()}
     ${restTimerEnd?`<div style="position:fixed;bottom:calc(env(safe-area-inset-bottom)+72px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent);border-radius:999px;padding:10px 20px;display:flex;align-items:center;gap:14px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.5)">
@@ -1398,10 +1413,11 @@ function renderScheduleTab(){
     const [sy,sm]=s.date.split('-').map(Number);
     if(sy===schedViewYear&&sm-1===schedViewMonth) addDot(s.date,s.focus);
   });
-  // Add recurring dots for every matching weekday in the month
+  // Add recurring dots only for future/today matching weekdays in the month
   const daysInMonthR=new Date(schedViewYear,schedViewMonth+1,0).getDate();
   for(let d=1;d<=daysInMonthR;d++){
     const ds=`${schedViewYear}-${String(schedViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(ds<today)continue;
     const dow=dateDow(ds);
     recurringSchedules.forEach(r=>{if(r.dow===dow)addDot(ds,r.focus);});
   }
@@ -1725,6 +1741,22 @@ function renderExDetailModal(){
 }
 
 function renderAdd(){
+  if(selectingTemplate){
+    const allF=getAllFocuses();
+    return`
+      <div class="add-header"><div class="add-title">${t('log_workout')}</div></div>
+      <div class="add-body">
+        <div class="form-label" style="margin-bottom:12px;font-size:13px">Choose a template</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${allF.map(f=>{
+            const color=getFocusColor(f);
+            return`<button onclick="pickTemplate('${f.replace(/'/g,"\\'")}') "style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${color};border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:${color};font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif">${tFocus(f)}</button>`;
+          }).join('')}
+          <button onclick="pickTemplate('') " style="background:none;border:1px dashed var(--border);border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:var(--dim);font-size:14px;font-family:'DM Sans',sans-serif">No template — blank session</button>
+        </div>
+      </div>`;
+  }
+
   const f=addForm;
   const last=f.templateFrom?sessions.find(s=>s.id===f.templateFrom.id):null;
   const lastByEx={};
@@ -1742,7 +1774,7 @@ function renderAdd(){
           <input class="form-input" type="date" value="${f.date}" onchange="addForm.date=this.value">
         </div>
         <div class="form-group">
-          <label class="form-label">${t('focus')}</label>
+          <label class="form-label">Template</label>
           <select class="form-input" onchange="changeFocus(this.value)">
             ${getAllFocuses().map(foc=>`<option value="${foc}" ${f.focus===foc?'selected':''}>${tFocus(foc)}</option>`).join('')}
           </select>
@@ -1783,11 +1815,8 @@ function renderAdd(){
                   }
                 </div>
                 ${!isCollapsed&&ex.name?`<button class="ex-info-btn" onclick="openExDetail('${ex.name.replace(/'/g,"\\'")}')">ⓘ</button>`:''}
-                <button class="ex-info-btn" onclick="toggleTimerPicker(${ei})" title="Rest timer">⏱</button>
                 <button class="rm-ex-btn-add" onclick="removeEx(${ei})">×</button>
               </div>
-
-              ${showTimerPick?`<div class="timer-picker-row"><span style="font-size:11px;color:var(--dim);margin-right:6px">Rest:</span>${[60,90,120,150,180].map(s=>`<button class="timer-preset-btn" onclick="startRestTimer(${s})">${fmtTimer(s)}</button>`).join('')}</div>`:''}
 
               ${isCollapsed?'':`
                 ${sugg?`<div class="overload-hint"><span class="oh-icon">${sugg.type==='increase'?'🔼':sugg.type==='progress'?'💪':'🔄'}</span><div class="oh-text">${sugg.text}<br><strong>${sugg.suggestion}</strong></div><button class="oh-apply" onclick="applySugg(${ei},${sugg.sets},${sugg.reps},${sugg.weight})">${t('apply')}</button></div>`:''}
@@ -1819,19 +1848,39 @@ function renderAdd(){
       ${showExerciseLibrary?renderExerciseBrowser():''}
       <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">${t('manual_ex')}</button>
       <button class="save-btn" id="save-btn" onclick="saveSession()">${t('save_session')}</button>
-      <div style="height:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="leaveAndSaveDraft()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Leave & save draft</button>
+        <button onclick="leaveAndDiscard()" style="flex:1;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Leave & discard</button>
+      </div>
+      <div style="height:80px"></div>
     </div>`;
 }
 
 // ═══════════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════════
-function switchTab(t){
-  tab=t; acActive=null;
-  if(t==='add'){addForm=defaultForm();showExerciseLibrary=false;collapsedExercises=new Set();timerPickerEx=null;loadTemplate(addForm.focus);}
-  else{if(t!=='muscles'){selMuscle=null;selGroup=null;progressGroup=null;progressMuscle=null;}render();}
+function switchTab(tb){
+  acActive=null;
+  if(tb==='add'){
+    const draft=loadDraft();
+    if(draft){addForm=draft;tab='add';selectingTemplate=false;}
+    else{tab='add';selectingTemplate=true;addForm=defaultForm();}
+    showExerciseLibrary=false;collapsedExercises=new Set();timerPickerEx=null;showTimerDock=false;
+  } else {
+    tab=tb;
+    if(tb!=='muscles'){selMuscle=null;selGroup=null;progressGroup=null;progressMuscle=null;}
+  }
+  render();
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},0);
 }
+function pickTemplate(focus){
+  selectingTemplate=false;
+  addForm=defaultForm();
+  addForm.focus=focus;
+  loadTemplate(focus);
+}
+function leaveAndDiscard(){clearDraft();tab='sessions';addForm=defaultForm();selectingTemplate=false;render();}
+function leaveAndSaveDraft(){saveDraft();tab='sessions';render();}
 function selectEx(name){selEx=name;render();}
 function openExDetail(name){exDetailName=name;render();document.body.classList.add('ex-detail-open');}
 function closeExDetail(){exDetailName=null;render();document.body.classList.remove('ex-detail-open');}
@@ -1859,7 +1908,7 @@ function useAsTemplate(id){
     exercises:s.exercises.map(ex=>({name:ex.name,ss:ex.ss||false,sets:ex.sets.map(set=>({r:String(set.r),w:String(set.w)}))})),
     templateFrom:{date:s.date,id:s.id}
   };
-  tab='add';acActive=null;render();
+  tab='add';selectingTemplate=false;acActive=null;render();
   setTimeout(()=>{const c=document.getElementById('content');if(c)c.scrollTop=0;},50);
 }
 
@@ -1969,7 +2018,7 @@ async function saveSession(){
   const exs=addForm.exercises.filter(e=>e.name.trim()).map(e=>({name:e.name.trim(),sets:e.sets.filter(s=>s.r&&s.w).map(s=>({r:+s.r,w:+s.w}))})).filter(e=>e.sets.length);
   if(!exs.length){toast(t('add_at_least'),true);if(btn)btn.disabled=false;return;}
   loading=true;render();
-  try{await addSession({date:addForm.date,focus:addForm.focus,exercises:exs});toast(t('session_saved'));tab='sessions';addForm=defaultForm();}
+  try{await addSession({date:addForm.date,focus:addForm.focus,exercises:exs});clearDraft();toast(t('session_saved'));tab='sessions';selectingTemplate=false;addForm=defaultForm();}
   catch(e){toast('Error: '+e.message,true);}
   loading=false;render();
 }
