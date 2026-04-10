@@ -73,7 +73,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 
 html{
-  height:100%;
+  height:calc(100% + var(--bottom-gap,0px));
   overflow:hidden;
   overscroll-behavior:none;
   background-color:#100c0a;
@@ -1132,11 +1132,10 @@ body{
    ============================================================ */
 .dock{
   position:fixed;
-  left:0;
-  right:0;
-  bottom:calc(-1 * var(--bottom-gap,0px));
-  padding:0 12px calc(var(--bottom-gap,0px) + 8px);
-  background:rgba(16,14,12,.96);
+  left:12px;
+  right:12px;
+  bottom:0;
+  padding-bottom:8px;
   z-index:210;
   pointer-events:none;
 }
