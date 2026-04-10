@@ -1135,7 +1135,7 @@ body{
   left:12px;
   right:12px;
   bottom:0;
-  padding-bottom:8px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 8px);
   z-index:210;
   pointer-events:none;
 }

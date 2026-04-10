@@ -438,7 +438,7 @@ async function createUserAndInit(){
 
 async function initUserData(){
   loading=true;render();
-  loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedDefaultTemplates();if(currentUser&&currentUser.hasSeed)seedBoxingTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
+  loadSchedules();loadRecurringSchedules();loadCustomTemplates();seedDefaultTemplates();loadBuiltinTemplates();loadBuiltinColors();loadHiddenBuiltins();
   try{await initDb();await loadSessions();}
   catch(e){toast(t('failed_load'),true);}
   loading=false;render();
@@ -466,6 +466,7 @@ let selectingTemplate=false;
 let showTimerDock=false;
 let lang=localStorage.getItem('lifttrack_lang')||'en';
 let showSettings=false;
+let leaveModalOpen=false;
 
 const STRINGS={
   en:{
@@ -638,8 +639,17 @@ function thisWeekCount(){
   return sessions.filter(s=>s.date>=wk&&s.date<=sunStr).length;
 }
 function thisWeekTarget(){
-  const days=new Set(recurringSchedules.map(r=>r.dow));
-  return days.size||3;
+  const wk=weekMonday(new Date().toISOString().split('T')[0]);
+  const d=new Date(wk+'T12:00:00');
+  const scheduled=new Set();
+  for(let i=0;i<7;i++){
+    const ds=d.toISOString().split('T')[0];
+    if(schedules.some(s=>s.date===ds))scheduled.add(ds);
+    const dow=(d.getDay()+6)%7;
+    if(recurringSchedules.some(r=>r.dow===dow))scheduled.add(ds);
+    d.setDate(d.getDate()+1);
+  }
+  return scheduled.size;
 }
 function calcStreak(){
   if(!sessions.length)return 0;
@@ -783,14 +793,14 @@ const DEFAULT_TEMPLATES=[
   {name:'Legs',color:'#67b06f',exercises:['Leg Press Machine','Leg Extension Machine','Leg Curl Machine','Dumbbell Bulgarian Split Squat','Standing Calf Raise Machine']},
 ];
 function seedDefaultTemplates(){
-  let changed=false;
+  if(localStorage.getItem(uKey('defaultsSeeded')))return;
   for(const tmpl of DEFAULT_TEMPLATES){
     if(!customTemplates.some(t=>t.name===tmpl.name)){
       customTemplates.push({id:crypto.randomUUID(),name:tmpl.name,exercises:[...tmpl.exercises],color:tmpl.color});
-      changed=true;
     }
   }
-  if(changed)saveCustomTemplates();
+  saveCustomTemplates();
+  localStorage.setItem(uKey('defaultsSeeded'),'1');
 }
 const BUILTIN_TEMPLATE_DEFAULTS={
   Push:['Barbell Bench Press','Dumbbell Incline Press','Dumbbell Overhead Press','Cable Lateral Raise','Pec Deck','Cable Overhead Triceps Extension'],
@@ -836,7 +846,17 @@ function addRecurring(dow,focus){
 function deleteRecurring(id){recurringSchedules=recurringSchedules.filter(r=>r.id!==id);saveRecurringSchedules();render();}
 function getNextScheduled(){
   const today=new Date().toISOString().split('T')[0];
-  const oneOff=schedules.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
+  const todayDow=(new Date().getDay()+6)%7;
+  const loggedToday=sessions.some(s=>s.date===today);
+  // If today is scheduled and not yet logged, return today
+  if(!loggedToday){
+    const todayOneOff=schedules.find(s=>s.date===today)||null;
+    if(todayOneOff)return todayOneOff;
+    const todayRecurring=recurringSchedules.find(r=>r.dow===todayDow)||null;
+    if(todayRecurring)return{date:today,focus:todayRecurring.focus,recurring:true};
+  }
+  // Otherwise find next future scheduled session
+  const oneOff=schedules.filter(s=>s.date>today).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
   const recurring=recurringSchedules.map(r=>({date:nextDateForDow(r.dow),focus:r.focus,recurring:true})).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
   if(!oneOff&&!recurring)return null;
   if(!oneOff)return recurring;
@@ -997,6 +1017,7 @@ function render(){
   const da=last?daysSince(last.date):0;
   const exList=allExNames();
   if(!selEx&&exList.length)selEx=exList[0];
+  const twc=thisWeekCount();const twt=thisWeekTarget();
 
   document.getElementById('app').innerHTML=`
     ${loading?'<div class="loading-overlay"><div class="spinner"></div></div>':''}
@@ -1024,7 +1045,7 @@ function render(){
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">${t('this_week')}</div>
-        <div class="stat-cell-val" style="color:var(--accent)">${thisWeekCount()}<span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:600"> / ${thisWeekTarget()}</span></div>
+        <div class="stat-cell-val" style="color:var(--accent)">${twc}${twt>0?`<span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:600"> / ${twt}</span>`:''}</div>
       </div>
       <div class="stat-cell">
         <div class="stat-cell-label">${t('streak')}</div>
@@ -1069,6 +1090,7 @@ function render(){
     </div>`}
     ${renderExDetailModal()}
     ${renderSettingsModal()}
+    ${renderLeaveModal()}
   `;
 
   const c=document.getElementById('content');
@@ -1772,6 +1794,20 @@ function renderExerciseBrowser(addFn){
 // ═══════════════════════════════════════════════
 // SETTINGS MODAL
 // ═══════════════════════════════════════════════
+function renderLeaveModal(){
+  if(!leaveModalOpen)return'';
+  return`
+    <div class="settings-backdrop" onclick="leaveModalOpen=false;render()"></div>
+    <div class="settings-sheet" style="padding-bottom:calc(env(safe-area-inset-bottom) + 16px)">
+      <div class="settings-handle"></div>
+      <div class="settings-title">Leave workout?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px 8px">
+        <button onclick="leaveModalOpen=false;leaveAndSaveDraft()" style="width:100%;background:var(--card2);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--text2);cursor:pointer">Save draft &amp; leave</button>
+        <button onclick="leaveModalOpen=false;leaveAndDiscard()" style="width:100%;background:rgba(207,75,75,.08);border:1px solid rgba(207,75,75,.25);border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;color:#c27b7b;cursor:pointer">Discard &amp; leave</button>
+      </div>
+    </div>`;
+}
+
 function renderSettingsModal(){
   if(!showSettings)return'';
   return`
@@ -1848,6 +1884,8 @@ function renderExDetailModal(){
 function renderAdd(){
   if(selectingTemplate){
     const allF=getAllFocuses();
+    const sc=getNextScheduled();
+    const scheduledFocus=sc&&sc.date===new Date().toISOString().split('T')[0]?sc.focus:null;
     return`
       <div class="add-header"><div class="add-title">${t('log_workout')}</div></div>
       <div class="add-body">
@@ -1855,7 +1893,8 @@ function renderAdd(){
         <div style="display:flex;flex-direction:column;gap:10px">
           ${allF.map(f=>{
             const color=getFocusColor(f);
-            return`<button onclick="pickTemplate('${f.replace(/'/g,"\\'")}') "style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${color};border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:${color};font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif">${tFocus(f)}</button>`;
+            const isSched=scheduledFocus&&f===scheduledFocus;
+            return`<button onclick="pickTemplate('${f.replace(/'/g,"\\'")}') "style="background:${isSched?'rgba(42,32,11,.80)':'var(--card)'};border:1px solid ${isSched?color:'var(--border)'};border-left:3px solid ${color};border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:${color};font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:space-between">${tFocus(f)}${isSched?`<span style="font-size:10px;font-weight:900;letter-spacing:.08em;background:${color}22;border:1px solid ${color}55;border-radius:999px;padding:3px 8px;opacity:.9">SCHEDULED</span>`:''}</button>`;
           }).join('')}
           <button onclick="pickTemplate('') " style="background:none;border:1px dashed var(--border);border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;color:var(--dim);font-size:14px;font-family:'DM Sans',sans-serif">No template — blank session</button>
         </div>
@@ -1871,7 +1910,12 @@ function renderAdd(){
   const currentNames=f.exercises.map(e=>e.name).filter(Boolean);
 
   return`
-    <div class="add-header"><div class="add-title">${t('log_workout')}</div></div>
+    <div class="add-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="add-title">${t('log_workout')}</div>
+        <button onclick="leaveModalOpen=true;render()" style="background:rgba(207,75,75,.12);border:1px solid rgba(207,75,75,.30);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#c27b7b;cursor:pointer;flex-shrink:0">×</button>
+      </div>
+    </div>
     <div class="add-body">
       <div class="form-row">
         <div class="form-group">
@@ -1952,10 +1996,6 @@ function renderAdd(){
       ${showExerciseLibrary?renderExerciseBrowser():''}
       <button class="ghost-btn" style="margin-top:-4px;font-size:9px;opacity:.55" onclick="addBlankExercise()">${t('manual_ex')}</button>
       <button class="save-btn" id="save-btn" onclick="saveSession()">${t('save_session')}</button>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button onclick="leaveAndSaveDraft()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Leave & save draft</button>
-        <button onclick="leaveAndDiscard()" style="flex:1;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--dim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Leave & discard</button>
-      </div>
       <div style="height:80px"></div>
     </div>`;
 }
