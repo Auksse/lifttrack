@@ -2208,7 +2208,8 @@ async function init(){
   } else {
     render(); // shows user picker
   }
-  // Temporary diagnostic — auto-show on load, tap to dismiss
-  setTimeout(showDebug, 500);
+  // Set bottom gap variable for iOS PWA safe area below viewport
+  const gap = Math.max(0, screen.height - window.innerHeight);
+  document.documentElement.style.setProperty('--bottom-gap', gap + 'px');
 }
 init();
