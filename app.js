@@ -1009,7 +1009,6 @@ function render(){
             <div class="rest-badge ${da>4?'warn':''}">${da}${t('rest')}</div>
           </div>
         </div>
-        <button onclick="showDebug()" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:4px 6px;font-family:monospace">dbg</button>
         <button class="settings-btn" onclick="showSettings=!showSettings;render()" title="${t('settings')}">⚙</button>
       </div>
     </div>
@@ -1152,7 +1151,7 @@ function renderSessions(){
 
             ${open?`
               <div class="s-body">
-                ${isEditing?renderEditForm(s):`
+                ${isEditing?renderEditForm():`
                   <div class="s-body-inner">
                     ${s.exercises.map(ex=>{
                       const isPR=prExNames.includes(ex.name);
@@ -1183,7 +1182,7 @@ function renderSessions(){
   `;
 }
 
-function renderEditForm(s){
+function renderEditForm(){
   const f=editForm;
   return`
     <div class="edit-form" onclick="event.stopPropagation()">
@@ -2142,25 +2141,42 @@ async function confirmDelete(id){
 // INIT
 // ═══════════════════════════════════════════════
 function showDebug(){
-  const existing=document.getElementById('_dbg');
-  if(existing){existing.remove();return;}
+  // Toggle: remove if already shown
+  if(document.getElementById('_dbg')){
+    ['_dbg','_dbg_top','_dbg_bot'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
+    return;
+  }
+  // Red line at top:0 (viewport top edge)
+  const top=document.createElement('div');
+  top.id='_dbg_top';
+  top.style.cssText='position:fixed;top:0;left:0;right:0;height:4px;background:#ff3b30;z-index:99999;pointer-events:none';
+  // Red line at bottom:0 (viewport bottom edge)
+  const bot=document.createElement('div');
+  bot.id='_dbg_bot';
+  bot.style.cssText='position:fixed;bottom:0;left:0;right:0;height:4px;background:#ff3b30;z-index:99999;pointer-events:none';
+  // Info panel — anchored to top so it doesn't overlap the bottom line
   const d=document.createElement('div');
   d.id='_dbg';
-  d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.92);color:#f7d98a;font-size:11px;font-family:monospace;padding:8px 10px;z-index:99999;line-height:1.7;border-top:1px solid #f7d98a';
-  const si=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'n/a';
+  d.style.cssText='position:fixed;top:60px;left:12px;right:12px;background:rgba(0,0,0,.95);color:#f7d98a;font-size:12px;font-family:monospace;padding:10px 12px;z-index:99999;line-height:1.8;border-radius:10px;border:1px solid #f7d98a55';
+  const app=document.getElementById('app');
+  const appRect=app?app.getBoundingClientRect():{};
   d.innerHTML=`
-    window.innerHeight: <b>${window.innerHeight}px</b><br>
-    screen.height: <b>${screen.height}px</b><br>
-    documentElement.clientHeight: <b>${document.documentElement.clientHeight}px</b><br>
-    #app offsetHeight: <b>${(document.getElementById('app')||{}).offsetHeight||'?'}px</b><br>
-    safe-area top: <b>${si('--sat')||si('padding-top')||'use CSS'}</b><br>
-    safe-area bottom: <b>${si('--sab')||'use CSS'}</b><br>
-    <span style="color:#aaa;font-size:10px">tap here to close</span>
+    <b>Viewport</b><br>
+    window.innerHeight: ${window.innerHeight}px<br>
+    screen.height: ${screen.height}px<br>
+    gap (screen - viewport): ${screen.height-window.innerHeight}px<br>
+    <br>
+    <b>#app</b><br>
+    offsetHeight: ${app?app.offsetHeight:'?'}px<br>
+    rect.top: ${appRect.top||0}px &nbsp; rect.bottom: ${Math.round(appRect.bottom)||0}px<br>
+    <br>
+    <b>Red lines = top:0 and bottom:0 of viewport</b><br>
+    Does the bottom red line touch the screen edge?<br>
+    <span style="color:#aaa;font-size:10px">Tap to close</span>
   `;
-  // inject CSS vars so we can read safe-area values
-  document.documentElement.style.setProperty('--sat','env(safe-area-inset-top)');
-  document.documentElement.style.setProperty('--sab','env(safe-area-inset-bottom)');
-  d.onclick=()=>d.remove();
+  d.onclick=()=>['_dbg','_dbg_top','_dbg_bot'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
+  document.body.appendChild(top);
+  document.body.appendChild(bot);
   document.body.appendChild(d);
 }
 
