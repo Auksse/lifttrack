@@ -2146,6 +2146,19 @@ function showDebug(){
     ['_dbg','_dbg_top','_dbg_bot'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
     return;
   }
+  // Measure env() safe area values by making a 0×0 element with height=env(...)
+  function readEnv(prop){
+    const el=document.createElement('div');
+    el.style.cssText=`position:fixed;top:0;left:0;width:0;height:${prop};visibility:hidden;pointer-events:none`;
+    document.documentElement.appendChild(el);
+    const val=el.offsetHeight;
+    el.remove();
+    return val;
+  }
+  const sat=readEnv('env(safe-area-inset-top,0px)');
+  const sab=readEnv('env(safe-area-inset-bottom,0px)');
+  const sal=readEnv('env(safe-area-inset-left,0px)');
+  const sar=readEnv('env(safe-area-inset-right,0px)');
   // Red line at top:0 (viewport top edge)
   const top=document.createElement('div');
   top.id='_dbg_top';
@@ -2154,25 +2167,30 @@ function showDebug(){
   const bot=document.createElement('div');
   bot.id='_dbg_bot';
   bot.style.cssText='position:fixed;bottom:0;left:0;right:0;height:4px;background:#ff3b30;z-index:99999;pointer-events:none';
-  // Info panel — anchored to top so it doesn't overlap the bottom line
+  // Info panel
   const d=document.createElement('div');
   d.id='_dbg';
-  d.style.cssText='position:fixed;top:60px;left:12px;right:12px;background:rgba(0,0,0,.95);color:#f7d98a;font-size:12px;font-family:monospace;padding:10px 12px;z-index:99999;line-height:1.8;border-radius:10px;border:1px solid #f7d98a55';
+  d.style.cssText='position:fixed;top:80px;left:12px;right:12px;background:rgba(0,0,0,.97);color:#f7d98a;font-size:13px;font-family:monospace;padding:12px 14px;z-index:99999;line-height:2;border-radius:10px;border:1px solid #f7d98a55';
   const app=document.getElementById('app');
   const appRect=app?app.getBoundingClientRect():{};
   d.innerHTML=`
-    <b>Viewport</b><br>
-    window.innerHeight: ${window.innerHeight}px<br>
+    <b>Screen</b><br>
     screen.height: ${screen.height}px<br>
-    gap (screen - viewport): ${screen.height-window.innerHeight}px<br>
+    window.innerHeight: ${window.innerHeight}px<br>
+    gap: ${screen.height-window.innerHeight}px<br>
+    devicePixelRatio: ${window.devicePixelRatio}<br>
+    <br>
+    <b>Safe area (measured via element)</b><br>
+    inset-top: ${sat}px<br>
+    inset-bottom: ${sab}px<br>
+    inset-left: ${sal}px &nbsp; inset-right: ${sar}px<br>
     <br>
     <b>#app</b><br>
     offsetHeight: ${app?app.offsetHeight:'?'}px<br>
     rect.top: ${appRect.top||0}px &nbsp; rect.bottom: ${Math.round(appRect.bottom)||0}px<br>
     <br>
-    <b>Red lines = top:0 and bottom:0 of viewport</b><br>
-    Does the bottom red line touch the screen edge?<br>
-    <span style="color:#aaa;font-size:10px">Tap to close</span>
+    <span style="color:#ff3b30">Red line = viewport bottom (bottom:0)</span><br>
+    <span style="color:#aaa;font-size:11px">Tap to dismiss</span>
   `;
   d.onclick=()=>['_dbg','_dbg_top','_dbg_bot'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
   document.body.appendChild(top);
@@ -2190,5 +2208,7 @@ async function init(){
   } else {
     render(); // shows user picker
   }
+  // Temporary diagnostic — auto-show on load, tap to dismiss
+  setTimeout(showDebug, 500);
 }
 init();

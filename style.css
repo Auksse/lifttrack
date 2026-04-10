@@ -1132,11 +1132,10 @@ body{
    ============================================================ */
 .dock{
   position:fixed;
-  left:0;
-  right:0;
+  left:12px;
+  right:12px;
   bottom:0;
-  padding:0 12px env(safe-area-inset-bottom);
-  background:rgba(16,14,12,.96);
+  padding-bottom:8px;
   z-index:210;
   pointer-events:none;
 }
