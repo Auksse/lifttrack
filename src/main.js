@@ -5,12 +5,15 @@
 /**
  * Typography: one variable family, self-hosted.
  *
- * Space Grotesk covers headings, body and figures at different weights.
- * A single variable file replaces the previous three static families,
- * which is both more cohesive and a smaller download — and nothing is
- * fetched from a CDN, so type survives being offline.
+ * Inter covers headings, body and figures at different weights. The `opsz`
+ * build carries Inter's optical-size axis alongside weight, so the same
+ * family is drawn differently for a 10px label and a 52px heading —
+ * tighter spacing and finer detail at display sizes, more open at small
+ * ones — rather than one design scaled up and down.
+ *
+ * Nothing is fetched from a CDN, so type survives being offline.
  */
-import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/inter/opsz.css';
 
 import './styles/tokens.css';
 import './styles/base.css';

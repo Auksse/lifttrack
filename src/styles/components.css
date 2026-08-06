@@ -14,9 +14,9 @@
 /* Big condensed figure. The one place the display face earns its keep. */
 .figure {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 0.95;
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
@@ -90,13 +90,16 @@
 
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 700;
+  /* Inter runs to 900; 800 gives the hero presence a 700 cannot at this
+     size, without tipping into the mushy top of the axis. */
+  font-weight: 800;
   /* Sized for a normal-width grotesque. The condensed face this replaced
      ran to 84px; at these widths "SHOULDERS" would overflow a 393pt
      phone. Long names wrap rather than shrink below the floor. */
   font-size: clamp(34px, 12vw, 52px);
-  line-height: 0.96;
-  letter-spacing: -0.03em;
+  line-height: 0.95;
+  /* Inter is spaced for text; large settings need real negative tracking. */
+  letter-spacing: -0.04em;
   text-transform: uppercase;
   color: var(--hero-color, var(--gold));
   margin: var(--space-2) 0 var(--space-3);
@@ -350,13 +353,13 @@
 }
 .metric-value {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   /* Scales with the cell rather than sitting at a fixed 28px. A four-digit
      value like "151.2" overflowed a quarter-width column into its
      neighbour at the fixed size. */
   font-size: clamp(19px, 6.2vw, var(--text-2xl));
   line-height: 0.95;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
   white-space: nowrap;
 }
@@ -685,7 +688,7 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 .rest-time {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-xl);
   line-height: 1;
   color: var(--gold);
@@ -738,7 +741,7 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 .empty-title {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-2xl);
   line-height: 1;
   letter-spacing: var(--tracking-wide);
@@ -813,7 +816,7 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 .sheet-title {
   flex: 1;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-xl);
   line-height: 1;
   letter-spacing: var(--tracking-wide);

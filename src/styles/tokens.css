@@ -81,15 +81,18 @@
   --space-16: 64px;
 
   /* ---- Type ------------------------------------------------------
-     One family throughout: Space Grotesk, a technical grotesque with
-     genuine character — a single-storey g, flat-sided rounds, and
-     numerals with real personality. Headings are the same face at
-     weight 700 rather than a separate display type, which is both
-     more cohesive and how most well-made products set type now.
+     One family throughout: Inter, with both the weight and optical-size
+     axes. Headings are the same face at a heavier weight rather than a
+     separate display type — more cohesive, and how most well-made
+     products set type now.
 
-     Figures use `font-variant-numeric: tabular-nums` (set on body)
-     so columns of numbers align without needing a monospace face. */
-  --font-display: 'Space Grotesk Variable', 'Space Grotesk', -apple-system, system-ui, sans-serif;
+     Inter is also what iOS SF Pro is closest to, so the app reads as
+     native on an iPhone without depending on a font Apple only ships
+     on its own platforms.
+
+     Figures use `font-variant-numeric: tabular-nums` (set on body) so
+     columns of numbers align without needing a monospace face. */
+  --font-display: 'Inter Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-body: var(--font-display);
   --font-mono: var(--font-display);
 
