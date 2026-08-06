@@ -9,8 +9,20 @@ import { t, tFocus, formatDate, formatMonth } from '../../i18n/index.js';
 import { focusColor } from '../../domain/focus.js';
 import {
   sessionVolume, totalVolume, sessionsThisWeek, currentStreak,
-  suggestNextFocus, groupByMonth, isPersonalRecord, daysSince,
+  suggestNextFocus, groupByMonth, isPersonalRecord, daysSince, weekStart,
 } from '../../domain/stats.js';
+import { MUSCLE_GROUPS, readinessByGroup } from '../../domain/muscles.js';
+
+/**
+ * Volume in tonnes, with the precision the magnitude can carry.
+ * "151.2" is too wide for a quarter-width metric cell; "151" is not.
+ */
+function formatTonnage(kg) {
+  const t = kg / 1000;
+  if (t >= 100) return String(Math.round(t));
+  if (t >= 10) return t.toFixed(1);
+  return t.toFixed(1);
+}
 
 function metric(label, value, unit = '', variant = '') {
   return `
@@ -69,6 +81,110 @@ function renderNextUp() {
         ${icon('bolt', { size: 17 })} ${t('start_workout')}
       </button>
     </section>`;
+}
+
+/**
+ * The current training week, Monday first.
+ *
+ * A filled cell is a day you trained, tinted with that session's focus
+ * colour, so the week's shape reads at a glance rather than as a count.
+ */
+function renderWeekStrip() {
+  const labels = ['d_mo', 'd_tu', 'd_we', 'd_th', 'd_fr', 'd_sa', 'd_su'];
+  const start = weekStart(new Date());
+  const todayISO = new Date().toISOString().slice(0, 10);
+
+  const byDate = new Map();
+  state.sessions.forEach((s) => byDate.set(s.date, s));
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { iso, day: d.getDate(), session: byDate.get(iso), isToday: iso === todayISO };
+  });
+
+  return `
+    <div class="week-strip">
+      ${days
+        .map(
+          (d, i) => `
+        <div class="week-day">
+          <span class="week-day-label">${t(labels[i])}</span>
+          <span class="week-day-cell ${d.session ? 'is-trained' : ''} ${d.isToday && !d.session ? 'is-today' : ''}"
+                ${d.session ? `style="--day-color:${focusColor(d.session.focus)}"` : ''}>
+            ${d.session ? icon('check', { size: 14, stroke: 3 }) : d.day}
+          </span>
+        </div>`,
+        )
+        .join('')}
+    </div>`;
+}
+
+/** Compact area chart of recent session volume. */
+function renderVolumeSpark() {
+  const recent = state.sessions.slice(-14);
+  if (recent.length < 3) return '';
+
+  const values = recent.map(sessionVolume);
+  const peak = Math.max(...values, 1);
+  const W = 100;
+  const H = 30;
+
+  const points = values.map((v, i) => [
+    (i / (values.length - 1)) * W,
+    H - 2 - (v / peak) * (H - 4),
+  ]);
+  const line = points.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
+  const area = `${line} L${W},${H} L0,${H} Z`;
+  const [lastX, lastY] = points.at(-1);
+
+  return `
+    <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="spark-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.32"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#spark-fade)"/>
+      <path d="${line}" fill="none" stroke="var(--gold)" stroke-width="1.4"
+            stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <circle cx="${lastX.toFixed(2)}" cy="${lastY.toFixed(2)}" r="2" fill="var(--gold)"
+              vector-effect="non-scaling-stroke"/>
+    </svg>`;
+}
+
+/**
+ * Muscle readiness as six vertical gauges — the recovery model made
+ * visible from the first screen rather than buried a tab away.
+ */
+function renderReadinessRail() {
+  if (state.sessions.length < 2) return '';
+  const readiness = readinessByGroup(state.sessions);
+  const groups = MUSCLE_GROUPS.map((g) => ({ ...g, readiness: readiness[g.id] ?? 1 }));
+
+  return `
+    <button class="readiness-rail" data-action="nav:tab" data-tab="muscles"
+            style="width:100%;text-align:inherit">
+      ${groups
+        .map((g) => {
+          const pct = Math.round(g.readiness * 100);
+          const color =
+            g.readiness >= 0.7 ? 'var(--plate-green)'
+            : g.readiness >= 0.45 ? 'var(--plate-yellow)'
+            : 'var(--plate-red)';
+          return `
+          <span class="readiness-col" style="--gauge-color:${color}">
+            <span class="readiness-pct">${pct}</span>
+            <span class="readiness-gauge">
+              <span class="readiness-fill" style="height:${pct}%"></span>
+            </span>
+            <span class="readiness-name">${esc(g.short || g.label)}</span>
+          </span>`;
+        })
+        .join('')}
+    </button>`;
 }
 
 function renderSessionCard(session) {
@@ -182,10 +298,26 @@ export function renderLogScreen() {
 
       <div class="metric-strip">
         ${metric(t('sessions'), sessions.length, '', 'metric--gold')}
-        ${metric(t('volume'), (totalVolume(sessions) / 1000).toFixed(1), 't', 'metric--info')}
+        ${metric(t('volume'), formatTonnage(totalVolume(sessions)), 't', 'metric--info')}
         ${metric(t('week_short'), sessionsThisWeek(sessions))}
         ${metric(t('streak'), currentStreak(sessions), t('streak_unit'), 'metric--positive')}
       </div>
+
+      <h2 class="section-label">${t('this_week')}</h2>
+      ${renderWeekStrip()}
+
+      ${sessions.length >= 3
+        ? `<h2 class="section-label">
+             ${t('vol_per_session')}
+             <span class="count">${formatTonnage(sessionVolume(sessions.at(-1)))}t</span>
+           </h2>
+           ${renderVolumeSpark()}`
+        : ''}
+
+      ${sessions.length >= 2
+        ? `<h2 class="section-label">${t('recovery_status')}</h2>
+           ${renderReadinessRail()}`
+        : ''}
 
       <section>
         ${monthKeys

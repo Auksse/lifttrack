@@ -32,17 +32,19 @@ const DAY_MS = 86_400_000;
  * exercise database's `muscles[].name`.
  */
 export const MUSCLE_GROUPS = [
-  { id: 'chest',    label: 'Chest',         color: 'var(--focus-push)',
+  // `short` is for the dense readiness rail, where six labels share the
+  // screen width and the full names truncate to "SHOULDE…".
+  { id: 'chest',    label: 'Chest',         short: 'Chest', color: 'var(--focus-push)',
     muscles: ['Chest', 'Upper Chest', 'Lower Chest'] },
-  { id: 'back',     label: 'Back',          color: 'var(--focus-pull)',
+  { id: 'back',     label: 'Back',          short: 'Back',  color: 'var(--focus-pull)',
     muscles: ['Lats', 'Upper Back', 'Mid Back', 'Rhomboids', 'Upper Traps', 'Mid Traps', 'Mid/Lower Traps', 'Spinal Erectors'] },
-  { id: 'shoulders', label: 'Shoulders',    color: 'var(--gold)',
+  { id: 'shoulders', label: 'Shoulders',    short: 'Delts', color: 'var(--gold)',
     muscles: ['Front Delts', 'Side Delts', 'Rear Delts', 'Rotator Cuff'] },
-  { id: 'arms',     label: 'Arms',          color: 'var(--focus-upper)',
+  { id: 'arms',     label: 'Arms',          short: 'Arms',  color: 'var(--focus-upper)',
     muscles: ['Biceps', 'Brachialis', 'Triceps', 'Triceps Long Head', 'Other Triceps Heads', 'Forearms', 'Brachioradialis'] },
-  { id: 'core',     label: 'Core',          color: 'var(--warning)',
+  { id: 'core',     label: 'Core',          short: 'Core',  color: 'var(--warning)',
     muscles: ['Abs', 'Obliques', 'Deep Core', 'Hip Flexors', 'Serratus'] },
-  { id: 'legs',     label: 'Legs & Glutes', color: 'var(--focus-legs)',
+  { id: 'legs',     label: 'Legs & Glutes', short: 'Legs',  color: 'var(--focus-legs)',
     muscles: ['Quads', 'Hamstrings', 'Glutes', 'Adductors', 'Calves', 'Gastrocnemius', 'Soleus'] },
 ];
 
