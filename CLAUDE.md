@@ -1,65 +1,143 @@
-# CLAUDE.md — Gym Log App
+# CLAUDE.md — LiftTrack
 
-This file is read automatically by Claude Code at startup. It provides context about
-the project and how to work on it effectively.
-
----
-
-## Project Overview
-
-A personal gym logging web app.
-
-The user is not a professional developer. Explanations should be clear and practical.
-Prefer making targeted, surgical changes over large rewrites.
+Read automatically at startup. Context about the project and how to work on it.
 
 ---
 
+## What this is
 
-## Active Training Program
+An offline-first strength training log. Progressive web app, installable to the
+iOS home screen, intended to be wrapped with Capacitor for TestFlight later.
 
-The user is following a structured 12-week boxing S&C program.
-Full program details, exercise list, template definitions, starting loads, and progression
-rules are in:
+The user is not a professional developer. Explain changes in plain language.
+
+---
+
+## Tech stack — read this carefully
+
+**There is no backend.** No Python, no FastAPI, no SQLite, no React.
+(An earlier version of this file claimed all four. It was wrong.)
+
+| Layer     | Reality                                                    |
+|-----------|------------------------------------------------------------|
+| Language  | Vanilla JavaScript, ES modules                              |
+| Build     | Vite 7 (`npm run dev` / `npm run build`)                    |
+| UI        | Template-literal rendering into `innerHTML`. No framework.  |
+| Styling   | Plain CSS with custom-property design tokens                |
+| Data      | IndexedDB for sessions, localStorage for profiles/settings  |
+| Offline   | `vite-plugin-pwa` (Workbox) — everything precached          |
+| Charts    | Chart.js, bundled locally                                   |
+| Fonts     | `@fontsource` packages, self-hosted — no CDN at runtime     |
+
+---
+
+## Architecture
 
 ```
-BOXING_PROGRAM.md
+src/
+  main.js              bootstrap, action handlers, render loop
+  state/
+    store.js           single state object; mutations schedule one rAF render
+    storage.js         localStorage: profiles, drafts, settings
+  data/
+    repository.js      IndexedDB behind an interface (see below)
+    templates.js       workout templates
+  domain/              pure logic, no DOM — trivially testable
+    progression.js     rep targets, load increments, next-set suggestions
+    stats.js           volume, streaks, PRs, history
+    focus.js           session focus types and colours
+  i18n/                en.js / fr.js — English is the source of truth
+  ui/
+    icons.js           SVG icon set (24-unit grid, 1.75 stroke)
+    actions.js         event delegation + HTML escaping
+    feedback.js        haptics and synthesised audio cues
+    screens/           one module per screen
+  styles/
+    tokens.css         ALL colour/space/type/motion values live here
+    base.css           reset and app shell
+    components.css     reusable components
 ```
 
-Read that file before doing any work related to exercises, templates, or progression tracking.
+### Rules that matter
 
-### Key things to know about the program
+1. **No inline `onclick`.** Markup declares `data-action="thing:verb"`;
+   handlers register via `onAction()` in `main.js`. Inline handlers forced
+   every function to be a global, which ES modules cannot do.
 
-- 3 sessions per week: Session A (Monday), Session B (Wednesday), Session C (Friday)
-- 3 templates need to exist: "Boxing A — Power + Lower", "Boxing B — Push + Core", "Boxing C — Pull + Conditioning"
-- The exercise library may be missing some exercises — see the checklist in BOXING_PROGRAM.md
-- The user has elbow issues — barbell bench press is intentionally excluded from the program. Do not add it back.
-- Progression is load-based with specific kg increments, not just RPE. See BOXING_PROGRAM.md for rules.
+2. **No hardcoded design values.** Colours, spacing, type sizes, easings and
+   durations all come from `tokens.css`. If you need a value that isn't
+   there, add a token rather than a literal.
 
----
+3. **All data access goes through `data/repository.js`.** Screens never touch
+   IndexedDB. This is deliberate: adding cloud sync later means writing a
+   second implementation of the same interface, not rewriting screens.
 
-## Priority Task List
+4. **Escape interpolated text** with `esc()` from `ui/actions.js`. Exercise
+   names are user input and end up inside HTML attributes.
 
-When the user asks you to work on the boxing program integration, work through these in order:
+5. **Minimum 44×44px touch targets** — Apple's floor. Use `.icon-btn` or the
+   invisible expansion on `.btn--sm`.
 
-1. Verify exercise library against BOXING_PROGRAM.md checklist — add missing exercises
-2. Create or validate the 3 session templates using the Template Definitions in BOXING_PROGRAM.md
-3. Test the template → workout → history flow end to end
-4. Add progression flag logic for the 5 main lifts
-5. Optional: deload reminders and phase tracking
+6. **Inputs must be ≥16px** or iOS Safari zooms the viewport on focus.
 
----
-
-## Tech Stack
-
-- **Backend:** Python / FastAPI / Uvicorn
-- **Frontend:** React / Vite
-- **Database:** SQLite (local dev)
-- **Version control:** Git (local, pushed to GitHub)
+7. **Numeric fields need `inputmode`** (`numeric` for reps, `decimal` for
+   weight) so the keypad appears instead of the full keyboard.
 
 ---
 
+## Legacy files — dead, but still present
+
+The rewrite is complete. All screens run from `src/`. These root files are
+**no longer referenced by anything** and are not published (the deploy ships
+`dist/`, not the repo root):
+
+| File | Superseded by |
+|------|---------------|
+| `app.js` (2,255 lines) | `src/` modules |
+| `style.css` (2,014 lines) | `src/styles/*` |
+| `exerciseDatabase.js`, `exercise-db.js` | `src/data/exercise-db.js` |
+| `sw.js` | generated by `vite-plugin-pwa` |
+| `manifest.json` | generated `manifest.webmanifest` |
+
+They are safe to delete whenever you want; git history keeps them. Left in
+place only because deleting someone's files unasked is rude.
+
+`data/` **is** still live — `gen-exercise-db.js` + `exercises.json` are the
+generation pipeline for the exercise database.
+
+---
+
+## Active training program
+
+The user follows a 12-week boxing S&C program. Details, exercise list,
+template definitions, starting loads and progression rules are in
+`BOXING_PROGRAM.md`. Read it before touching exercises, templates or
+progression.
+
+- 3 sessions/week: A (Mon), B (Wed), C (Fri)
+- **The user has elbow issues — barbell bench press is deliberately excluded.
+  Do not add it back.**
+- Progression is load-based with specific kg increments, not just RPE.
+
+---
+
+## Testing changes
+
+There is no test suite yet. Verify visually against a real browser:
+
+```bash
+npm run build
+npx vite preview --port 8899
+```
+
+Then drive it with Playwright at an iPhone viewport and *look at the
+screenshots* — several shipped bugs (an invisible call-to-action, a timer
+covering the sets beneath it) were only visible, not detectable in code.
+
+---
 
 ## Notes
 
-- The user works on this in github in VS Code with Claude Code
-- Always explain what you changed and why, in plain language
+- The user works in VS Code with Claude Code.
+- Always explain what changed and why, in plain language.
+- Prefer targeted changes; discuss before large rewrites.

@@ -1,0 +1,578 @@
+/* ============================================================
+   Components
+   ============================================================ */
+
+/* ---- Buttons ------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  transition: transform var(--duration-instant) var(--ease-out),
+              background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
+}
+.btn:active { transform: scale(0.975); }
+.btn:disabled { opacity: 0.4; pointer-events: none; }
+.btn--block { display: flex; width: 100%; }
+
+.btn--primary {
+  background: linear-gradient(160deg, var(--gold-bright), var(--gold-deep));
+  color: var(--gold-ink);
+  box-shadow: var(--shadow-gold);
+  text-transform: uppercase;
+  font-weight: 800;
+}
+.btn--primary:active { box-shadow: var(--shadow-sm); }
+
+.btn--secondary {
+  background: var(--surface-elevated);
+  border: 1px solid var(--line-default);
+  color: var(--text-primary);
+}
+.btn--secondary:active { background: var(--surface-overlay); }
+
+.btn--ghost {
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.btn--ghost:active { background: rgba(255, 255, 255, 0.05); }
+
+.btn--danger {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.32);
+  color: var(--negative);
+}
+
+.btn--sm {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+/* A small button still needs a 44px touch area. Expand it invisibly
+   rather than making the visual chrome bigger. */
+.btn--sm::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+.btn--sm { position: relative; }
+
+/* ---- Cards --------------------------------------------------------- */
+
+.card {
+  background: var(--surface-raised);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.card--flush { padding: 0; overflow: hidden; }
+.card--interactive {
+  transition: transform var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+.card--interactive:active {
+  transform: scale(0.99);
+  border-color: var(--line-default);
+}
+
+/* Section label — small, wide-tracked, uppercase. Used above every
+   group of content instead of ad-hoc inline styles. */
+.section-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 var(--space-3);
+}
+
+/* ---- Metric tiles ---------------------------------------------------
+   Replaces the permanent four-cell strip. Now used only where metrics
+   are the point of the screen. */
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: var(--space-2);
+}
+
+.metric {
+  background: var(--surface-raised);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.metric-label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metric-value {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+.metric-unit {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+.metric--gold .metric-value { color: var(--gold); }
+.metric--info .metric-value { color: var(--info); }
+.metric--positive .metric-value { color: var(--positive); }
+
+/* ---- Segmented control ---------------------------------------------- */
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-pill);
+}
+.segmented-option {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+.segmented-option.is-active {
+  background: var(--surface-elevated);
+  color: var(--gold);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- Focus chip (Push / Pull / Legs …) -------------------------------- */
+
+.focus-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--chip-color, var(--gold)) 16%, transparent);
+  color: var(--chip-color, var(--gold));
+  border: 1px solid color-mix(in srgb, var(--chip-color, var(--gold)) 34%, transparent);
+}
+
+/* Chips used as filter buttons are visually small by design, but the touch
+   area must still clear 44px. Expand it invisibly rather than inflating the
+   chip itself. */
+button.focus-chip::after {
+  content: '';
+  position: absolute;
+  inset: -9px -4px;
+}
+
+/* ============================================================
+   THE SET ROW — the core interaction of the whole app
+   ============================================================
+   Design notes:
+   - A set can now be *completed*. The old UI had no way to mark a set
+     done, which is the single most important action in a workout log.
+   - Reps and weight are large, mono, and centred so they read at a
+     glance from arm's length with a bar in your hands.
+   - Inputs carry inputmode="decimal" so iOS shows the numeric keypad
+     instead of the full QWERTY keyboard.
+   - The completion control is a full 44px target on the right, where
+     a thumb naturally lands.
+*/
+
+.set-row {
+  display: grid;
+  grid-template-columns: 26px 1fr 1fr var(--tap-min);
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.set-index {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.set-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.set-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  /* 16px minimum stops iOS Safari zooming the viewport on focus. */
+  font-size: var(--text-md);
+  font-weight: 500;
+  text-align: center;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+  /* Hide the number-spinner; it is useless on touch and ugly on desktop. */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.set-input::-webkit-outer-spin-button,
+.set-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.set-input::placeholder { color: var(--text-faint); font-weight: 400; }
+.set-input:focus {
+  border-color: var(--gold);
+  background: var(--surface-raised);
+}
+
+/* Unit suffix sits inside the field so the number stays optically centred. */
+.set-unit {
+  position: absolute;
+  right: var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+/* Completion toggle */
+.set-check {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--text-faint);
+  border: 1px solid var(--line-subtle);
+  background: var(--surface-sunken);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.set-check:active { transform: scale(0.9); }
+.set-check.is-done {
+  background: linear-gradient(160deg, var(--gold-bright), var(--gold-deep));
+  border-color: transparent;
+  color: var(--gold-ink);
+  box-shadow: 0 0 0 3px var(--gold-wash);
+}
+
+/* A completed set recedes so your eye lands on what is still to do —
+   but it keeps its box. Dropping the border entirely made a finished row
+   read as broken rather than done. */
+.set-row.is-done .set-input {
+  opacity: 0.55;
+  border-color: var(--line-subtle);
+  background: transparent;
+}
+.set-row.is-done .set-index { color: var(--gold); }
+
+/* ---- Exercise card --------------------------------------------------- */
+
+.exercise-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+.exercise-card.is-complete {
+  border-color: color-mix(in srgb, var(--gold) 28%, transparent);
+}
+
+.exercise-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  min-height: 56px;
+}
+.exercise-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exercise-meta {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.exercise-body { padding: 0 var(--space-3) var(--space-3); }
+
+/* Progress ring around the exercise: how many sets are done. */
+.exercise-progress {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  position: relative;
+}
+.exercise-progress svg { transform: rotate(-90deg); display: block; }
+.exercise-progress-track { stroke: var(--line-default); }
+.exercise-progress-fill {
+  stroke: var(--gold);
+  transition: stroke-dashoffset var(--duration-base) var(--ease-out);
+}
+.exercise-progress-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+/* ---- Suggestion pill (progressive overload advice) ------------------- */
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--gold-wash);
+  border: 1px solid var(--line-gold);
+}
+.suggestion-icon { color: var(--gold); flex: none; }
+.suggestion-text { flex: 1; min-width: 0; }
+.suggestion-label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.suggestion-value {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--gold);
+  font-family: var(--font-mono);
+}
+
+/* ---- Rest timer -----------------------------------------------------
+   Previously a floating gold pill that sat *on top of* sets 2 and 3.
+   Now it is a docked bar that participates in layout, so it can never
+   obscure the sets you are trying to read. */
+
+.rest-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-overlay);
+  border-top: 1px solid var(--line-gold);
+}
+.rest-time {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--gold);
+  min-width: 62px;
+  font-variant-numeric: tabular-nums;
+}
+.rest-track {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--line-default);
+  overflow: hidden;
+}
+.rest-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  transition: width 1s linear;
+}
+.rest-presets { display: flex; gap: var(--space-1); }
+.rest-preset {
+  min-width: 46px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.rest-preset:active { background: var(--gold-wash); color: var(--gold); }
+
+/* ---- Empty state -----------------------------------------------------
+   The old empty state rendered its call-to-action as dark text on a dark
+   background with no button chrome at all — effectively invisible, and
+   the very first thing a new user saw. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+}
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-2xl);
+  background: var(--gold-wash);
+  border: 1px solid var(--line-gold);
+  color: var(--gold);
+}
+.empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 0;
+}
+.empty-body {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  max-width: 34ch;
+  margin: 0;
+}
+
+/* ---- PR badge --------------------------------------------------------- */
+
+.pr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--gold-wash);
+  border: 1px solid var(--line-gold);
+  color: var(--gold);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* ---- Sheet / modal ----------------------------------------------------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 101;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-overlay);
+  border-top: 1px solid var(--line-default);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding-bottom: var(--safe-bottom);
+  animation: sheet-up var(--duration-base) var(--ease-out);
+}
+.sheet-grip {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--line-strong);
+  margin: var(--space-3) auto var(--space-2);
+  flex: none;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-5) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  flex: none;
+}
+.sheet-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin: 0;
+}
+.sheet-body {
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5) var(--space-6);
+  scrollbar-width: none;
+}
+.sheet-body::-webkit-scrollbar { display: none; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* ---- Text input -------------------------------------------------------- */
+
+.text-input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-default);
+  color: var(--text-primary);
+  font-size: var(--text-md);   /* ≥16px: prevents iOS focus zoom */
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.text-input::placeholder { color: var(--text-faint); }
+.text-input:focus { border-color: var(--gold); }

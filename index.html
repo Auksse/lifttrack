@@ -2,27 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <!--
+    viewport-fit=cover lets the app paint into the safe areas; the CSS then
+    pads by env(safe-area-inset-*). Note there is deliberately no
+    `user-scalable=no`: iOS Safari ignores it anyway, and blocking zoom is an
+    accessibility failure. The zoom-on-focus problem it was there to solve is
+    handled properly instead — every input is >=16px (see components.css).
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Offline-first strength training log with progressive overload tracking." />
+  <meta name="theme-color" content="#0c0b0a" />
+
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="LiftTrack" />
-  <meta name="theme-color" content="#0b0b0a" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="iconfix.png" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
+
   <title>LiftTrack</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <div id="app"></div>
-  <div class="toast" id="toast"></div>
-  <script src="exerciseDatabase.js"></script>
-  <script src="data/lifttrack-exercise-db.js"></script>
-  <script src="data/fr-exercise-instructions.js"></script>
-  <script src="app.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
