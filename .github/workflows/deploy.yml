@@ -1,14 +1,22 @@
-# Build and publish LiftTrack to GitHub Pages.
+# Build LiftTrack and publish it to the `gh-pages` branch.
 #
-# Publishes to the SAME url the existing home-screen app is installed at —
+# Publishes to the SAME url the home-screen app is installed at —
 # https://auksse.github.io/lifttrack/ — so pushing to main updates the app
 # already on the phone. No re-install, no re-adding to the home screen.
 #
+# WHY A BRANCH AND NOT actions/deploy-pages
+#
+# The Actions-native deployment path failed repeatedly on this repo: the
+# build always succeeded, the artifact uploaded, the deployment reached
+# `in_progress`, and then the Pages service never reported completion —
+# "Timeout reached, aborting!" every time, with a 1.1 MB / 19 file
+# artifact and Pages reporting no incidents. Rather than keep guessing at
+# a service-side failure, this uses the classic branch pipeline, which has
+# a long record of succeeding on this repo.
+#
 # ONE-TIME SETUP (cannot be automated from here):
 #   GitHub → repo Settings → Pages → Build and deployment → Source:
-#   change from "Deploy from a branch" to "GitHub Actions".
-#
-# Until that is switched, this workflow will build but the deploy step fails.
+#   "Deploy from a branch", Branch: `gh-pages`, folder: `/ (root)`.
 
 name: Deploy to GitHub Pages
 
@@ -18,26 +26,24 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Only the newest push matters. `cancel-in-progress: false` meant a run
-# stuck waiting on the Pages service held everything behind it, and each
-# queued run then consumed part of the ~10 builds/hour Pages allows.
+# Only the newest push matters. Superseded runs stand down rather than
+# queueing, which also keeps us under Pages' build-rate allowance.
 concurrency:
-  group: pages
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
@@ -45,27 +51,28 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: actions/configure-pages@v5
+      - name: Prepare artifact
+        run: |
+          # Stop Jekyll from processing the output on the Pages side.
+          touch dist/.nojekyll
+          # SPA fallback: any deep link resolves to the app shell.
+          cp dist/index.html dist/404.html
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+      - name: Publish to gh-pages
+        run: |
+          set -euo pipefail
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    # Fail fast rather than sitting at the action's 10-minute internal
-    # timeout, which is what "Timeout reached, aborting!" was.
-    timeout-minutes: 8
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          # The Pages service can be slow to report completion under load.
-          # Poll longer between checks rather than giving up early.
-          timeout: 420000
-          error_count: 10
-          reporting_interval: 8000
+          cd dist
+          git init -q
+          git checkout -q -b gh-pages
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA::7}"
+          # Force-push: gh-pages is a build output, it has no history worth
+          # preserving and should always mirror the latest main exactly.
+          git push -q --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
