@@ -13,7 +13,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     target: 'es2020',
-    sourcemap: true,
+    // Source maps were 869 KB of a 2 MB artifact — nearly half the upload,
+    // for files no one reads on a deployed alpha. Build locally with
+    // `vite build --sourcemap` when you actually need them.
+    sourcemap: false,
     rollupOptions: {
       output: {
         /**

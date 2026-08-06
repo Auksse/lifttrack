@@ -22,11 +22,12 @@ permissions:
   pages: write
   id-token: write
 
-# Never run two deploys at once, but do let a newer push cancel a
-# queued (not in-progress) one.
+# Only the newest push matters. `cancel-in-progress: false` meant a run
+# stuck waiting on the Pages service held everything behind it, and each
+# queued run then consumed part of the ~10 builds/hour Pages allows.
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -53,9 +54,18 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Fail fast rather than sitting at the action's 10-minute internal
+    # timeout, which is what "Timeout reached, aborting!" was.
+    timeout-minutes: 8
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # The Pages service can be slow to report completion under load.
+          # Poll longer between checks rather than giving up early.
+          timeout: 420000
+          error_count: 10
+          reporting_interval: 8000
