@@ -1,0 +1,32 @@
+{
+  "appId": "energy.eep.lifttrack",
+  "appName": "LiftTrack",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c0b0a",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "android": {
+    "backgroundColor": "#0c0b0a"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 400,
+      "backgroundColor": "#0c0b0a",
+      "showSpinner": false
+    },
+    "Keyboard": {
+      "resize": "none",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    },
+    "StatusBar": {
+      "style": "dark",
+      "backgroundColor": "#0c0b0a",
+      "overlaysWebView": true
+    }
+  }
+}

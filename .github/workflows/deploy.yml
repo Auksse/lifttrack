@@ -1,0 +1,61 @@
+# Build and publish LiftTrack to GitHub Pages.
+#
+# Publishes to the SAME url the existing home-screen app is installed at —
+# https://auksse.github.io/lifttrack/ — so pushing to main updates the app
+# already on the phone. No re-install, no re-adding to the home screen.
+#
+# ONE-TIME SETUP (cannot be automated from here):
+#   GitHub → repo Settings → Pages → Build and deployment → Source:
+#   change from "Deploy from a branch" to "GitHub Actions".
+#
+# Until that is switched, this workflow will build but the deploy step fails.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once, but do let a newer push cancel a
+# queued (not in-progress) one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
