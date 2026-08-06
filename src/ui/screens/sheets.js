@@ -296,6 +296,10 @@ function renderLayoutDiagnostic() {
     ['containing block', `${r.icbHeight}px`],
     ['documentElement', `${r.clientHeight}px`],
     ['--app-height', r.appHeightVar],
+    // How much the root overhangs the viewport to colour the dead band.
+    // Expected to be 0 in a browser tab and non-zero only on a short
+    // standalone view.
+    ['--bottom-gap', r.bottomGapVar],
     ['#app height', `${r.appHeight}px`],
     ['dock bottom edge', `${r.dockBottom}px`],
     ['screen height', `${r.screenHeight}px`],

@@ -13,6 +13,23 @@ html {
   height: 100vh;
   height: 100dvh;
   height: var(--app-height, 100dvh);
+  /* ...plus the dead screen below a short standalone web view.
+     --bottom-gap is measured in JS and is 0 everywhere except an iOS
+     home-screen app whose view does not reach the bottom of the screen.
+     Overhanging the viewport by exactly that much lets the root
+     background paint across the band, which is otherwise black.
+     Only html is extended — body and #app stay at --app-height, so no
+     control ends up in the strip the user cannot reach. */
+  height: calc(var(--app-height, 100dvh) + var(--bottom-gap, 0px));
+
+  /* Both of these belong to the line above, and the old build had them.
+     The overhang makes the document taller than the viewport, which
+     without `overflow: hidden` is 59px the user can scroll — dragging the
+     entire UI up off the top. And the root's background is what gets
+     painted across the band, so it has to be set here rather than
+     inherited from body, whose box stops at --app-height. */
+  overflow: hidden;
+  background: var(--surface-base);
 }
 
 body {

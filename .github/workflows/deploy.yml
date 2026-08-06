@@ -1,36 +1,27 @@
-# Build LiftTrack and publish it to the `gh-pages` branch.
+# Build LiftTrack and publish it through the Pages Actions pipeline.
 #
 # Publishes to the SAME url the home-screen app is installed at —
 # https://auksse.github.io/lifttrack/ — so pushing to main updates the app
 # already on the phone. No re-install, no re-adding to the home screen.
 #
-# WHY A BRANCH AND NOT actions/deploy-pages
+# WHY THIS SHAPE
 #
-# The Actions-native deployment path failed repeatedly on this repo: the
-# build always succeeded, the artifact uploaded, the deployment reached
-# `in_progress`, and then the Pages service never reported completion —
-# "Timeout reached, aborting!" every time, with a 1.1 MB / 19 file
-# artifact and Pages reporting no incidents. Rather than keep guessing at
-# a service-side failure, this uses the classic branch pipeline, which has
-# a long record of succeeding on this repo.
+# The repo's Pages source is set to "GitHub Actions". That source ignores
+# the `gh-pages` branch entirely, so the previous branch-pushing pipeline
+# published to somewhere nothing was reading. Deployment now goes through
+# upload-pages-artifact + deploy-pages, which is what that source consumes.
 #
-# EXPECT GITHUB'S OWN RUN TO GO RED — IT IS LYING
+# ABOUT THE 30-MINUTE TIMEOUT
 #
-# Pushing to `gh-pages` also triggers GitHub's auto-generated "pages build
-# and deployment" run. On this repo the Pages backend currently takes
-# ~15 minutes to publish, and that run's deploy job gives up at 10, so it
-# reports "Timeout reached, aborting!" and shows a red X. The content is
-# published anyway, a few minutes later. (Verified: job failed 13:40:53,
-# site Last-Modified 13:55:22, serving the correct build.)
+# deploy-pages defaults to giving up after 10 minutes. The Pages backend on
+# this repo has been taking 10-15 minutes to publish, so that default turned
+# slow-but-successful publishes into red X's — the content went live a few
+# minutes after the job had already declared failure. 1800000ms (30 min) is
+# long enough to wait it out and report the truth.
 #
-# We cannot change that run's timeout. Instead the final step below polls
-# the live URL until it serves *this* build, so this workflow's green tick
-# means the app on the phone is genuinely updated. Trust this one; ignore
-# the auto-generated one.
-#
-# ONE-TIME SETUP (cannot be automated from here):
+# ONE-TIME SETUP (already done, noted for the record):
 #   GitHub → repo Settings → Pages → Build and deployment → Source:
-#   "Deploy from a branch", Branch: `gh-pages`, folder: `/ (root)`.
+#   "GitHub Actions".
 
 name: Deploy to GitHub Pages
 
@@ -40,19 +31,21 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
-# Only the newest push matters. Superseded runs stand down rather than
-# queueing, which also keeps us under Pages' build-rate allowance.
+# Never cancel a deployment in flight: a half-applied Pages deployment is
+# worse than a slightly stale one, and runs here are slow enough that a
+# cancellation would likely land mid-publish.
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    # Generous: the build is ~1 minute, the rest is waiting on Pages.
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -73,44 +66,24 @@ jobs:
           # SPA fallback: any deep link resolves to the app shell.
           cp dist/index.html dist/404.html
 
-      - name: Publish to gh-pages
-        run: |
-          set -euo pipefail
-          git config --global user.name  "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
-          cd dist
-          git init -q
-          git checkout -q -b gh-pages
-          git add -A
-          git commit -q -m "Deploy ${GITHUB_SHA::7}"
-          # Force-push: gh-pages is a build output, it has no history worth
-          # preserving and should always mirror the latest main exactly.
-          git push -q --force \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Wait for the live site to serve this build
-        run: |
-          set -uo pipefail
-          # Vite hashes the entry filename from its contents, so finding this
-          # exact name on the live site proves the new build is being served
-          # rather than a cached older one.
-          marker=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
-          echo "Waiting for $URL to serve $marker"
-
-          for i in $(seq 1 60); do
-            # Cache-bust the query string; Pages sets max-age=600 on HTML.
-            if curl -fsSL "$URL?ci=$GITHUB_RUN_ID-$i" | grep -qF "$marker"; then
-              echo "Live after roughly $((i * 15)) seconds."
-              exit 0
-            fi
-            sleep 15
-          done
-
-          echo "::error::Still not serving $marker after 15 minutes."
-          exit 1
-        env:
-          URL: https://auksse.github.io/lifttrack/
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Comfortably past the step's own 30-minute timeout, so the step is what
+    # decides the outcome rather than the runner being killed underneath it.
+    timeout-minutes: 40
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # Milliseconds. See the note at the top of this file.
+          timeout: 1800000
