@@ -14,6 +14,20 @@
 # a service-side failure, this uses the classic branch pipeline, which has
 # a long record of succeeding on this repo.
 #
+# EXPECT GITHUB'S OWN RUN TO GO RED — IT IS LYING
+#
+# Pushing to `gh-pages` also triggers GitHub's auto-generated "pages build
+# and deployment" run. On this repo the Pages backend currently takes
+# ~15 minutes to publish, and that run's deploy job gives up at 10, so it
+# reports "Timeout reached, aborting!" and shows a red X. The content is
+# published anyway, a few minutes later. (Verified: job failed 13:40:53,
+# site Last-Modified 13:55:22, serving the correct build.)
+#
+# We cannot change that run's timeout. Instead the final step below polls
+# the live URL until it serves *this* build, so this workflow's green tick
+# means the app on the phone is genuinely updated. Trust this one; ignore
+# the auto-generated one.
+#
 # ONE-TIME SETUP (cannot be automated from here):
 #   GitHub → repo Settings → Pages → Build and deployment → Source:
 #   "Deploy from a branch", Branch: `gh-pages`, folder: `/ (root)`.
@@ -37,7 +51,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Generous: the build is ~1 minute, the rest is waiting on Pages.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -76,3 +91,26 @@ jobs:
             gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for the live site to serve this build
+        run: |
+          set -uo pipefail
+          # Vite hashes the entry filename from its contents, so finding this
+          # exact name on the live site proves the new build is being served
+          # rather than a cached older one.
+          marker=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
+          echo "Waiting for $URL to serve $marker"
+
+          for i in $(seq 1 60); do
+            # Cache-bust the query string; Pages sets max-age=600 on HTML.
+            if curl -fsSL "$URL?ci=$GITHUB_RUN_ID-$i" | grep -qF "$marker"; then
+              echo "Live after roughly $((i * 15)) seconds."
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "::error::Still not serving $marker after 15 minutes."
+          exit 1
+        env:
+          URL: https://auksse.github.io/lifttrack/
