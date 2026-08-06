@@ -9,6 +9,7 @@ import { state } from '../../state/store.js';
 import { icon } from '../icons.js';
 import { esc } from '../actions.js';
 import { t, getLanguage, SUPPORTED_LANGUAGES } from '../../i18n/index.js';
+import { FR_INSTRUCTIONS } from '../../i18n/fr-instructions.js';
 import { focusColor } from '../../domain/focus.js';
 import { MUSCLE_GROUPS, findExercise } from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
@@ -151,6 +152,12 @@ function exerciseDetail() {
   const primary = (ex.muscles || []).filter((m) => m.role === 'primary');
   const secondary = (ex.muscles || []).filter((m) => m.role === 'secondary');
 
+  // Prefer translated instructions where they exist. Coverage is partial
+  // (118 of 216 exercises), so fall back to English rather than showing
+  // an exercise with no instructions at all.
+  const instructions =
+    (getLanguage() === 'fr' && FR_INSTRUCTIONS[ex.id]) || ex.instructions || [];
+
   const muscleList = (list) =>
     list
       .map(
@@ -182,11 +189,11 @@ function exerciseDetail() {
       ? `<h3 class="section-label" style="margin-top:var(--space-4)">${t('secondary')}</h3>${muscleList(secondary)}`
       : ''}
 
-    ${ex.instructions?.length
+    ${instructions.length
       ? `<h3 class="section-label" style="margin-top:var(--space-5)">${t('instructions')}</h3>
          <ol style="margin:0;padding-left:var(--space-5);color:var(--text-secondary);
                     font-size:var(--text-sm);line-height:1.65">
-           ${ex.instructions.map((step) => `<li style="margin-bottom:var(--space-2)">${esc(step)}</li>`).join('')}
+           ${instructions.map((step) => `<li style="margin-bottom:var(--space-2)">${esc(step)}</li>`).join('')}
          </ol>`
       : ''}`,
   );
