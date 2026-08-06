@@ -101,6 +101,7 @@ export default {
   switch_user: 'Changer de profil', delete_user: 'Supprimer le profil',
   haptics: 'Vibrations', sound: 'Son', units: 'Unités',
   export_data: 'Exporter les données', import_data: 'Importer des données',
+  new_profile: 'Nouveau profil', get_started: 'Commencer',
   create_profile: 'Crée ton profil', whos_training: "Qui s'entraîne ?",
   your_name: 'Ton prénom…', continue_: 'Appuie pour continuer',
   enter_name: 'Entre un prénom', name_taken: 'Un profil porte déjà ce nom',

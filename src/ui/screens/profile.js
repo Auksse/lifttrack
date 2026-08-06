@@ -48,7 +48,7 @@ export function renderProfileGate() {
              <div style="height:1px;background:var(--line-subtle);margin:var(--space-4) 0"></div>`
           : ''}
 
-        <h2 class="section-label">${users.length ? t('create_profile') : t('create_profile')}</h2>
+        <h2 class="section-label">${users.length ? t('new_profile') : t('create_profile')}</h2>
 
         <input class="text-input"
                id="profile-name"
@@ -60,7 +60,7 @@ export function renderProfileGate() {
 
         <button class="btn btn--primary btn--block" data-action="profile:create"
                 style="margin-top:var(--space-2)">
-          ${t('create_profile')} ${icon('arrowRight', { size: 18 })}
+          ${t('get_started')} ${icon('arrowRight', { size: 18 })}
         </button>
       </div>
     </div>`;

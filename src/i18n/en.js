@@ -100,6 +100,7 @@ export default {
   switch_user: 'Switch user', delete_user: 'Delete profile',
   haptics: 'Haptics', sound: 'Sound', units: 'Units',
   export_data: 'Export data', import_data: 'Import data',
+  new_profile: 'New profile', get_started: 'Get started',
   create_profile: 'Create your profile', whos_training: "Who's training?",
   your_name: 'Your name…', continue_: 'Tap to continue',
   enter_name: 'Enter a name', name_taken: 'A profile with that name already exists',
