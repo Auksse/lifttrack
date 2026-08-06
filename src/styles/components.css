@@ -14,8 +14,8 @@
 /* Big condensed figure. The one place the display face earns its keep. */
 .figure {
   font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 0.82;
+  font-weight: 700;
+  line-height: 0.95;
   letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
@@ -90,16 +90,20 @@
 
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(56px, 19vw, 84px);
-  line-height: 0.8;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  /* Sized for a normal-width grotesque. The condensed face this replaced
+     ran to 84px; at these widths "SHOULDERS" would overflow a 393pt
+     phone. Long names wrap rather than shrink below the floor. */
+  font-size: clamp(34px, 12vw, 52px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
   color: var(--hero-color, var(--gold));
   margin: var(--space-2) 0 var(--space-3);
-  /* Optical alignment: condensed caps carry side bearing that makes
-     them look indented against a hard left edge. */
-  margin-left: -0.03em;
+  /* Optical alignment: caps carry side bearing that makes them look
+     indented against a hard left edge. */
+  margin-left: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .hero-meta {
@@ -230,9 +234,9 @@
 }
 .metric-value {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--text-2xl);
-  line-height: 0.82;
+  line-height: 0.95;
   letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
 }
@@ -274,7 +278,7 @@
   color: var(--gold-ink);
   box-shadow: var(--shadow-gold);
   text-transform: uppercase;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: var(--tracking-wider);
 }
 .btn--primary:active { box-shadow: var(--shadow-sm); }
@@ -363,7 +367,7 @@
   padding: 5px var(--space-3);
   border-radius: var(--radius-sm);
   font-size: var(--text-2xs);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
   background: transparent;
@@ -561,7 +565,7 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 .rest-time {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--text-xl);
   line-height: 1;
   color: var(--gold);
@@ -614,9 +618,9 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 .empty-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--text-2xl);
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--text-primary);
@@ -640,7 +644,7 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   border: 1px solid var(--line-gold);
   color: var(--gold);
   font-size: var(--text-2xs);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
 }
@@ -689,9 +693,9 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 .sheet-title {
   flex: 1;
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--text-xl);
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   margin: 0;

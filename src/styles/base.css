@@ -7,15 +7,23 @@
 html {
   /* dvh tracks the *visible* viewport on iOS, where vh does not.
      The vh line is the fallback for browsers without dvh. */
+  /* --app-height is measured in JS (see ui/viewport.js) because iOS gets
+     all three CSS viewport units wrong at different moments. dvh is the
+     pre-JS fallback; vh is the fallback's fallback. */
   height: 100vh;
   height: 100dvh;
+  height: var(--app-height, 100dvh);
 }
 
 body {
   margin: 0;
   padding: 0;
+  /* --app-height is measured in JS (see ui/viewport.js) because iOS gets
+     all three CSS viewport units wrong at different moments. dvh is the
+     pre-JS fallback; vh is the fallback's fallback. */
   height: 100vh;
   height: 100dvh;
+  height: var(--app-height, 100dvh);
   overflow: hidden;
   overscroll-behavior: none;
 
@@ -67,8 +75,12 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
    one below the dock. */
 
 #app {
+  /* --app-height is measured in JS (see ui/viewport.js) because iOS gets
+     all three CSS viewport units wrong at different moments. dvh is the
+     pre-JS fallback; vh is the fallback's fallback. */
   height: 100vh;
   height: 100dvh;
+  height: var(--app-height, 100dvh);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -84,13 +96,11 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  /* Only a hair on top of the inset — the inset already clears the status
-     bar and Dynamic Island, and adding a full step on top of it pushed the
-     wordmark visibly too low on device. max() keeps a sensible minimum
-     where there is no inset at all (desktop, older phones), which a bare
-     `safe-top + 4px` would have collapsed to 4px. */
-  padding: max(var(--space-3), calc(var(--safe-top) + var(--space-1)))
-           var(--gutter) var(--space-3);
+  /* No padding added on top of the inset at all. The inset already clears
+     the status bar and Dynamic Island — anything extra is dead space, and
+     on device it visibly floated the wordmark. max() only supplies a
+     minimum where there is no inset (desktop, older phones). */
+  padding: max(var(--space-3), var(--safe-top)) var(--gutter) var(--space-2);
   padding-left: max(var(--gutter), var(--safe-left));
   padding-right: max(var(--gutter), var(--safe-right));
   background: var(--surface-base);
@@ -100,8 +110,8 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 .screen-title {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 800;
-  line-height: 0.9;
+  font-weight: 700;
+  line-height: 1;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--text-primary);

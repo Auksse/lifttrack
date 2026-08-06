@@ -67,6 +67,7 @@ export default {
 
   // --- Settings extras ---
   feedback: 'Retour', data: 'Données',
+  layout_diagnostic: 'Diagnostic de mise en page',
   data_local_notice:
     "Tes données d'entraînement sont stockées uniquement sur cet appareil. Exporte régulièrement — supprimer l'app les efface.",
 

@@ -66,6 +66,7 @@ export default {
 
   // --- Settings extras ---
   feedback: 'Feedback', data: 'Data',
+  layout_diagnostic: 'Layout diagnostic',
   data_local_notice:
     'Your training data is stored only on this device. Export regularly — deleting the app removes it.',
 

@@ -13,6 +13,7 @@ import { FR_INSTRUCTIONS } from '../../i18n/fr-instructions.js';
 import { focusColor } from '../../domain/focus.js';
 import { MUSCLE_GROUPS, findExercise } from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
+import { viewportReport } from '../viewport.js';
 
 function shell(title, body, { action = '' } = {}) {
   return `
@@ -269,8 +270,55 @@ function settingsSheet() {
     </div>
     <p style="margin-top:var(--space-3);font-size:var(--text-xs);color:var(--text-faint);line-height:1.6">
       ${t('data_local_notice')}
-    </p>`,
+    </p>
+
+    ${renderLayoutDiagnostic()}`,
   );
+}
+
+/**
+ * Layout diagnostic.
+ *
+ * On-device layout bugs caused by safe-area insets and iOS viewport units
+ * cannot be reproduced in a desktop browser — every unit is correct there
+ * and every inset reports zero. Rather than guess from screenshots, this
+ * prints the numbers the layout actually depends on so they can be read
+ * off the device directly.
+ */
+function renderLayoutDiagnostic() {
+  const r = viewportReport();
+  const rows = [
+    ['window.innerHeight', `${r.innerHeight}px`],
+    ['visualViewport', r.visualViewport === null ? 'unsupported' : `${r.visualViewport}px`],
+    ['--app-height', r.appHeightVar],
+    ['#app height', `${r.appHeight}px`],
+    ['dock bottom edge', `${r.dockBottom}px`],
+    ['screen height', `${r.screenHeight}px`],
+    ['safe top / bottom', `${r.insets.top} / ${r.insets.bottom}`],
+    ['standalone', r.standalone ? 'yes' : 'no (browser)'],
+  ];
+
+  return `
+    <details style="margin-top:var(--space-6);border-top:1px solid var(--line-subtle);
+                    padding-top:var(--space-4)">
+      <summary style="font-size:var(--text-2xs);font-weight:700;
+                      letter-spacing:var(--tracking-widest);text-transform:uppercase;
+                      color:var(--text-faint);cursor:pointer;list-style:none">
+        ${t('layout_diagnostic')}
+      </summary>
+      <div style="margin-top:var(--space-3);font-family:var(--font-mono);
+                  font-size:var(--text-xs);color:var(--text-tertiary)">
+        ${rows
+          .map(
+            ([k, v]) => `
+            <div style="display:flex;gap:var(--space-3);padding:3px 0">
+              <span style="flex:1;min-width:0">${k}</span>
+              <span style="color:var(--text-secondary)">${esc(v)}</span>
+            </div>`,
+          )
+          .join('')}
+      </div>
+    </details>`;
 }
 
 // ---------------------------------------------------------- dispatcher

@@ -81,30 +81,32 @@
   --space-16: 64px;
 
   /* ---- Type ------------------------------------------------------
-     Big Shoulders Display for headings and figures: a condensed
-     industrial face drawn from Chicago public signage, with flat
-     terminals that read like stencilled equipment labelling. It
-     replaces Bebas Neue, which is the default condensed face on
-     roughly every dark fitness app.
+     One family throughout: Space Grotesk, a technical grotesque with
+     genuine character — a single-storey g, flat-sided rounds, and
+     numerals with real personality. Headings are the same face at
+     weight 700 rather than a separate display type, which is both
+     more cohesive and how most well-made products set type now.
 
-     It only earns its keep at size, so the scale runs much larger
-     than before — the old build set its display face at 24–38px
-     and wasted it. */
-  --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
-  --font-body: 'DM Sans Variable', 'DM Sans', -apple-system, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+     Figures use `font-variant-numeric: tabular-nums` (set on body)
+     so columns of numbers align without needing a monospace face. */
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', -apple-system, system-ui, sans-serif;
+  --font-body: var(--font-display);
+  --font-mono: var(--font-display);
 
+  /* Scale tuned for a normal-width grotesque. The previous scale ran up
+     to 84px because it was set in a condensed face; at these widths that
+     would overflow a 393pt phone on a word like "SHOULDERS". */
   --text-2xs: 10px;
   --text-xs: 11px;
   --text-sm: 13px;
   --text-base: 15px;
   --text-md: 17px;
-  --text-lg: 20px;
-  --text-xl: 26px;
-  --text-2xl: 34px;
-  --text-3xl: 46px;
-  --text-4xl: 62px;
-  --text-5xl: 84px;
+  --text-lg: 19px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 46px;
+  --text-5xl: 58px;
 
   --tracking-tight: -0.015em;
   --tracking-normal: 0;

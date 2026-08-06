@@ -2,15 +2,15 @@
  * Application entry point.
  */
 
-// Self-hosted fonts — no Google Fonts request at runtime, so typography
-// survives being offline. The old build fetched all three from a CDN.
-// No `.css` suffix: this package's exports map is "./*" -> "./*.css",
-// so an explicit extension resolves to "700.css.css" and fails to build.
-import '@fontsource/big-shoulders-display/700';
-import '@fontsource/big-shoulders-display/800';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
-import '@fontsource-variable/dm-sans';
+/**
+ * Typography: one variable family, self-hosted.
+ *
+ * Space Grotesk covers headings, body and figures at different weights.
+ * A single variable file replaces the previous three static families,
+ * which is both more cohesive and a smaller download — and nothing is
+ * fetched from a CDN, so type survives being offline.
+ */
+import '@fontsource-variable/space-grotesk';
 
 import './styles/tokens.css';
 import './styles/base.css';
@@ -36,6 +36,7 @@ import { renderPlanScreen } from './ui/screens/plan.js';
 import { renderSheet } from './ui/screens/sheets.js';
 import { saveTemplates, createTemplate } from './data/templates.js';
 import { cleanUpLegacyServiceWorker, reloadOnWorkerActivation } from './legacy-cleanup.js';
+import { initViewport, viewportReport } from './ui/viewport.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { suggestNext, getProfile } from './domain/progression.js';
 
@@ -685,6 +686,10 @@ async function activateUser(user) {
 }
 
 async function boot() {
+  // Measure the real viewport before first paint so the shell is never
+  // laid out against a wrong dvh.
+  initViewport();
+
   // Hand over from the previous hand-written service worker before anything
   // else, so an already-installed home-screen app can't boot from its cache.
   cleanUpLegacyServiceWorker();
