@@ -59,7 +59,45 @@ function measure() {
   }
 
   applyEffectiveBottomInset(height);
+  applyBottomGap(height);
   return height;
+}
+
+/**
+ * Publish the dead screen below the web view as `--bottom-gap`.
+ *
+ * A home-screen standalone app gets a web view shorter than the screen —
+ * 793pt on an 852pt iPhone. The missing ~59pt is not merely unused, it is
+ * unreachable: no in-app layout can paint there, so it shows through as a
+ * black band along the bottom edge.
+ *
+ * The trick that fixes it (lost in the modular rebuild — it was in the old
+ * `app.js`, commit 1b9e883) is to make the root element taller than the
+ * viewport by exactly that gap. The root's background is propagated to the
+ * canvas and painted across the whole window, band included, so the band
+ * takes the app's colour instead of black. `base.css` consumes this as
+ * `html { height: calc(var(--app-height, 100dvh) + var(--bottom-gap, 0px)) }`.
+ * Body and `#app` stay at `--app-height`, so nothing interactive moves into
+ * the unreachable strip.
+ *
+ * Gated on standalone mode. In a browser tab the screen/viewport difference
+ * is browser chrome — address bar, tab strip, OS dock — which is painted by
+ * the browser and cannot be reached anyway. Extending the root there would
+ * add hundreds of phantom pixels of scrollable nothing.
+ */
+function applyBottomGap(height) {
+  const screenHeight = window.screen?.height ?? 0;
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  // Measured height, not raw innerHeight: when the view genuinely spans the
+  // screen under `viewport-fit=cover`, innerHeight can still report the
+  // pre-launch value, and trusting it would extend the root for a band that
+  // is not there.
+  const gap = standalone && screenHeight > 0 ? Math.max(0, screenHeight - height) : 0;
+
+  document.documentElement.style.setProperty('--bottom-gap', `${gap}px`);
 }
 
 /**
@@ -182,6 +220,14 @@ export function viewportReport() {
     dockBottom: dockEl ? Math.round(dockEl.getBoundingClientRect().bottom) : null,
     appHeightVar: getComputedStyle(document.documentElement)
       .getPropertyValue('--app-height').trim() || '(unset)',
+    /**
+     * How far the root is extended past the viewport to colour the dead
+     * band below a short standalone web view. Non-zero here with a black
+     * band still visible means the extension is not reaching the canvas;
+     * zero here with a band visible means the gap was never detected.
+     */
+    bottomGapVar: getComputedStyle(document.documentElement)
+      .getPropertyValue('--bottom-gap').trim() || '(unset)',
     insets,
     standalone: window.matchMedia('(display-mode: standalone)').matches
       || window.navigator.standalone === true,
