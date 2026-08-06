@@ -290,6 +290,11 @@ function renderLayoutDiagnostic() {
   const rows = [
     ['window.innerHeight', `${r.innerHeight}px`],
     ['visualViewport', r.visualViewport === null ? 'unsupported' : `${r.visualViewport}px`],
+    // The containing block is what `position: fixed; inset: 0` resolves
+    // against — the real paintable area. Where it disagrees with innerHeight
+    // is exactly where the black band comes from, so it has to be visible.
+    ['containing block', `${r.icbHeight}px`],
+    ['documentElement', `${r.clientHeight}px`],
     ['--app-height', r.appHeightVar],
     ['#app height', `${r.appHeight}px`],
     ['dock bottom edge', `${r.dockBottom}px`],
