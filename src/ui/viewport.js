@@ -32,7 +32,41 @@ function measure() {
   if (height > 0) {
     document.documentElement.style.setProperty('--app-height', `${height}px`);
   }
+
+  applyEffectiveBottomInset(height);
   return height;
+}
+
+/**
+ * Decide whether the bottom safe-area inset is real.
+ *
+ * `env(safe-area-inset-bottom)` reports 34px on a home-indicator iPhone
+ * whether or not the web view actually reaches the bottom of the screen.
+ * When iOS launches a home-screen app without honouring `viewport-fit=cover`
+ * — which it does when the icon was added before the meta tag existed, since
+ * the launch configuration is captured at install time — the view is short
+ * by the status-bar height and the home indicator sits *outside* it.
+ *
+ * Padding for an indicator that is not in your viewport just wastes space:
+ * on an 852pt screen with a 793pt view that was 59pt of unreachable screen
+ * plus 34pt of pointless padding stacked on top of it.
+ *
+ * So: only honour the inset when the view genuinely spans the screen.
+ */
+function applyEffectiveBottomInset(height) {
+  const screenHeight = window.screen?.height ?? 0;
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  // A 24px tolerance absorbs rounding and minor chrome without masking the
+  // ~59px shortfall this is here to detect.
+  const isShort = standalone && screenHeight > 0 && height < screenHeight - 24;
+
+  document.documentElement.style.setProperty(
+    '--safe-bottom-eff',
+    isShort ? '0px' : 'env(safe-area-inset-bottom, 0px)',
+  );
 }
 
 function scheduleMeasure() {
