@@ -23,6 +23,15 @@ import { focusColor } from '../../domain/focus.js';
 const isDone = (set) => !!set.done;
 const isFilled = (set) => Number(set.r) > 0 && set.w !== '' && set.w != null;
 
+/**
+ * Seconds as m:ss.
+ * Integer-divide the minutes — `s / 60` rendered 90 seconds as "1.5:30".
+ */
+function formatDuration(seconds) {
+  const m = Math.floor(seconds / 60);
+  return `${m}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
 function elapsed(startedAt) {
   const secs = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
   const m = Math.floor(secs / 60);
@@ -174,7 +183,7 @@ export function renderRestBar() {
           ${[60, 90, 120, 180]
             .map(
               (s) => `<button class="rest-preset" data-action="rest:start" data-seconds="${s}">
-                        ${s >= 60 ? `${s / 60}:${String(s % 60).padStart(2, '0')}` : `${s}s`}
+                        ${formatDuration(s)}
                       </button>`,
             )
             .join('')}

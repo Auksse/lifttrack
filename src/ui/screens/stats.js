@@ -124,14 +124,12 @@ function renderSplit(sessions) {
 
 function renderExercisePicker(names, selected) {
   return `
-    <div style="display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-3);
-                margin:0 calc(var(--space-5) * -1);padding-left:var(--space-5);padding-right:var(--space-5);
-                scrollbar-width:none">
+    <div class="chip-rail">
       ${names
         .slice(0, 20)
         .map(
           (name) => `
-          <button class="focus-chip" data-action="stats:exercise" data-name="${esc(name)}"
+          <button class="chip" data-action="stats:exercise" data-name="${esc(name)}"
                   style="--chip-color:${name === selected ? 'var(--gold)' : 'var(--text-tertiary)'};flex:none">
             ${esc(name)}
           </button>`,
@@ -268,7 +266,7 @@ export function renderStatsScreen() {
   return {
     header,
     body: `
-      <div class="metric-row" style="margin-bottom:var(--space-6)">
+      <div class="metric-strip" style="margin-bottom:var(--space-6)">
         <div class="metric metric--gold">
           <div class="metric-label">${t('sessions')}</div>
           <div class="metric-value">${sessions.length}</div>

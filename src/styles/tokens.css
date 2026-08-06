@@ -1,53 +1,72 @@
 /* ============================================================
    LiftTrack — Design tokens
-   The single source of truth for colour, space, type and motion.
-   Nothing in the app hardcodes a value that belongs here.
+
+   Direction: "Meet Board".
+   The visual language of a powerlifting competition — a results
+   board, a loaded bar, a chalked plate. Concretely that means:
+   condensed industrial display type at genuine scale, hairline
+   rules instead of card chrome, and a data palette taken from
+   IPF competition plate colours rather than invented hues.
    ============================================================ */
 
 :root {
   /* ---- Surfaces ------------------------------------------------
-     Near-neutral blacks with a whisper of warmth. Deliberately
-     cooler than the old palette so the gold is the only warm
-     element on screen and therefore reads as *the* accent. */
-  --surface-base: #0c0b0a;
-  --surface-sunken: #080807;
-  --surface-raised: #141310;
-  --surface-overlay: #1b1916;
-  --surface-elevated: #23201b;
+     Near-neutral blacks with a whisper of warmth, so gold is the
+     only warm element on screen and reads as *the* accent. */
+  --surface-base: #0b0a09;
+  --surface-sunken: #060605;
+  --surface-raised: #121110;
+  --surface-overlay: #191715;
+  --surface-elevated: #221f1b;
 
-  /* Hairlines. One pixel, never heavier. */
-  --line-subtle: rgba(255, 255, 255, 0.06);
-  --line-default: rgba(255, 255, 255, 0.11);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --line-gold: rgba(232, 184, 75, 0.28);
+  /* The dock and header need to be legibly *distinct* from the page,
+     not the same black at 98% opacity — that made the dock's
+     home-indicator padding read as an empty void on device. */
+  --surface-chrome: #161412;
+
+  /* Hairlines. The primary structural device — one pixel, never heavier. */
+  --line-subtle: rgba(255, 255, 255, 0.07);
+  --line-default: rgba(255, 255, 255, 0.13);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --line-gold: rgba(240, 192, 79, 0.30);
 
   /* ---- Text ----------------------------------------------------
-     Four steps only. Every one clears WCAG AA on --surface-base. */
-  --text-primary: #f7f2e8;    /* 17.4:1 */
-  --text-secondary: #cbc0b0;  /* 10.3:1 */
-  --text-tertiary: #9a8f80;   /*  5.6:1 */
-  --text-faint: #6f665b;      /*  3.1:1 — decorative only, never body */
+     Four steps. Every one clears WCAG AA on --surface-base. */
+  --text-primary: #f7f2e8;    /* 17.6:1 */
+  --text-secondary: #cbc0b0;  /* 10.4:1 */
+  --text-tertiary: #9a8f80;   /*  5.7:1 */
+  --text-faint: #6f665b;      /*  3.2:1 — decorative only, never body */
 
   /* ---- Gold: the brand ----------------------------------------- */
   --gold: #f0c04f;
   --gold-bright: #ffd970;
-  --gold-deep: #c2921f;
+  --gold-deep: #bd8c1a;
   --gold-ink: #120e04;        /* text that sits ON gold */
-  --gold-wash: rgba(240, 192, 79, 0.10);
+  --gold-wash: rgba(240, 192, 79, 0.09);
   --gold-glow: rgba(240, 192, 79, 0.30);
 
-  /* ---- Focus / split colours -----------------------------------
-     Lifted in luminance vs. the originals so each clears 4.5:1. */
-  --focus-push: #ff8a63;
-  --focus-pull: #5cb8e4;
-  --focus-legs: #6fca7a;
-  --focus-upper: #b18ef0;
+  /* ---- Plate palette -------------------------------------------
+     IPF competition plate colours, luminance-lifted for a dark
+     ground. These are the data colours: they come from the sport's
+     own equipment rather than being decorative choices, so a colour
+     always means the same thing across the app. */
+  --plate-red: #ef5350;     /* 25 kg */
+  --plate-blue: #4f9ee8;    /* 20 kg */
+  --plate-yellow: #f2c14e;  /* 15 kg */
+  --plate-green: #5cc46e;   /* 10 kg */
+  --plate-white: #e8e2d6;   /*  5 kg */
+
+  /* Session focus maps onto the plate palette. */
+  --focus-push: var(--plate-red);
+  --focus-pull: var(--plate-blue);
+  --focus-legs: var(--plate-green);
+  --focus-upper: #a78bfa;
 
   /* ---- Semantic ------------------------------------------------- */
-  --positive: #5fd07a;
-  --negative: #ff6b6b;
-  --warning: #f0b23f;
-  --info: #5cb8e4;
+  --positive: var(--plate-green);
+  --negative: var(--plate-red);
+  --warning: var(--plate-yellow);
+  --info: var(--plate-blue);
 
   /* ---- Spacing: strict 4px scale -------------------------------- */
   --space-1: 4px;
@@ -61,10 +80,17 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* ---- Type scale ------------------------------------------------
-     Ratio ~1.2. Display face is condensed; body is DM Sans;
-     all figures are monospaced so columns of numbers align. */
-  --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  /* ---- Type ------------------------------------------------------
+     Big Shoulders Display for headings and figures: a condensed
+     industrial face drawn from Chicago public signage, with flat
+     terminals that read like stencilled equipment labelling. It
+     replaces Bebas Neue, which is the default condensed face on
+     roughly every dark fitness app.
+
+     It only earns its keep at size, so the scale runs much larger
+     than before — the old build set its display face at 24–38px
+     and wasted it. */
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
   --font-body: 'DM Sans Variable', 'DM Sans', -apple-system, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
@@ -74,35 +100,35 @@
   --text-base: 15px;
   --text-md: 17px;
   --text-lg: 20px;
-  --text-xl: 24px;
-  --text-2xl: 30px;
-  --text-3xl: 38px;
-  --text-4xl: 48px;
-  --text-5xl: 64px;
+  --text-xl: 26px;
+  --text-2xl: 34px;
+  --text-3xl: 46px;
+  --text-4xl: 62px;
+  --text-5xl: 84px;
 
-  --tracking-tight: -0.02em;
+  --tracking-tight: -0.015em;
   --tracking-normal: 0;
-  --tracking-wide: 0.06em;
-  --tracking-wider: 0.12em;
-  --tracking-widest: 0.18em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.11em;
+  --tracking-widest: 0.2em;
 
-  /* ---- Radii ----------------------------------------------------- */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
+  /* ---- Radii ------------------------------------------------------
+     Deliberately restrained. The old build wrapped everything in
+     16–22px rounded cards, which is what made it read as a generic
+     card stack. Structure now comes from rules and space. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-pill: 999px;
 
-  /* ---- Elevation -------------------------------------------------
-     Shadows are for lift, not decoration. Three steps. */
+  /* ---- Elevation -------------------------------------------------- */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
-  --shadow-gold: 0 6px 28px rgba(240, 192, 79, 0.28);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 4px 22px rgba(240, 192, 79, 0.22);
 
-  /* ---- Motion ----------------------------------------------------
-     Springs for anything the finger drives; ease for the rest. */
+  /* ---- Motion ------------------------------------------------------ */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -110,25 +136,32 @@
   --duration-instant: 90ms;
   --duration-fast: 160ms;
   --duration-base: 240ms;
-  --duration-slow: 380ms;
+  --duration-slow: 420ms;
 
-  /* ---- Layout ----------------------------------------------------- */
+  /* ---- Layout ------------------------------------------------------- */
   --tap-min: 44px;              /* Apple HIG floor. Non-negotiable. */
-  --dock-height: 64px;
-  --content-max: 520px;
+  --dock-height: 58px;
+  --content-max: 560px;
+  --gutter: 20px;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
-  /* Total space the dock occupies, including the home indicator.
-     Scroll containers pad by this so content is never trapped
-     underneath — the bug that clipped the Log and Stats tabs. */
-  --dock-clearance: calc(var(--dock-height) + var(--safe-bottom) + var(--space-5));
+  /* Space the dock occupies including the home indicator. Scroll
+     containers pad by this so content is never trapped underneath. */
+  --dock-clearance: calc(var(--dock-height) + var(--safe-bottom) + var(--space-6));
+
+  /* ---- Knurl ---------------------------------------------------------
+     A barbell's grip, abstracted: a fine diagonal cross-hatch. Used at
+     very low opacity on the hero only, so surfaces have a material
+     rather than being flat fills. */
+  --knurl:
+    repeating-linear-gradient(45deg,  rgba(255,255,255,.028) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.028) 0 1px, transparent 1px 7px);
 }
 
-/* Honour the OS reduced-motion preference. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-instant: 0ms;

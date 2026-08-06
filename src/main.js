@@ -4,7 +4,10 @@
 
 // Self-hosted fonts — no Google Fonts request at runtime, so typography
 // survives being offline. The old build fetched all three from a CDN.
-import '@fontsource/bebas-neue/400.css';
+// No `.css` suffix: this package's exports map is "./*" -> "./*.css",
+// so an explicit extension resolves to "700.css.css" and fails to build.
+import '@fontsource/big-shoulders-display/700';
+import '@fontsource/big-shoulders-display/800';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import '@fontsource-variable/dm-sans';
@@ -176,7 +179,6 @@ onAction('workout:quickstart', () => {
     return;
   }
   setState({ sheet: { type: 'template-picker' } });
-  openTemplatePicker();
 });
 
 onAction('workout:start', ({ focus }) => {
@@ -680,11 +682,6 @@ async function activateUser(user) {
     s.loading = false;
     s.tab = 'log';
   });
-}
-
-function openTemplatePicker() {
-  // Placeholder until the picker sheet lands; start from the suggestion.
-  toast(t('choose_template'));
 }
 
 async function boot() {

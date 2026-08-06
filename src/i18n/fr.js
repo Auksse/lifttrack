@@ -80,6 +80,8 @@ export default {
   recovery_fatigued: 'Fatigué', recovery_cooked: 'Épuisé',
   recovery_explainer:
     "La récupération est estimée à partir des séries enregistrées, pondérées par l'implication de chaque muscle dans l'exercice, puis décroît avec le temps. Les grands groupes musculaires disposent de plus de temps pour récupérer.",
+  of: 'sur',
+  target: 'Cible',
   sets_week: 'séries/sem', total_sets: 'Séries totales', groups_optimal: 'Dans la cible',
   last_7_days: '7 derniers jours',
   volume_none: 'Pas travaillé cette semaine', volume_low: 'Sous la cible',

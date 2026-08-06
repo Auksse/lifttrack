@@ -4,14 +4,21 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overscroll-behavior: none;
+html {
+  /* dvh tracks the *visible* viewport on iOS, where vh does not.
+     The vh line is the fallback for browsers without dvh. */
+  height: 100vh;
+  height: 100dvh;
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+
   background: var(--surface-base);
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -20,20 +27,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-
-  /* Stop iOS from bumping font sizes in landscape. */
   -webkit-text-size-adjust: 100%;
 
-  /* The app owns scrolling in #content; the body never scrolls. */
-  overflow: hidden;
-  position: fixed;
-  inset: 0;
-  width: 100%;
+  /* Every figure is tabular so columns of numbers line up. */
+  font-variant-numeric: tabular-nums;
 }
-
-/* Every figure in the app is tabular so columns of numbers line up.
-   This is the difference between a spreadsheet and a jitter. */
-body { font-variant-numeric: tabular-nums; }
 
 button, input, select, textarea {
   font: inherit;
@@ -50,7 +48,6 @@ button {
   touch-action: manipulation;
 }
 
-/* Kill the iOS "tap flash" everywhere; we provide our own press states. */
 a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 
 :focus { outline: none; }
@@ -62,40 +59,49 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 
 .icon { display: block; flex: none; }
 
-/* ---- App frame -------------------------------------------------- */
+/* ---- App frame ----------------------------------------------------
+   A plain flex column at exactly the visible viewport height.
+   The previous build used `position: fixed; inset: 0` on both body
+   and #app, which on an iOS standalone home-screen app left the
+   layout letterboxed — a dead band above the header and a larger
+   one below the dock. */
 
 #app {
-  position: fixed;
-  inset: 0;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(120% 60% at 50% -10%, rgba(240, 192, 79, 0.055), transparent 60%),
-    var(--surface-base);
+  overflow: hidden;
+  background: var(--surface-base);
 }
 
-/* ---- Screen header ----------------------------------------------
-   Replaces the old always-on four-cell stat strip, which ate ~430px
-   of a 660px viewport on every single tab. The header is now compact
-   and screen-specific: a title, and only the metrics that screen
-   actually needs. */
+/* ---- Screen header -------------------------------------------------
+   Replaces the old always-on four-cell stat strip, which consumed
+   ~430px of a 660px viewport on every tab. */
 
 .screen-header {
   flex: none;
-  padding: calc(var(--safe-top) + var(--space-3)) var(--space-5) var(--space-3);
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  /* Only a hair on top of the inset — the inset already clears the status
+     bar and Dynamic Island, and adding a full step on top of it pushed the
+     wordmark visibly too low on device. max() keeps a sensible minimum
+     where there is no inset at all (desktop, older phones), which a bare
+     `safe-top + 4px` would have collapsed to 4px. */
+  padding: max(var(--space-3), calc(var(--safe-top) + var(--space-1)))
+           var(--gutter) var(--space-3);
+  padding-left: max(var(--gutter), var(--safe-left));
+  padding-right: max(var(--gutter), var(--safe-right));
+  background: var(--surface-base);
   border-bottom: 1px solid var(--line-subtle);
-  background: linear-gradient(180deg, rgba(12, 11, 10, 0.96), rgba(12, 11, 10, 0.82));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .screen-title {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  line-height: 1;
+  font-size: var(--text-xl);
+  font-weight: 800;
+  line-height: 0.9;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--text-primary);
@@ -108,14 +114,13 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 
 .header-spacer { flex: 1; }
 
-/* Icon button — the 44px floor is enforced here, once, for the whole app.
-   Several buttons were 24–32px before, below Apple's minimum. */
+/* Icon button — the 44px floor is enforced here, once, app-wide. */
 .icon-btn {
   width: var(--tap-min);
   height: var(--tap-min);
   display: grid;
   place-items: center;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   transition: color var(--duration-fast) var(--ease-out),
               background var(--duration-fast) var(--ease-out),
@@ -130,10 +135,13 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 
 .content {
   flex: 1;
+  min-height: 0;             /* lets the flex child actually scroll */
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: var(--space-5) var(--space-5) var(--dock-clearance);
+  padding: var(--space-5) var(--gutter) var(--dock-clearance);
+  padding-left: max(var(--gutter), var(--safe-left));
+  padding-right: max(var(--gutter), var(--safe-right));
   scrollbar-width: none;
 }
 .content::-webkit-scrollbar { display: none; }
@@ -144,22 +152,27 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
   width: 100%;
 }
 
-/* ---- Bottom dock -------------------------------------------------
-   Five destinations. The centre action is raised and gold; the four
-   tabs are equal-weight. Icons are SVG (see ui/icons.js) rather than
-   the emoji the app shipped with. */
+/* Full-bleed escape hatch: lets the hero break the gutter. */
+.bleed {
+  margin-left: calc(var(--gutter) * -1);
+  margin-right: calc(var(--gutter) * -1);
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+/* ---- Bottom dock ---------------------------------------------------
+   The dock now sits on its own surface with a visible top rule. On
+   device the old near-black translucent dock was indistinguishable
+   from the page, so its home-indicator padding read as a void. */
 
 .dock {
   flex: none;
-  position: relative;
-  height: calc(var(--dock-height) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
   display: flex;
   align-items: stretch;
-  background: linear-gradient(180deg, rgba(14, 13, 11, 0.86), rgba(8, 8, 7, 0.98));
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border-top: 1px solid var(--line-subtle);
+  height: calc(var(--dock-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--line-default);
 }
 
 .dock-tab {
@@ -180,51 +193,47 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
 .dock-tab-label {
   font-size: var(--text-2xs);
   font-weight: 700;
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
 }
 
-/* Active indicator: a short gold rule above the tab. Subtler and more
-   modern than the filled pill the old dock used. */
+/* Active marker: a short gold rule on the top edge. */
 .dock-tab::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -1px;
   left: 50%;
   transform: translateX(-50%) scaleX(0);
-  width: 26px;
+  width: 28px;
   height: 2px;
-  border-radius: 0 0 2px 2px;
   background: var(--gold);
   transition: transform var(--duration-base) var(--ease-spring);
 }
 .dock-tab.is-active::before { transform: translateX(-50%) scaleX(1); }
 
-/* Centre action button, raised out of the dock. */
+/* Centre action, raised out of the dock. */
 .dock-action {
   flex: none;
-  width: 58px;
+  width: 62px;
   display: grid;
   place-items: center;
   position: relative;
 }
 .dock-action-btn {
   position: absolute;
-  bottom: 10px;
-  width: 56px;
-  height: 56px;
+  bottom: 8px;
+  width: 54px;
+  height: 54px;
   border-radius: var(--radius-pill);
   display: grid;
   place-items: center;
   color: var(--gold-ink);
-  background: linear-gradient(160deg, var(--gold-bright), var(--gold-deep));
+  background: linear-gradient(165deg, var(--gold-bright), var(--gold-deep));
   box-shadow: var(--shadow-gold), var(--shadow-md);
   transition: transform var(--duration-fast) var(--ease-spring);
 }
 .dock-action-btn:active { transform: scale(0.9); }
-.dock-action-btn.is-active {
-  transform: rotate(45deg);
-}
+.dock-action-btn.is-active { transform: rotate(45deg); }
 .dock-action-btn.is-active:active { transform: rotate(45deg) scale(0.9); }
 
 /* ---- Toast -------------------------------------------------------- */
@@ -237,7 +246,7 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
   z-index: 200;
   max-width: calc(100vw - var(--space-8));
   padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--surface-elevated);
   border: 1px solid var(--line-default);
   box-shadow: var(--shadow-lg);
@@ -250,14 +259,8 @@ a, button, [data-action] { -webkit-tap-highlight-color: transparent; }
               transform var(--duration-base) var(--ease-spring);
 }
 .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
-.toast.is-error {
-  border-color: rgba(255, 107, 107, 0.4);
-  color: var(--negative);
-}
-.toast.is-success {
-  border-color: rgba(95, 208, 122, 0.4);
-  color: var(--positive);
-}
+.toast.is-error { border-color: color-mix(in srgb, var(--negative) 45%, transparent); color: var(--negative); }
+.toast.is-success { border-color: color-mix(in srgb, var(--positive) 45%, transparent); color: var(--positive); }
 
 /* ---- Utility ------------------------------------------------------ */
 

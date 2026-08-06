@@ -28,44 +28,46 @@ function renderActiveWorkout() {
   const total = w.exercises.reduce((n, e) => n + e.sets.length, 0);
 
   return `
-    <button class="card card--interactive" data-action="workout:resume"
-            style="display:flex;align-items:center;gap:var(--space-3);width:100%;text-align:left;
-                   border-color:var(--line-gold);background:var(--gold-wash);margin-bottom:var(--space-4)">
-      <span style="color:var(--gold)">${icon('bolt', { size: 22 })}</span>
-      <span style="flex:1;min-width:0">
-        <span class="metric-label" style="display:block">${t('workout_in_progress')}</span>
-        <strong style="color:var(--gold);font-size:var(--text-base)">
+    <button class="ledger-row" data-action="workout:resume"
+            style="--spine-color:var(--gold);border-top:1px solid var(--line-gold);
+                   border-bottom-color:var(--line-gold);background:var(--gold-wash)">
+      <span class="ledger-spine"></span>
+      <span class="ledger-main">
+        <span class="eyebrow" style="display:block">${t('workout_in_progress')}</span>
+        <span class="ledger-title" style="color:var(--gold);margin-top:2px">
           ${esc(tFocus(w.focus))} · ${done}/${total} ${t('sets')}
-        </strong>
+        </span>
       </span>
       <span style="color:var(--gold)">${icon('chevronRight', { size: 20 })}</span>
     </button>`;
 }
 
-/** "Next up" — what to train today, and the button that starts it. */
+/**
+ * The hero: what to train next.
+ *
+ * This is the page's thesis, so it gets a scale nothing else approaches
+ * and the only textured surface in the app. Everything below it is
+ * deliberately quiet — hairlines and figures.
+ */
 function renderNextUp() {
   if (state.workout) return '';
   const suggestion = suggestNextFocus(state.sessions);
   const color = focusColor(suggestion.focus);
+  const last = state.sessions.at(-1);
 
   return `
-    <section style="margin-bottom:var(--space-6)">
-      <h2 class="section-label">${t('next_up')}</h2>
-      <div class="card" style="border-color:color-mix(in srgb, ${color} 30%, transparent);
-           background:linear-gradient(150deg, color-mix(in srgb, ${color} 10%, var(--surface-raised)), var(--surface-raised))">
-        <div class="row gap-3" style="margin-bottom:var(--space-4)">
-          <div style="flex:1;min-width:0">
-            <div style="font-family:var(--font-display);font-size:var(--text-3xl);line-height:1;
-                        letter-spacing:var(--tracking-wide);text-transform:uppercase;color:${color}">
-              ${esc(tFocus(suggestion.focus))}
-            </div>
-            <div class="metric-label" style="margin-top:var(--space-2)">${esc(suggestion.reason)}</div>
-          </div>
-        </div>
-        <button class="btn btn--primary btn--block" data-action="workout:start" data-focus="${esc(suggestion.focus)}">
-          ${icon('bolt', { size: 18 })} ${t('start_workout')}
-        </button>
+    <section class="hero bleed" style="--hero-color:${color}">
+      <p class="eyebrow">${t('next_up')}</p>
+      <h2 class="hero-title">${esc(tFocus(suggestion.focus))}</h2>
+      <div class="hero-meta">
+        <span>${esc(suggestion.reason)}</span>
+        ${last ? `<span style="color:var(--text-faint)">·</span>
+                  <span style="color:var(--text-tertiary)">${daysSince(last.date)}${t('rest')}</span>` : ''}
       </div>
+      <button class="btn btn--primary btn--block" data-action="workout:start"
+              data-focus="${esc(suggestion.focus)}" style="margin-top:var(--space-4)">
+        ${icon('bolt', { size: 17 })} ${t('start_workout')}
+      </button>
     </section>`;
 }
 
@@ -76,29 +78,27 @@ function renderSessionCard(session) {
   const hasPR = session.exercises.some((ex) => isPersonalRecord(state.sessions, session, ex.name));
 
   return `
-    <article class="card card--flush" style="margin-bottom:var(--space-2)">
-      <button data-action="session:toggle" data-id="${session.id}"
-              style="display:flex;align-items:center;gap:var(--space-3);width:100%;
-                     padding:var(--space-4);text-align:left;border-left:3px solid ${color}">
-        <span style="flex:1;min-width:0">
+    <article>
+      <button class="ledger-row ledger-row--tall" data-action="session:toggle" data-id="${session.id}"
+              style="--spine-color:${color}">
+        <span class="ledger-spine"></span>
+        <span class="ledger-main">
           <span style="display:flex;align-items:center;gap:var(--space-2)">
-            <strong style="font-family:var(--font-display);font-size:var(--text-lg);
-                           letter-spacing:var(--tracking-wide);text-transform:uppercase;color:${color}">
+            <span class="figure figure--sm" style="color:${color}">
               ${esc(tFocus(session.focus))}
-            </strong>
-            ${hasPR ? `<span class="pr-badge">${icon('trophy', { size: 11, stroke: 2.2 })} ${t('new_pr')}</span>` : ''}
+            </span>
+            ${hasPR ? `<span class="pr-badge">${icon('trophy', { size: 10, stroke: 2.4 })} ${t('new_pr')}</span>` : ''}
           </span>
-          <span class="metric-label" style="display:block;margin-top:2px">
-            ${session.exercises.length} ${t('exercises_lbl')}
+          <span class="ledger-sub">${session.exercises.length} ${t('exercises_lbl')}</span>
+        </span>
+        <span class="ledger-trail">
+          <span class="eyebrow" style="display:block">${formatDate(session.date)}</span>
+          <span class="figure figure--sm" style="color:var(--text-secondary);margin-top:3px;display:block">
+            ${(volume / 1000).toFixed(1)}<span class="figure-unit">k</span>
           </span>
         </span>
-        <span style="text-align:right">
-          <span class="metric-label" style="display:block">${formatDate(session.date)}</span>
-          <strong style="font-family:var(--font-mono);font-size:var(--text-base);color:var(--text-secondary)">
-            ${(volume / 1000).toFixed(1)}k
-          </strong>
-        </span>
-        <span style="color:var(--text-faint);transition:transform var(--duration-fast) var(--ease-out);
+        <span style="color:var(--text-faint);flex:none;
+                     transition:transform var(--duration-fast) var(--ease-out);
                      ${expanded ? 'transform:rotate(180deg)' : ''}">
           ${icon('chevronDown', { size: 18 })}
         </span>
@@ -110,7 +110,8 @@ function renderSessionCard(session) {
 
 function renderSessionDetail(session) {
   return `
-    <div style="padding:0 var(--space-4) var(--space-4);border-top:1px solid var(--line-subtle)">
+    <div style="padding:0 0 var(--space-4) var(--space-5);
+                border-bottom:1px solid var(--line-subtle);background:var(--surface-sunken)">
       <div style="padding-top:var(--space-3)">
         ${session.exercises
           .map((ex) => {
@@ -151,11 +152,6 @@ export function renderLogScreen() {
   const header = `
     <h1 class="screen-title">LIFT<em>TRACK</em></h1>
     <div class="header-spacer"></div>
-    ${last
-      ? `<span class="focus-chip" style="--chip-color:${daysSince(last.date) > 4 ? 'var(--warning)' : 'var(--text-tertiary)'}">
-           ${daysSince(last.date)}${t('rest')}
-         </span>`
-      : ''}
     <button class="icon-btn" data-action="settings:open" aria-label="${t('settings')}">
       ${icon('settings', { size: 21 })}
     </button>`;
@@ -184,26 +180,21 @@ export function renderLogScreen() {
       ${renderActiveWorkout()}
       ${renderNextUp()}
 
-      <section style="margin-bottom:var(--space-5)">
-        <h2 class="section-label">${t('overview_title')}</h2>
-        <div class="metric-row">
-          ${metric(t('sessions'), sessions.length, '', 'metric--gold')}
-          ${metric(t('volume'), (totalVolume(sessions) / 1000).toFixed(1), 't', 'metric--info')}
-          ${metric(t('week_short'), sessionsThisWeek(sessions))}
-          ${metric(t('streak'), currentStreak(sessions), t('streak_unit'), 'metric--positive')}
-        </div>
-      </section>
+      <div class="metric-strip">
+        ${metric(t('sessions'), sessions.length, '', 'metric--gold')}
+        ${metric(t('volume'), (totalVolume(sessions) / 1000).toFixed(1), 't', 'metric--info')}
+        ${metric(t('week_short'), sessionsThisWeek(sessions))}
+        ${metric(t('streak'), currentStreak(sessions), t('streak_unit'), 'metric--positive')}
+      </div>
 
       <section>
-        <h2 class="section-label">${t('recent_workouts')}</h2>
         ${monthKeys
           .map(
             (key) => `
-              <div class="row gap-3" style="margin:var(--space-4) 0 var(--space-2)">
-                <span class="metric-label">${formatMonth(key)}</span>
-                <span style="flex:1;height:1px;background:var(--line-subtle)"></span>
-                <span class="metric-label">${months.get(key).length}</span>
-              </div>
+              <h2 class="section-label">
+                ${formatMonth(key)}
+                <span class="count">${months.get(key).length}</span>
+              </h2>
               ${[...months.get(key)].reverse().map(renderSessionCard).join('')}`,
           )
           .join('')}

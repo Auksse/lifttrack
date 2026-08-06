@@ -94,15 +94,14 @@ function exerciseLibrary() {
            data-input="library:search" autofocus
            style="margin-bottom:var(--space-3)">
 
-    <div style="display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-3);
-                scrollbar-width:none">
-      <button class="focus-chip" data-action="library:filter" data-group=""
+    <div class="chip-rail">
+      <button class="chip" data-action="library:filter" data-group=""
               style="--chip-color:${!groupFilter ? 'var(--gold)' : 'var(--text-tertiary)'};flex:none">
         ${t('all')}
       </button>
       ${MUSCLE_GROUPS.map(
         (g) => `
-        <button class="focus-chip" data-action="library:filter" data-group="${g.id}"
+        <button class="chip" data-action="library:filter" data-group="${g.id}"
                 style="--chip-color:${groupFilter === g.id ? g.color : 'var(--text-tertiary)'};flex:none">
           ${esc(g.label)}
         </button>`,
@@ -180,7 +179,7 @@ function exerciseDetail() {
     <div class="row gap-2" style="flex-wrap:wrap;margin-bottom:var(--space-4)">
       ${[ex.level, ex.mechanic, ex.force, ex.equipment]
         .filter(Boolean)
-        .map((tag) => `<span class="focus-chip" style="--chip-color:var(--text-tertiary)">${esc(tag)}</span>`)
+        .map((tag) => `<span class="chip" style="--chip-color:var(--text-tertiary)">${esc(tag)}</span>`)
         .join('')}
     </div>
 

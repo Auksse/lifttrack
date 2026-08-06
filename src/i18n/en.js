@@ -79,6 +79,8 @@ export default {
   recovery_fatigued: 'Fatigued', recovery_cooked: 'Cooked',
   recovery_explainer:
     'Recovery is estimated from the sets you logged, weighted by how much each exercise involves the muscle, decaying over time. Larger muscle groups are given longer to recover.',
+  of: 'of',
+  target: 'Target',
   sets_week: 'sets/wk', total_sets: 'Total sets', groups_optimal: 'In range',
   last_7_days: 'Last 7 days',
   volume_none: 'Not trained this week', volume_low: 'Below target',
