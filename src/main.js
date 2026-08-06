@@ -39,6 +39,7 @@ import { renderPlanScreen } from './ui/screens/plan.js';
 import { renderSheet } from './ui/screens/sheets.js';
 import { saveTemplates, createTemplate } from './data/templates.js';
 import { cleanUpLegacyServiceWorker, reloadOnWorkerActivation } from './legacy-cleanup.js';
+import { shareBackup, recordExport, backupStatus } from './data/backup.js';
 import { initViewport, viewportReport } from './ui/viewport.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { suggestNext, getProfile } from './domain/progression.js';
@@ -248,6 +249,8 @@ onAction('workout:save', async () => {
     s.tab = 'log';
   });
   persistDraft();
+
+  setState({ backupDue: backupStatus(state.user.id, sessions.length).due });
 
   cue(gotPR ? 'pr' : 'saved');
   toast(gotPR ? `${t('session_saved')} · ${t('new_pr')}!` : t('session_saved'), 'success');
@@ -570,7 +573,7 @@ onAction('settings:units', ({ units }) => {
 
 // ---- data export / import ----
 
-onAction('data:export', () => {
+onAction('data:export', async () => {
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -579,15 +582,20 @@ onAction('data:export', () => {
     templates: state.templates,
     settings: state.settings,
   };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `lifttrack-${state.user.name}-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast(t('export_data'), 'success');
+  const filename = `lifttrack-${state.user.name}-${new Date().toISOString().slice(0, 10)}.json`;
+
+  // Prefer the OS share sheet so this can be saved straight to Files /
+  // iCloud Drive. A download that lands only on the device is no backup at
+  // all when the risk is losing the device's storage.
+  const completed = await shareBackup(payload, filename);
+  if (!completed) return;
+
+  recordExport(state.user.id, state.sessions.length);
+  setState({ backupDue: false });
+  toast(t('backup_saved'), 'success');
 });
+
+onAction('backup:dismiss', () => setState({ backupDue: false }));
 
 onAction('data:import', () => {
   const input = document.createElement('input');
@@ -683,6 +691,7 @@ async function activateUser(user) {
     s.sessions = sessions;
     s.templates = loadTemplates(user.id);
     s.workout = migrateDraft(loadDraft(user.id));
+    s.backupDue = backupStatus(user.id, sessions.length).due;
     s.loading = false;
     s.tab = 'log';
   });

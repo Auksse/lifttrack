@@ -32,6 +32,34 @@ function metric(label, value, unit = '', variant = '') {
     </div>`;
 }
 
+/**
+ * Backup prompt.
+ *
+ * There is no server copy of any of this. iOS deletes a home-screen web
+ * app's storage when the icon is removed, and can evict it under storage
+ * pressure — so the app has to actively push a copy off the device rather
+ * than leaving export buried in Settings.
+ */
+function renderBackupBanner() {
+  if (!state.backupDue) return '';
+  return `
+    <div class="ledger-row" style="--spine-color:var(--warning);border-top:1px solid
+         color-mix(in srgb, var(--warning) 35%, transparent);
+         border-bottom-color:color-mix(in srgb, var(--warning) 35%, transparent);
+         background:color-mix(in srgb, var(--warning) 8%, transparent)">
+      <span class="ledger-spine"></span>
+      <span class="ledger-main">
+        <span class="eyebrow" style="display:block;color:var(--warning)">${t('backup_due')}</span>
+        <span class="ledger-sub" style="white-space:normal">${t('backup_due_body')}</span>
+      </span>
+      <button class="btn btn--sm btn--secondary" data-action="data:export">${t('back_up')}</button>
+      <button class="icon-btn" data-action="backup:dismiss" aria-label="${t('close')}"
+              style="width:34px;height:34px">
+        ${icon('close', { size: 16 })}
+      </button>
+    </div>`;
+}
+
 /** The resume banner for a workout left in progress. */
 function renderActiveWorkout() {
   const w = state.workout;
@@ -293,6 +321,7 @@ export function renderLogScreen() {
   return {
     header,
     body: `
+      ${renderBackupBanner()}
       ${renderActiveWorkout()}
       ${renderNextUp()}
 

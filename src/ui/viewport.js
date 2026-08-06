@@ -25,10 +25,35 @@
 
 let raf = null;
 
+/**
+ * Height of the initial containing block — what `position: fixed; inset: 0`
+ * resolves against, and therefore the real paintable area.
+ *
+ * On iOS with `viewport-fit=cover` this can exceed `window.innerHeight`:
+ * the view genuinely spans the full screen while innerHeight still reports
+ * the value from before the safe areas were surrendered. Sizing to
+ * innerHeight in that state *creates* the dead band it was meant to remove.
+ */
+function measureContainingBlock() {
+  if (!document.body) return 0;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(probe);
+  const h = Math.round(probe.getBoundingClientRect().height);
+  probe.remove();
+  return h;
+}
+
 function measure() {
   // visualViewport excludes on-screen keyboards and browser chrome.
   const vv = window.visualViewport;
-  const height = Math.round(vv?.height ?? window.innerHeight);
+  const reported = Math.round(vv?.height ?? window.innerHeight);
+  const icb = measureContainingBlock();
+
+  // Take the larger. A keyboard shrinks visualViewport legitimately, but it
+  // shrinks the containing block too, so this cannot wrongly ignore one.
+  const height = Math.max(reported, icb);
+
   if (height > 0) {
     document.documentElement.style.setProperty('--app-height', `${height}px`);
   }
@@ -125,9 +150,24 @@ export function viewportReport() {
   const appEl = document.getElementById('app');
   const dockEl = document.querySelector('.dock');
 
+  /**
+   * The initial containing block — what `position: fixed; inset: 0` actually
+   * resolves against. This is the measurement that settles whether the web
+   * view really is short, or whether `window.innerHeight` is under-reporting
+   * a full-height view. They disagree on iOS more often than you would like.
+   */
+  const icbProbe = document.createElement('div');
+  icbProbe.style.cssText =
+    'position:fixed;inset:0;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(icbProbe);
+  const icbHeight = Math.round(icbProbe.getBoundingClientRect().height);
+  icbProbe.remove();
+
   return {
     innerHeight: window.innerHeight,
     visualViewport: window.visualViewport ? Math.round(window.visualViewport.height) : null,
+    icbHeight,
+    clientHeight: document.documentElement.clientHeight,
     screenHeight: window.screen?.height ?? null,
     appHeight: appEl ? Math.round(appEl.getBoundingClientRect().height) : null,
     dockBottom: dockEl ? Math.round(dockEl.getBoundingClientRect().bottom) : null,
