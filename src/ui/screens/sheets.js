@@ -299,6 +299,9 @@ function renderLayoutDiagnostic() {
     ['#app height', `${r.appHeight}px`],
     ['dock bottom edge', `${r.dockBottom}px`],
     ['screen height', `${r.screenHeight}px`],
+    ['avail height', r.availHeight === null ? 'unknown' : `${r.availHeight}px`],
+    // Decides whether the dead band is above or below the view.
+    ['view top on screen', r.screenY === null ? 'unknown' : `${r.screenY}px`],
     ['safe top / bottom', `${r.insets.top} / ${r.insets.bottom}`],
     ['standalone', r.standalone ? 'yes' : 'no (browser)'],
   ];

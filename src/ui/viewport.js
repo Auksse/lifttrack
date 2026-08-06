@@ -164,6 +164,15 @@ export function viewportReport() {
   icbProbe.remove();
 
   return {
+    /**
+     * Where the web view sits on the physical screen. This is the one thing
+     * the height measurements cannot tell us: a 793pt view on an 852pt
+     * screen is either flush to the top with 59pt of dead screen below it,
+     * or pushed down 59pt by a status bar that reserves its own space. The
+     * two need opposite fixes, and `screenY` distinguishes them.
+     */
+    screenY: window.screenY ?? null,
+    availHeight: window.screen?.availHeight ?? null,
     innerHeight: window.innerHeight,
     visualViewport: window.visualViewport ? Math.round(window.visualViewport.height) : null,
     icbHeight,
