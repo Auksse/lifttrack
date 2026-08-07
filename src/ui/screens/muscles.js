@@ -172,7 +172,18 @@ function renderVolume() {
 
 // ------------------------------------------------------------ library view
 
-function renderLibrary() {
+/**
+ * The filtered list for the Muscles tab's library, separated from the
+ * search field above it for the same reason as the library sheet: typing
+ * patches this container instead of re-rendering the app, so the input
+ * element survives and keeps focus and the keyboard.
+ *
+ * This tab has its own search field with the same `data-input`, and it was
+ * missed when the sheet was fixed — the handler found no container to patch
+ * here and fell back to a full re-render, which dropped focus on every
+ * keystroke.
+ */
+export function muscleLibraryResults() {
   const query = (state.libraryQuery || '').toLowerCase().trim();
   const groupFilter = state.libraryGroup || null;
 
@@ -191,6 +202,25 @@ function renderLibrary() {
         (ex.aliases || []).some((a) => a.toLowerCase().includes(query)),
     );
   }
+
+  return `
+    <div class="metric-label" style="margin-bottom:var(--space-3)">
+      ${results.length} ${t('exercises_lbl')}
+    </div>
+
+    ${results.length
+      ? results.slice(0, 80).map(renderLibraryRow).join('')
+      : `<div class="empty"><p class="empty-body">${t('no_results')}</p></div>`}
+
+    ${results.length > 80
+      ? `<p class="metric-label" style="text-align:center;margin-top:var(--space-4)">
+           ${t('showing_first', { n: 80 })}
+         </p>`
+      : ''}`;
+}
+
+function renderLibrary() {
+  const groupFilter = state.libraryGroup || null;
 
   return `
     <input class="text-input" placeholder="${t('search_exercises')}"
@@ -212,19 +242,7 @@ function renderLibrary() {
       ).join('')}
     </div>
 
-    <div class="metric-label" style="margin-bottom:var(--space-3)">
-      ${results.length} ${t('exercises_lbl')}
-    </div>
-
-    ${results.length
-      ? results.slice(0, 80).map(renderLibraryRow).join('')
-      : `<div class="empty"><p class="empty-body">${t('no_results')}</p></div>`}
-
-    ${results.length > 80
-      ? `<p class="metric-label" style="text-align:center;margin-top:var(--space-4)">
-           ${t('showing_first', { n: 80 })}
-         </p>`
-      : ''}`;
+    <div id="muscle-library-results">${muscleLibraryResults()}</div>`;
 }
 
 function equipmentLabel(equipment) {
