@@ -366,6 +366,44 @@ export function recommendTraining(sessions, now = Date.now()) {
   }).sort((a, b) => b.score - a.score);
 }
 
+/**
+ * Groups carrying the largest weekly volume debt, worst first.
+ *
+ * "Least recently trained" on the Log hero was a statement about the
+ * Push/Pull/Legs rotation, not about you — it could not tell you that your
+ * back had two sets this week while your legs had twelve. This reads the
+ * same numbers the Muscles tab shows and names the groups actually going
+ * short.
+ *
+ * Ties are broken by how long ago the group was last trained, which
+ * matters for a fresh log where every group is equally at zero.
+ */
+export function undertrainedGroups(sessions, limit = 3) {
+  const volume = volumeByGroup(sessions, 7);
+
+  const lastTrained = {};
+  sessions.forEach((session) => {
+    const when = new Date(`${session.date}T18:00:00`).getTime();
+    Object.keys(sessionSetsByGroup(session)).forEach((id) => {
+      lastTrained[id] = Math.max(lastTrained[id] || 0, when);
+    });
+  });
+
+  return MUSCLE_GROUPS.map((group) => {
+    const sets = volume[group.id] || 0;
+    const target = volumeTarget(group.id);
+    return {
+      ...group,
+      sets: Math.round(sets * 10) / 10,
+      deficit: Math.max(0, (target.min - sets) / target.min),
+      lastTrained: lastTrained[group.id] || 0,
+    };
+  })
+    .filter((g) => g.deficit > 0)
+    .sort((a, b) => b.deficit - a.deficit || a.lastTrained - b.lastTrained)
+    .slice(0, limit);
+}
+
 /** A short human explanation for a group's current state. */
 export function describeRecovery(readiness) {
   if (readiness >= 0.9) return 'fresh';

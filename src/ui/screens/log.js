@@ -11,7 +11,7 @@ import {
   sessionVolume, totalVolume, sessionsThisWeek, currentStreak,
   suggestNextFocus, groupByMonth, isPersonalRecord, daysSince, weekStart,
 } from '../../domain/stats.js';
-import { MUSCLE_GROUPS, readinessByGroup } from '../../domain/muscles.js';
+import { MUSCLE_GROUPS, readinessByGroup, undertrainedGroups } from '../../domain/muscles.js';
 
 /**
  * Volume in tonnes, with the precision the magnitude can carry.
@@ -95,14 +95,25 @@ function renderNextUp() {
   const color = focusColor(suggestion.focus);
   const last = state.sessions.at(-1);
 
+  /**
+   * Name the groups actually going short this week rather than restating
+   * the rotation. "Least recently trained" was a fact about Push/Pull/Legs;
+   * "Core · Back · Chest" is a fact about you, and it is the same data the
+   * Muscles tab shows. Falls back to the rotation's reason once every group
+   * is at or above its weekly minimum.
+   */
+  const neglected = undertrainedGroups(state.sessions, 3);
+  const parts = neglected.length
+    ? neglected.map((g) => esc(g.label))
+    : [esc(suggestion.reason)];
+  if (last) parts.push(`<span style="color:var(--text-tertiary)">${daysSince(last.date)}${t('rest')}</span>`);
+
   return `
     <section class="hero bleed" style="--hero-color:${color}">
       <p class="eyebrow">${t('next_up')}</p>
       <h2 class="hero-title">${esc(tFocus(suggestion.focus))}</h2>
-      <div class="hero-meta">
-        <span>${esc(suggestion.reason)}</span>
-        ${last ? `<span style="color:var(--text-faint)">·</span>
-                  <span style="color:var(--text-tertiary)">${daysSince(last.date)}${t('rest')}</span>` : ''}
+      <div class="hero-meta" data-fit-line data-fit-max="15" data-fit-min="9">
+        ${parts.join('<span style="color:var(--text-faint)"> · </span>')}
       </div>
       <button class="btn btn--primary btn--block" data-action="workout:start"
               data-focus="${esc(suggestion.focus)}" style="margin-top:var(--space-4)">
