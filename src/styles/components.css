@@ -94,9 +94,14 @@
      size, without tipping into the mushy top of the axis. */
   font-weight: 800;
   /* Sized for a normal-width grotesque. The condensed face this replaced
-     ran to 84px; at these widths "SHOULDERS" would overflow a 393pt
-     phone. Long names wrap rather than shrink below the floor. */
+     ran to 84px; at these widths "SHOULDERS" would overflow a 393pt phone.
+     This is the starting size only — the headline now carries two or three
+     muscle-group names, whose width varies from "ARMS · CORE" to
+     "SHOULDERS · LEGS & GLUTES · CHEST", so ui/fit.js measures and steps it
+     down. nowrap + hidden is what makes the overflow measurable. */
   font-size: clamp(34px, 12vw, 52px);
+  white-space: nowrap;
+  overflow: hidden;
   line-height: 0.95;
   /* Inter is spaced for text; large settings need real negative tracking. */
   letter-spacing: -0.04em;
@@ -109,16 +114,31 @@
   overflow-wrap: anywhere;
 }
 
+/* Eyebrow left, rest indicator right — opposite corners, so the days of
+   rest cannot be misread as another item in the muscle list. */
+.hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.hero-rest {
+  flex: none;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
 .hero-meta {
   padding-top: var(--space-3);
   border-top: 1px solid var(--line-subtle);
   font-size: var(--text-sm);
   color: var(--text-secondary);
 
-  /* One line, always. The content varies from "Core · 2d rest" to
-     "Shoulders · Legs & Glutes · Back · 12d rest", so ui/fit.js measures
-     and shrinks the type to fit; nowrap + hidden is what makes overflow
-     detectable as scrollWidth exceeding clientWidth. */
+  /* One line, always — see ui/fit.js. nowrap + hidden is what makes
+     overflow detectable as scrollWidth exceeding clientWidth. */
   display: block;
   white-space: nowrap;
   overflow: hidden;
