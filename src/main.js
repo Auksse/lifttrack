@@ -41,6 +41,7 @@ import { saveTemplates, createTemplate } from './data/templates.js';
 import { cleanUpLegacyServiceWorker, reloadOnWorkerActivation } from './legacy-cleanup.js';
 import { shareBackup, recordExport, backupStatus } from './data/backup.js';
 import { initViewport, viewportReport } from './ui/viewport.js';
+import { fitLines } from './ui/fit.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { suggestNext, getProfile } from './domain/progression.js';
 
@@ -130,6 +131,9 @@ function render() {
 
   const content = document.getElementById('content');
   if (content) content.scrollTop = scrollTop;
+
+  // Must run after the markup is in the document: it measures.
+  fitLines(app);
 }
 
 subscribe(render);
