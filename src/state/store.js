@@ -31,6 +31,8 @@ export const state = {
 
   // --- transient UI ---
   expandedSessionId: null,
+  /** Recovery group whose per-muscle breakdown is open, by group id. */
+  expandedMuscleGroup: null,
   sheet: null,             // null | {type, props}
   /**
    * Working copy of the session being edited. Edits are applied here and
