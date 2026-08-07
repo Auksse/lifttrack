@@ -521,7 +521,11 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 
 .set-row {
   display: grid;
-  grid-template-columns: 22px 1fr 1fr var(--tap-min);
+  /* index | reps | weight | done | remove.
+     The last track is 36px for a 32px button: the spare 4px separates the
+     delete target from the tick's, so a thumb aiming at "done" cannot
+     catch "delete". */
+  grid-template-columns: 22px 1fr 1fr var(--tap-min) 36px;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) 0;
@@ -588,6 +592,26 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   border-color: transparent;
   color: var(--gold-ink);
 }
+
+/* Deliberately quiet: it sits next to the tick, which is the action you
+   actually want, so it must not compete for the thumb. Colour only
+   arrives on press. */
+.set-remove {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  /* Sits at the far end of its 36px track — see .set-row. */
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  transition: color var(--duration-fast) var(--ease-out),
+              transform var(--duration-instant) var(--ease-out);
+}
+/* 32px box, 44px touch area — the HIG floor without the visual bulk. */
+.set-remove::after { content: ''; position: absolute; inset: -6px; }
+.set-remove:active { color: var(--negative); transform: scale(0.9); }
 
 /* A completed set recedes, but keeps its box — dropping the border
    entirely made a finished row read as broken rather than done. */

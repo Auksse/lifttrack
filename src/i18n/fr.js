@@ -12,7 +12,8 @@ export default {
   // --- Workout / set entry ---
   reps: 'Répétitions', reps_short: 'rép', weight: 'Charge',
   sets: 'séries', set_done: 'Série terminée', mark_set_done: 'Marquer la série terminée',
-  add_set: 'Ajouter une série', add_exercise: 'Ajouter un exercice',
+  add_set: 'Ajouter une série', remove_set: 'Retirer la série',
+  add_exercise: 'Ajouter un exercice',
   remove_exercise: "Retirer l'exercice",
   exercise_info: "Détails de l'exercice", unnamed_exercise: 'Exercice sans nom',
   no_exercises_yet: "Pas encore d'exercices",

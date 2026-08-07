@@ -95,6 +95,12 @@ function renderSetRow(exIndex, setIndex, set) {
               aria-label="${done ? t('set_done') : t('mark_set_done')}">
         ${icon('check', { size: 20, stroke: 2.4 })}
       </button>
+
+      <button class="set-remove"
+              data-action="set:remove" data-ex="${exIndex}" data-set="${setIndex}"
+              aria-label="${t('remove_set')} ${setIndex + 1}">
+        ${icon('close', { size: 16 })}
+      </button>
     </div>`;
 }
 
