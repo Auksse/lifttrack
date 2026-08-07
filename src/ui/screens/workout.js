@@ -95,6 +95,12 @@ function renderSetRow(exIndex, setIndex, set) {
               aria-label="${done ? t('set_done') : t('mark_set_done')}">
         ${icon('check', { size: 20, stroke: 2.4 })}
       </button>
+
+      <button class="set-remove"
+              data-action="set:remove" data-ex="${exIndex}" data-set="${setIndex}"
+              aria-label="${t('remove_set')} ${setIndex + 1}">
+        ${icon('close', { size: 16 })}
+      </button>
     </div>`;
 }
 
@@ -143,12 +149,24 @@ function renderExercise(exercise, exIndex) {
   const total = exercise.sets.length;
   const done = exercise.sets.filter(isDone).length;
   const complete = total > 0 && done === total;
+  const collapsed = !!exercise.collapsed;
 
+  /**
+   * The ring and the name are the toggle, rather than a separate chevron
+   * button: it is the biggest target in the header and the one a thumb
+   * naturally lands on. The info and remove buttons still win their own
+   * taps, because delegation resolves to the nearest `[data-action]`.
+   */
   return `
-    <article class="exercise-card ${complete ? 'is-complete' : ''}">
+    <article class="exercise-card ${complete ? 'is-complete' : ''} ${collapsed ? 'is-collapsed' : ''}">
       <header class="exercise-head">
-        ${progressRing(done, total)}
-        <h3 class="exercise-name">${esc(exercise.name || t('unnamed_exercise'))}</h3>
+        <button class="exercise-toggle" data-action="exercise:toggle" data-ex="${exIndex}"
+                aria-expanded="${!collapsed}"
+                aria-label="${collapsed ? t('expand_exercise') : t('collapse_exercise')}">
+          ${progressRing(done, total)}
+          <h3 class="exercise-name">${esc(exercise.name || t('unnamed_exercise'))}</h3>
+          <span class="exercise-caret">${icon(collapsed ? 'chevronRight' : 'chevronUp', { size: 18 })}</span>
+        </button>
         <button class="icon-btn" data-action="exercise:info" data-name="${esc(exercise.name)}"
                 aria-label="${t('exercise_info')}">
           ${icon('info', { size: 20 })}
@@ -159,14 +177,16 @@ function renderExercise(exercise, exIndex) {
         </button>
       </header>
 
-      <div class="exercise-body">
-        ${renderSuggestion(exercise.name, exIndex)}
-        ${exercise.sets.map((set, i) => renderSetRow(exIndex, i, set)).join('')}
-        <button class="btn btn--sm btn--ghost btn--block" data-action="set:add" data-ex="${exIndex}"
-                style="margin-top:var(--space-2)">
-          ${icon('plus', { size: 16 })} ${t('add_set')}
-        </button>
-      </div>
+      ${collapsed
+        ? ''
+        : `<div class="exercise-body">
+             ${renderSuggestion(exercise.name, exIndex)}
+             ${exercise.sets.map((set, i) => renderSetRow(exIndex, i, set)).join('')}
+             <button class="btn btn--sm btn--ghost btn--block" data-action="set:add" data-ex="${exIndex}"
+                     style="margin-top:var(--space-2)">
+               ${icon('plus', { size: 16 })} ${t('add_set')}
+             </button>
+           </div>`}
     </article>`;
 }
 

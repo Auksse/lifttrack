@@ -69,7 +69,9 @@ export default defineConfig({
         clientsClaim: true,
       },
 
-      includeAssets: ['icon-180.png', 'icon-192.png', 'icon-512.png'],
+      includeAssets: [
+        'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png',
+      ],
 
       manifest: {
         /**
@@ -89,10 +91,20 @@ export default defineConfig({
         start_url: './',
         scope: './',
         categories: ['health', 'fitness', 'lifestyle'],
+        /**
+         * The `any` icons are full-bleed squares: every platform that uses
+         * them applies its own mask, so artwork with its own rounded corners
+         * gets double-rounded — Apple's squircle with the drawing's smaller
+         * curve visible inside it, dead space in between.
+         *
+         * `maskable` is the opposite requirement: Android may crop to a
+         * circle inscribed in the middle 80%, so that file insets the art and
+         * pads it. Pointing both purposes at one file cannot satisfy either.
+         */
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
 

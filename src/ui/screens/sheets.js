@@ -69,7 +69,17 @@ function templatePicker() {
 
 // ---------------------------------------------------------- exercise library
 
-function exerciseLibrary() {
+/**
+ * The filtered exercise list, on its own so it can be re-rendered without
+ * the search field above it.
+ *
+ * Typing used to schedule a full app render, which replaced the whole of
+ * `#app` — including the input being typed into. The browser dropped focus
+ * with it, so you got exactly one character before the keyboard closed.
+ * Now `library:search` patches `#library-results` and leaves the input
+ * element itself untouched.
+ */
+export function libraryResults() {
   const query = (state.libraryQuery || '').toLowerCase().trim();
   const groupFilter = state.libraryGroup || null;
 
@@ -86,6 +96,36 @@ function exerciseLibrary() {
         (ex.aliases || []).some((a) => a.toLowerCase().includes(query)),
     );
   }
+
+  if (!results.length) {
+    return `<p class="empty-body" style="margin:var(--space-8) auto">${t('no_results')}</p>`;
+  }
+
+  return results
+    .slice(0, 60)
+    .map((ex) => {
+      const primary = (ex.muscles || []).filter((m) => m.role === 'primary').map((m) => m.name);
+      return `
+      <button class="card card--interactive" data-action="library:add" data-name="${esc(ex.name)}"
+              style="display:flex;align-items:center;gap:var(--space-3);width:100%;
+                     text-align:left;margin-bottom:var(--space-2)">
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:var(--text-base);font-weight:700;
+                       overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            ${esc(ex.name)}
+          </span>
+          <span class="metric-label" style="display:block;margin-top:2px">
+            ${esc(primary.join(' · ') || ex.category)}
+          </span>
+        </span>
+        <span style="color:var(--gold)">${icon('plus', { size: 18 })}</span>
+      </button>`;
+    })
+    .join('');
+}
+
+function exerciseLibrary() {
+  const groupFilter = state.libraryGroup || null;
 
   return shell(
     t('library'),
@@ -109,29 +149,7 @@ function exerciseLibrary() {
       ).join('')}
     </div>
 
-    ${results.length
-      ? results
-          .slice(0, 60)
-          .map((ex) => {
-            const primary = (ex.muscles || []).filter((m) => m.role === 'primary').map((m) => m.name);
-            return `
-            <button class="card card--interactive" data-action="library:add" data-name="${esc(ex.name)}"
-                    style="display:flex;align-items:center;gap:var(--space-3);width:100%;
-                           text-align:left;margin-bottom:var(--space-2)">
-              <span style="flex:1;min-width:0">
-                <span style="display:block;font-size:var(--text-base);font-weight:700;
-                             overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                  ${esc(ex.name)}
-                </span>
-                <span class="metric-label" style="display:block;margin-top:2px">
-                  ${esc(primary.join(' · ') || ex.category)}
-                </span>
-              </span>
-              <span style="color:var(--gold)">${icon('plus', { size: 18 })}</span>
-            </button>`;
-          })
-          .join('')
-      : `<p class="empty-body" style="margin:var(--space-8) auto">${t('no_results')}</p>`}
+    <div id="library-results">${libraryResults()}</div>
 
     <button class="btn btn--ghost btn--block" data-action="library:manual" style="margin-top:var(--space-3)">
       ${t('manual_ex')}

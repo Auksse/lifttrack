@@ -36,7 +36,7 @@ import { renderProfileGate } from './ui/screens/profile.js';
 import { renderMusclesScreen } from './ui/screens/muscles.js';
 import { renderStatsScreen } from './ui/screens/stats.js';
 import { renderPlanScreen } from './ui/screens/plan.js';
-import { renderSheet } from './ui/screens/sheets.js';
+import { renderSheet, libraryResults } from './ui/screens/sheets.js';
 import { saveTemplates, createTemplate } from './data/templates.js';
 import { cleanUpLegacyServiceWorker, reloadOnWorkerActivation } from './legacy-cleanup.js';
 import { shareBackup, recordExport, backupStatus } from './data/backup.js';
@@ -295,6 +295,31 @@ onAction('set:add', ({ ex }) => {
   invalidate();
 });
 
+/**
+ * Collapse / expand an exercise while logging.
+ *
+ * The flag lives on the exercise object rather than in a set of indices,
+ * so removing or reordering an exercise carries its own state with it and
+ * cannot collapse the wrong card. `workout:save` projects exercises down
+ * to `{name, sets}`, so this never reaches a saved session — it only rides
+ * along in the draft.
+ */
+onAction('exercise:toggle', ({ ex }) => {
+  const exercise = state.workout.exercises[+ex];
+  exercise.collapsed = !exercise.collapsed;
+  persistDraft();
+  invalidate();
+});
+
+onAction('set:remove', ({ ex, set }) => {
+  const sets = state.workout.exercises[+ex].sets;
+  // No confirmation: a set is two numbers and re-adding one is a single
+  // tap, so a dialog would cost more than the mistake it prevents.
+  sets.splice(+set, 1);
+  persistDraft();
+  invalidate();
+});
+
 onAction('exercise:remove', ({ ex }) => {
   state.workout.exercises.splice(+ex, 1);
   persistDraft();
@@ -430,7 +455,19 @@ onAction('exercise:info', ({ name }) =>
 
 onInput('library:search', (value) => {
   state.libraryQuery = value;
-  invalidate();
+
+  /**
+   * Patch the results list only.
+   *
+   * `invalidate()` here would rebuild all of `#app`, replacing the search
+   * field mid-keystroke. The browser drops focus with the removed element,
+   * so on iOS the keyboard closed after a single character — you could
+   * type one letter per tap into the field. Leaving the input node alone
+   * keeps focus, the caret and the keyboard exactly where they were.
+   */
+  const list = document.getElementById('library-results');
+  if (list) list.innerHTML = libraryResults();
+  else invalidate();
 });
 
 onAction('library:filter', ({ group }) =>
