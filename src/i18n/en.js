@@ -34,6 +34,7 @@ export default {
   edit: 'Edit', use_as_template: 'Use as template', delete: 'Delete',
   save_as_template: 'Save as template', rename: 'Rename',
   muscle_breakdown: 'Muscle breakdown', view_exercises: 'View exercises',
+  start_focus: 'Start {focus}',
   alternatives: 'Alternatives', swap: 'Swap', same_movement: 'same movement',
   alternatives_hint: 'Trains the same thing — useful when the kit is taken.',
   swapped_for: 'Swapped for {name}', reorder_exercise: 'Reorder exercise',

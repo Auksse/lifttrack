@@ -96,28 +96,40 @@ function renderNextUp() {
   const last = state.sessions.at(-1);
 
   /**
-   * Name the groups actually going short this week rather than restating
-   * the rotation. "Least recently trained" was a fact about Push/Pull/Legs;
-   * "Core · Back · Chest" is a fact about you, and it is the same data the
-   * Muscles tab shows. Falls back to the rotation's reason once every group
-   * is at or above its weekly minimum.
+   * The headline is what to train, so it names the muscle groups actually
+   * going short this week.
+   *
+   * It previously read "PUSH" with those groups listed underneath, and the
+   * two disagreed: Core and Back are not push muscles, so the largest text
+   * on the screen contradicted the line beneath it. The groups are the
+   * useful answer, so they take the headline and the rest indicator moves
+   * to the opposite corner where it cannot be read as part of the list.
+   *
+   * Once every group is at or above its weekly minimum there is no debt to
+   * report, and the rotation's suggestion becomes the useful headline again.
    */
   const neglected = undertrainedGroups(state.sessions, 3);
-  const parts = neglected.length
-    ? neglected.map((g) => esc(g.label))
-    : [esc(suggestion.reason)];
-  if (last) parts.push(`<span style="color:var(--text-tertiary)">${daysSince(last.date)}${t('rest')}</span>`);
+  const heroColor = neglected.length ? neglected[0].color : color;
+  const title = neglected.length
+    ? neglected.map((g) => esc(g.label)).join('<span style="opacity:.45"> · </span>')
+    : esc(tFocus(suggestion.focus));
 
   return `
-    <section class="hero bleed" style="--hero-color:${color}">
-      <p class="eyebrow">${t('next_up')}</p>
-      <h2 class="hero-title">${esc(tFocus(suggestion.focus))}</h2>
-      <div class="hero-meta" data-fit-line data-fit-max="15" data-fit-min="9">
-        ${parts.join('<span style="color:var(--text-faint)"> · </span>')}
+    <section class="hero bleed" style="--hero-color:${heroColor}">
+      <div class="hero-top">
+        <p class="eyebrow">${t('next_up')}</p>
+        ${last ? `<span class="hero-rest">${daysSince(last.date)}${t('rest')}</span>` : ''}
       </div>
+
+      <h2 class="hero-title" data-fit-line data-fit-max="52" data-fit-min="14">${title}</h2>
+
+      <!-- The button names the session it will actually start. Now that the
+           headline names muscles rather than a split, "Start workout" alone
+           would not say what you were about to get. -->
       <button class="btn btn--primary btn--block" data-action="workout:start"
               data-focus="${esc(suggestion.focus)}" style="margin-top:var(--space-4)">
-        ${icon('bolt', { size: 17 })} ${t('start_workout')}
+        ${icon('bolt', { size: 17 })}
+        ${t('start_focus', { focus: esc(tFocus(suggestion.focus)) })}
       </button>
     </section>`;
 }
