@@ -11,9 +11,10 @@ import { esc } from '../actions.js';
 import { t, getLanguage, SUPPORTED_LANGUAGES } from '../../i18n/index.js';
 import { FR_INSTRUCTIONS } from '../../i18n/fr-instructions.js';
 import { focusColor } from '../../domain/focus.js';
-import { MUSCLE_GROUPS, findExercise } from '../../domain/muscles.js';
+import { MUSCLE_GROUPS, findExercise, alternativesFor } from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
 import { viewportReport } from '../viewport.js';
+import { equipmentLabel } from './muscles.js';
 
 function shell(title, body, { action = '', modifier = '' } = {}) {
   return `
@@ -170,6 +171,55 @@ function exerciseLibrary() {
 
 // ---------------------------------------------------------- exercise detail
 
+/**
+ * Substitutes, with a one-tap swap when this exercise is in the session
+ * you are currently doing.
+ *
+ * Swapping preserves what you actually lifted. If sets are already ticked
+ * they stay attached to the original exercise and the alternative is
+ * inserted after it — rewriting the name would file three sets of leg
+ * press under "Hack Squat", which is a lie in your own log.
+ */
+function alternativesSection(ex) {
+  const options = alternativesFor(ex.name, 5);
+  if (!options.length) return '';
+
+  const exIndex = state.sheet.props?.ex;
+  const inWorkout = !!state.workout && exIndex != null;
+
+  return `
+    <h3 class="section-label" style="margin-top:var(--space-5)">${t('alternatives')}</h3>
+    <p style="font-size:var(--text-xs);color:var(--text-faint);margin:0 0 var(--space-3)">
+      ${t('alternatives_hint')}
+    </p>
+
+    ${options
+      .map(
+        (alt) => `
+      <div class="row gap-2" style="padding:var(--space-2) 0;border-bottom:1px solid var(--line-subtle)">
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:var(--text-sm);font-weight:600;
+                       overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            ${esc(alt.name)}
+          </span>
+          <span class="metric-label" style="display:block;margin-top:2px">
+            ${esc(alt.equipment ? equipmentLabel(alt.equipment) : '')}${alt.sameFamily ? ` · ${t('same_movement')}` : ''}
+          </span>
+        </span>
+        ${inWorkout
+          ? `<button class="btn btn--sm btn--secondary" data-action="exercise:swap"
+                     data-ex="${exIndex}" data-name="${esc(alt.name)}">
+               ${icon('swap', { size: 14 })} ${t('swap')}
+             </button>`
+          : `<button class="icon-btn" data-action="exercise:info" data-name="${esc(alt.name)}"
+                     aria-label="${t('exercise_info')}">
+               ${icon('chevronRight', { size: 18 })}
+             </button>`}
+      </div>`,
+      )
+      .join('')}`;
+}
+
 function exerciseDetail() {
   const name = state.sheet.props?.name;
   const ex = findExercise(name);
@@ -217,6 +267,8 @@ function exerciseDetail() {
     ${secondary.length
       ? `<h3 class="section-label" style="margin-top:var(--space-4)">${t('secondary')}</h3>${muscleList(secondary)}`
       : ''}
+
+    ${alternativesSection(ex)}
 
     ${instructions.length
       ? `<h3 class="section-label" style="margin-top:var(--space-5)">${t('instructions')}</h3>

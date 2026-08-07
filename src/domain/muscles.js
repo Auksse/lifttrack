@@ -404,6 +404,71 @@ export function undertrainedGroups(sessions, limit = 3) {
     .slice(0, limit);
 }
 
+/**
+ * Substitutes for an exercise, best first.
+ *
+ * The question this answers is a gym-floor one: the machine you wanted is
+ * occupied, so what else trains the same thing right now? That makes
+ * *different equipment* a feature rather than a mismatch — another
+ * variation of the same movement on the same machine is useless to you.
+ *
+ * Two signals, in order of trust:
+ *
+ *   familyName  The database already groups movements — "Flat Press"
+ *               covers the push-up, dumbbell, barbell and machine
+ *               versions. A family sibling is a direct swap.
+ *   primary muscle overlap
+ *               For anything without family siblings, how much of the
+ *               original's primary work the candidate reproduces,
+ *               penalised for pulling in a lot of unrelated primaries so
+ *               a whole-body lift is not offered as a substitute for a
+ *               calf raise.
+ */
+export function alternativesFor(name, limit = 6) {
+  const source = findExercise(name);
+  if (!source) return [];
+
+  const primary = new Map(
+    (source.muscles || [])
+      .filter((m) => m.role === 'primary')
+      .map((m) => [m.name.toLowerCase(), m.score]),
+  );
+  const sourcePrimaryTotal = [...primary.values()].reduce((a, b) => a + b, 0);
+
+  return EXERCISES.map((ex) => {
+    if (ex.id === source.id || ex.name === source.name) return null;
+
+    const sameFamily = !!source.familyName && ex.familyName === source.familyName;
+
+    let overlap = 0;
+    let candidateTotal = 0;
+    (ex.muscles || [])
+      .filter((m) => m.role === 'primary')
+      .forEach((m) => {
+        candidateTotal += m.score;
+        const shared = primary.get(m.name.toLowerCase());
+        if (shared) overlap += Math.min(shared, m.score);
+      });
+
+    if (!sameFamily && !overlap) return null;
+
+    const coverage = sourcePrimaryTotal ? overlap / sourcePrimaryTotal : 0;
+    const focus = candidateTotal ? overlap / candidateTotal : 0;
+    // Different kit is the point of the question, so it is a real bonus
+    // rather than a tiebreak — but not enough to beat a much better match.
+    const equipmentBonus = ex.equipment !== source.equipment ? 1.2 : 1;
+
+    return {
+      ...ex,
+      sameFamily,
+      score: (sameFamily ? 1 + coverage : coverage * focus) * equipmentBonus,
+    };
+  })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+}
+
 /** A short human explanation for a group's current state. */
 export function describeRecovery(readiness) {
   if (readiness >= 0.9) return 'fresh';
