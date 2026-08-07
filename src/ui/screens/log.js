@@ -279,6 +279,9 @@ function renderSessionDetail(session) {
         <button class="btn btn--sm btn--secondary" data-action="session:repeat" data-id="${session.id}">
           ${icon('copy', { size: 15 })} ${t('use_as_template')}
         </button>
+        <button class="btn btn--sm btn--secondary" data-action="session:save-template" data-id="${session.id}">
+          ${icon('plan', { size: 15 })} ${t('save_as_template')}
+        </button>
         <button class="btn btn--sm btn--secondary" data-action="session:edit" data-id="${session.id}">
           ${icon('edit', { size: 15 })} ${t('edit')}
         </button>

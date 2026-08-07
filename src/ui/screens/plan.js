@@ -178,6 +178,9 @@ function renderTemplates() {
                    <button class="btn btn--sm btn--secondary" data-action="template:add-ex" data-id="${tpl.id}">
                      ${icon('plus', { size: 15 })} ${t('add_exercise')}
                    </button>
+                   <button class="btn btn--sm btn--secondary" data-action="template:rename" data-id="${tpl.id}">
+                     ${icon('edit', { size: 15 })} ${t('rename')}
+                   </button>
                    <button class="btn btn--sm btn--danger" data-action="template:delete" data-id="${tpl.id}">
                      ${icon('trash', { size: 15 })}
                    </button>

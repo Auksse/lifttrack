@@ -847,6 +847,12 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   padding-bottom: var(--safe-bottom);
   animation: sheet-up var(--duration-base) var(--ease-out);
 }
+/* A sheet whose height must not follow its content — see exerciseLibrary().
+   dvh deliberately, not --app-height: --app-height shrinks when the
+   keyboard opens, which would resize the sheet mid-typing, reintroducing
+   the very movement this prevents. */
+.sheet--tall { height: 88dvh; }
+
 .sheet-grip {
   width: 34px;
   height: 4px;
