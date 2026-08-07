@@ -15,10 +15,10 @@ import { MUSCLE_GROUPS, findExercise } from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
 import { viewportReport } from '../viewport.js';
 
-function shell(title, body, { action = '' } = {}) {
+function shell(title, body, { action = '', modifier = '' } = {}) {
   return `
     <div class="sheet-backdrop" data-action="sheet:close"></div>
-    <section class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <section class="sheet ${modifier}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
       <div class="sheet-grip"></div>
       <header class="sheet-head">
         <h2 class="sheet-title">${esc(title)}</h2>
@@ -154,6 +154,17 @@ function exerciseLibrary() {
     <button class="btn btn--ghost btn--block" data-action="library:manual" style="margin-top:var(--space-3)">
       ${t('manual_ex')}
     </button>`,
+    /**
+     * Fixed height, not content height.
+     *
+     * The sheet is anchored to the bottom of the screen, so a shorter
+     * sheet has a lower top edge. Filtering the list down to two results
+     * therefore dragged the search field down the screen and under the
+     * keyboard — the field moved away as you typed into it. At a fixed
+     * height the field stays where it started and the list scrolls
+     * beneath it.
+     */
+    { modifier: 'sheet--tall' },
   );
 }
 
@@ -351,11 +362,104 @@ function renderLayoutDiagnostic() {
     </details>`;
 }
 
+// ---------------------------------------------------------- session edit
+
+/**
+ * Edit a logged session.
+ *
+ * Reads from `state.sessionEdit`, a working copy — nothing here touches the
+ * stored session until Save. The numeric fields deliberately do not
+ * re-render on input (see the handlers in main.js), so typing never
+ * disturbs focus; only structural edits redraw.
+ */
+function sessionEditSheet() {
+  const draft = state.sessionEdit;
+  if (!draft) return '';
+
+  const fieldLabel = (text) => `
+    <div class="metric-label" style="margin:var(--space-3) 0 var(--space-2)">${text}</div>`;
+
+  const exercises = draft.exercises
+    .map(
+      (ex, exIndex) => `
+      <div style="margin-top:var(--space-4)">
+        <div class="row gap-2" style="align-items:center">
+          <span style="flex:1;min-width:0;font-size:var(--text-sm);font-weight:700;
+                       overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            ${esc(ex.name)}
+          </span>
+          <button class="icon-btn icon-btn--danger" data-action="session-edit:remove-exercise"
+                  data-ex="${exIndex}" aria-label="${t('remove_exercise')}">
+            ${icon('trash', { size: 17 })}
+          </button>
+        </div>
+
+        ${ex.sets
+          .map(
+            (set, setIndex) => `
+          <div class="set-row">
+            <div class="set-index">${setIndex + 1}</div>
+            <div class="set-field">
+              <input class="set-input" type="text" inputmode="numeric" pattern="[0-9]*"
+                     value="${esc(set.r ?? '')}" placeholder="—"
+                     aria-label="${t('reps')} ${setIndex + 1}"
+                     data-input="session-edit:reps" data-ex="${exIndex}" data-set="${setIndex}">
+              <span class="set-unit">${t('reps_short')}</span>
+            </div>
+            <div class="set-field">
+              <input class="set-input" type="text" inputmode="decimal"
+                     value="${esc(set.w ?? '')}" placeholder="—"
+                     aria-label="${t('weight')} ${setIndex + 1}"
+                     data-input="session-edit:weight" data-ex="${exIndex}" data-set="${setIndex}">
+              <span class="set-unit">${state.settings.units}</span>
+            </div>
+            <span></span>
+            <button class="set-remove" data-action="session-edit:remove-set"
+                    data-ex="${exIndex}" data-set="${setIndex}"
+                    aria-label="${t('remove_set')} ${setIndex + 1}">
+              ${icon('close', { size: 16 })}
+            </button>
+          </div>`,
+          )
+          .join('')}
+      </div>`,
+    )
+    .join('');
+
+  return shell(
+    t('edit_session'),
+    `
+    ${fieldLabel(t('date'))}
+    <input class="text-input" type="date" value="${esc(draft.date)}"
+           data-input="session-edit:date" aria-label="${t('date')}">
+
+    ${fieldLabel(t('session_focus'))}
+    <input class="text-input" value="${esc(draft.focus)}"
+           data-input="session-edit:focus" aria-label="${t('session_focus')}">
+
+    ${exercises || `<p class="empty-body" style="margin:var(--space-6) auto">${t('no_exercises_yet')}</p>`}
+
+    <div class="row gap-2" style="margin-top:var(--space-6)">
+      <button class="btn btn--secondary" style="flex:none" data-action="sheet:close">
+        ${t('cancel')}
+      </button>
+      <!-- Save takes the remaining width: "Save changes" wrapped to two
+           lines when the two buttons split it evenly. -->
+      <button class="btn btn--primary" style="flex:1;white-space:nowrap"
+              data-action="session-edit:save">
+        ${t('save_changes')}
+      </button>
+    </div>`,
+    { modifier: 'sheet--tall' },
+  );
+}
+
 // ---------------------------------------------------------- dispatcher
 
 export function renderSheet() {
   if (!state.sheet) return '';
   switch (state.sheet.type) {
+    case 'session-edit': return sessionEditSheet();
     case 'template-picker': return templatePicker();
     case 'library': return exerciseLibrary();
     case 'exercise-detail': return exerciseDetail();

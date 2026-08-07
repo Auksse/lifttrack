@@ -144,7 +144,7 @@ subscribe(render);
  * we pre-build the right number of rows and pre-fill them with the
  * progression target, so the common case is: lift, tick, done.
  */
-function initialSetsFor(name) {
+function initialSetsFor(name, { count: forced } = {}) {
   const previous = [...state.sessions]
     .reverse()
     .find((s) => s.exercises.some((e) => e.name === name));
@@ -153,7 +153,7 @@ function initialSetsFor(name) {
   const suggestion = suggestNext(name, lastSets);
   const profile = getProfile(name);
 
-  const count = suggestion?.sets || profile.sets;
+  const count = forced ?? (suggestion?.sets || profile.sets);
   const reps = suggestion ? String(suggestion.reps) : '';
   const weight = suggestion ? String(suggestion.weight) : '';
 
@@ -387,6 +387,144 @@ onAction('session:delete', async ({ id }) => {
   toast(t('deleted'));
 });
 
+// ---- editing a logged session ----
+
+/**
+ * The Edit button has been in the session detail since the rebuild, but no
+ * handler was ever registered for it, so it silently did nothing.
+ *
+ * Edits go into a working copy and are written through the repository only
+ * on save. Backing out — closing the sheet, tapping the backdrop — leaves
+ * the stored session untouched.
+ */
+onAction('session:edit', ({ id }) => {
+  const session = state.sessions.find((s) => s.id === id);
+  if (!session) return;
+  setState({
+    sessionEdit: {
+      id: session.id,
+      date: session.date,
+      focus: session.focus,
+      // Deep copy, and strings in the fields so typing behaves.
+      exercises: session.exercises.map((ex) => ({
+        name: ex.name,
+        sets: ex.sets.map((set) => ({ r: String(set.r ?? ''), w: String(set.w ?? '') })),
+      })),
+    },
+    sheet: { type: 'session-edit' },
+  });
+});
+
+// Text fields mutate the draft without re-rendering — same reasoning as the
+// live set inputs: a redraw mid-keystroke would steal focus.
+onInput('session-edit:date', (value) => { state.sessionEdit.date = value; });
+onInput('session-edit:focus', (value) => { state.sessionEdit.focus = value; });
+onInput('session-edit:reps', (value, { ex, set }) => {
+  state.sessionEdit.exercises[+ex].sets[+set].r = value.replace(/[^\d]/g, '');
+});
+onInput('session-edit:weight', (value, { ex, set }) => {
+  state.sessionEdit.exercises[+ex].sets[+set].w =
+    value.replace(/[^\d.,]/g, '').replace(',', '.');
+});
+
+onAction('session-edit:remove-set', ({ ex, set }) => {
+  state.sessionEdit.exercises[+ex].sets.splice(+set, 1);
+  invalidate();
+});
+
+onAction('session-edit:remove-exercise', ({ ex }) => {
+  state.sessionEdit.exercises.splice(+ex, 1);
+  invalidate();
+});
+
+onAction('session-edit:save', async () => {
+  const draft = state.sessionEdit;
+  if (!draft) return;
+
+  // A date input can be cleared, and an empty date would sort the session
+  // nowhere and break every grouping that reads it.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) {
+    toast(t('invalid_date'), 'error');
+    cue('error');
+    return;
+  }
+
+  const exercises = draft.exercises
+    .map((ex) => ({
+      name: ex.name,
+      sets: ex.sets
+        .filter((s) => Number(s.r) > 0)
+        .map((s) => ({ r: Number(s.r), w: Number(s.w) || 0 })),
+    }))
+    .filter((ex) => ex.name && ex.sets.length);
+
+  if (!exercises.length) {
+    toast(t('add_at_least'), 'error');
+    cue('error');
+    return;
+  }
+
+  const repo = getRepository(state.user.id);
+  await repo.update(draft.id, {
+    date: draft.date,
+    focus: draft.focus.trim() || 'Other',
+    exercises,
+  });
+
+  // Re-list rather than patch in place: changing the date changes where the
+  // session sorts, and list() is what defines that order.
+  setState({ sessions: await repo.list(), sheet: null, sessionEdit: null });
+  cue('saved');
+  toast(t('session_updated'), 'success');
+});
+
+/**
+ * Save a logged session as a reusable template.
+ *
+ * Named up front, because the session's focus is almost always the name of
+ * the template it came from — saving under that name would leave two
+ * identically-named templates in the picker, which is exactly the bug the
+ * single template list was built to end.
+ */
+onAction('session:save-template', ({ id }) => {
+  const session = state.sessions.find((s) => s.id === id);
+  if (!session) return;
+
+  const name = prompt(t('tmpl_name_ph'), session.focus)?.trim();
+  if (!name) return;
+
+  if (state.templates.some((x) => x.name.toLowerCase() === name.toLowerCase())) {
+    toast(t('tmpl_exists'), 'error');
+    return;
+  }
+
+  const templates = [
+    ...state.templates,
+    createTemplate(name, session.exercises.map((ex) => ex.name), session.focus),
+  ];
+  saveTemplates(state.user.id, templates);
+  setState({ templates });
+  toast(t('tmpl_created'), 'success');
+});
+
+onAction('template:rename', ({ id }) => {
+  const tpl = state.templates.find((x) => x.id === id);
+  if (!tpl) return;
+
+  const name = prompt(t('tmpl_name_ph'), tpl.name)?.trim();
+  if (!name || name === tpl.name) return;
+
+  if (state.templates.some((x) => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) {
+    toast(t('tmpl_exists'), 'error');
+    return;
+  }
+
+  tpl.name = name;
+  saveTemplates(state.user.id, state.templates);
+  invalidate();
+  toast(t('tmpl_renamed'), 'success');
+});
+
 onAction('session:repeat', ({ id }) => {
   const source = state.sessions.find((s) => s.id === id);
   if (!source) return;
@@ -445,7 +583,8 @@ onAction('profile:switch', () => {
 
 // ---- sheets ----
 
-onAction('sheet:close', () => setState({ sheet: null }));
+// Dropping the edit draft here is what makes closing the sheet a cancel.
+onAction('sheet:close', () => setState({ sheet: null, sessionEdit: null }));
 onAction('settings:open', () => setState({ sheet: { type: 'settings' } }));
 
 onAction('exercise:browse', () => setState({ sheet: { type: 'library' }, libraryQuery: '' }));
@@ -482,7 +621,15 @@ onAction('library:add', ({ name }) => {
       s.sheet = null;
     });
   } else {
-    state.workout.exercises.push({ name, sets: initialSetsFor(name) });
+    /**
+     * One row, not the whole prescription.
+     *
+     * Pre-building four rows made sense for a template, where the set count
+     * is the plan. An exercise added mid-session is usually improvised, so
+     * the extra rows were just empty boxes to scroll past — add sets as you
+     * do them instead. The row still carries the progression target.
+     */
+    state.workout.exercises.push({ name, sets: initialSetsFor(name, { count: 1 }) });
     setState({ sheet: null });
   }
   persistDraft();

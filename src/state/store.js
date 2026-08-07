@@ -32,6 +32,12 @@ export const state = {
   // --- transient UI ---
   expandedSessionId: null,
   sheet: null,             // null | {type, props}
+  /**
+   * Working copy of the session being edited. Edits are applied here and
+   * only written through the repository on save, so backing out of the
+   * sheet cannot half-modify a logged session.
+   */
+  sessionEdit: null,
   lang: 'en',
   settings: {
     haptics: true,
