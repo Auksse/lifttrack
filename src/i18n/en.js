@@ -14,6 +14,7 @@ export default {
   sets: 'sets', set_done: 'Set complete', mark_set_done: 'Mark set complete',
   add_set: 'Add set', remove_set: 'Remove set',
   add_exercise: 'Add exercise', remove_exercise: 'Remove exercise',
+  collapse_exercise: 'Collapse exercise', expand_exercise: 'Expand exercise',
   exercise_info: 'Exercise details', unnamed_exercise: 'Untitled exercise',
   no_exercises_yet: 'No exercises yet',
   no_exercises_body: 'Add your first exercise to start logging sets.',

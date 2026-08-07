@@ -15,6 +15,7 @@ export default {
   add_set: 'Ajouter une série', remove_set: 'Retirer la série',
   add_exercise: 'Ajouter un exercice',
   remove_exercise: "Retirer l'exercice",
+  collapse_exercise: "Réduire l'exercice", expand_exercise: "Développer l'exercice",
   exercise_info: "Détails de l'exercice", unnamed_exercise: 'Exercice sans nom',
   no_exercises_yet: "Pas encore d'exercices",
   no_exercises_body: 'Ajoute ton premier exercice pour commencer à enregistrer des séries.',

@@ -295,6 +295,22 @@ onAction('set:add', ({ ex }) => {
   invalidate();
 });
 
+/**
+ * Collapse / expand an exercise while logging.
+ *
+ * The flag lives on the exercise object rather than in a set of indices,
+ * so removing or reordering an exercise carries its own state with it and
+ * cannot collapse the wrong card. `workout:save` projects exercises down
+ * to `{name, sets}`, so this never reaches a saved session — it only rides
+ * along in the draft.
+ */
+onAction('exercise:toggle', ({ ex }) => {
+  const exercise = state.workout.exercises[+ex];
+  exercise.collapsed = !exercise.collapsed;
+  persistDraft();
+  invalidate();
+});
+
 onAction('set:remove', ({ ex, set }) => {
   const sets = state.workout.exercises[+ex].sets;
   // No confirmation: a set is two numbers and re-adding one is a single
