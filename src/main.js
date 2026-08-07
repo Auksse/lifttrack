@@ -33,7 +33,7 @@ import { cue, haptic, primeAudio, setHapticsEnabled, setSoundEnabled } from './u
 import { renderLogScreen } from './ui/screens/log.js';
 import { renderWorkoutScreen } from './ui/screens/workout.js';
 import { renderProfileGate } from './ui/screens/profile.js';
-import { renderMusclesScreen } from './ui/screens/muscles.js';
+import { renderMusclesScreen, muscleLibraryResults } from './ui/screens/muscles.js';
 import { renderStatsScreen } from './ui/screens/stats.js';
 import { renderPlanScreen } from './ui/screens/plan.js';
 import { renderSheet, libraryResults } from './ui/screens/sheets.js';
@@ -603,10 +603,17 @@ onInput('library:search', (value) => {
    * so on iOS the keyboard closed after a single character — you could
    * type one letter per tap into the field. Leaving the input node alone
    * keeps focus, the caret and the keyboard exactly where they were.
+   *
+   * Two screens carry a search field with this `data-input`: the library
+   * sheet and the Muscles tab's library. Both are patched — fixing only
+   * the sheet left the tab falling through to the full re-render below,
+   * which is the same bug in the other place.
    */
-  const list = document.getElementById('library-results');
-  if (list) list.innerHTML = libraryResults();
-  else invalidate();
+  const sheetList = document.getElementById('library-results');
+  const tabList = document.getElementById('muscle-library-results');
+  if (sheetList) sheetList.innerHTML = libraryResults();
+  if (tabList) tabList.innerHTML = muscleLibraryResults();
+  if (!sheetList && !tabList) invalidate();
 });
 
 onAction('library:filter', ({ group }) =>
