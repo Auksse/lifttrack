@@ -34,6 +34,7 @@ export default {
   schedule_link: 'Planifier une date',
   edit: 'Modifier', use_as_template: 'Utiliser comme modèle', delete: 'Supprimer',
   save_as_template: 'Enregistrer comme modèle', rename: 'Renommer',
+  muscle_breakdown: 'Détail par muscle', view_exercises: 'Voir les exercices',
   edit_session: 'Modifier la séance', date: 'Date', session_focus: 'Type',
   invalid_date: 'Choisis une date valide', tmpl_renamed: 'Modèle renommé',
   session_saved: 'Séance enregistrée', session_updated: 'Séance mise à jour',

@@ -12,7 +12,7 @@ import { esc } from '../actions.js';
 import { t } from '../../i18n/index.js';
 import {
   MUSCLE_GROUPS, recommendTraining, volumeByGroup, volumeStatus,
-  volumeTarget, describeRecovery, findExercise,
+  volumeTarget, describeRecovery, findExercise, muscleBreakdown,
 } from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
 
@@ -34,33 +34,89 @@ function readinessColor(readiness) {
 
 // ------------------------------------------------------------ recovery view
 
+/**
+ * The muscles inside a group, most fatigued first.
+ *
+ * The group figure is an average, and an average is exactly the wrong
+ * summary here: "Arms 57%" reads as "arms are half-recovered" when the
+ * truth is usually that one head is cooked and the other is fine. This is
+ * the row that answers "yes, but which part".
+ */
+function renderMuscleBreakdown(group) {
+  const muscles = muscleBreakdown(state.sessions, group.id);
+  if (!muscles.length) return '';
+
+  return `
+    <div style="padding:var(--space-3) var(--gutter) var(--space-4) var(--space-5);
+                background:var(--surface-sunken);border-bottom:1px solid var(--line-subtle)">
+      <div class="metric-label" style="margin-bottom:var(--space-3)">${t('muscle_breakdown')}</div>
+
+      ${muscles
+        .map((m) => {
+          const pct = Math.round(m.readiness * 100);
+          const color = readinessColor(m.readiness);
+          return `
+          <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0">
+            <span style="flex:1;min-width:0;font-size:var(--text-sm);
+                         overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${esc(m.name)}
+            </span>
+            <span class="load-bar" style="flex:0 0 82px">
+              <span class="load-bar-fill" style="width:${pct}%;--bar-color:${color}"></span>
+            </span>
+            <span style="flex:none;width:38px;text-align:right;font-family:var(--font-mono);
+                         font-size:var(--text-xs);color:${color}">${pct}%</span>
+            <span style="flex:none;width:52px;text-align:right;font-size:var(--text-2xs);
+                         color:var(--text-faint)">${m.sets} ${t('sets')}</span>
+          </div>`;
+        })
+        .join('')}
+
+      <button class="btn btn--sm btn--secondary" data-action="muscle:open" data-group="${group.id}"
+              style="margin-top:var(--space-3)">
+        ${icon('search', { size: 14 })} ${t('view_exercises')}
+      </button>
+    </div>`;
+}
+
 function renderRecoveryRow(group) {
   const pct = Math.round(group.readiness * 100);
   const color = readinessColor(group.readiness);
   const label = describeRecovery(group.readiness);
+  const expanded = state.expandedMuscleGroup === group.id;
 
   return `
-    <button class="ledger-row" data-action="muscle:open" data-group="${group.id}"
-            style="--spine-color:${group.color};align-items:stretch">
-      <span class="ledger-spine"></span>
-      <span class="ledger-main" style="display:flex;flex-direction:column;justify-content:center;gap:var(--space-2)">
-        <span style="display:flex;align-items:baseline;gap:var(--space-2)">
-          <span class="ledger-title" style="flex:1">${esc(group.label)}</span>
-          <span class="eyebrow" style="color:${color}">${t(`recovery_${label}`)}</span>
-        </span>
+    <article>
+      <button class="ledger-row" data-action="muscle:toggle" data-group="${group.id}"
+              aria-expanded="${expanded}"
+              style="--spine-color:${group.color};align-items:stretch">
+        <span class="ledger-spine"></span>
+        <span class="ledger-main" style="display:flex;flex-direction:column;justify-content:center;gap:var(--space-2)">
+          <span style="display:flex;align-items:baseline;gap:var(--space-2)">
+            <span class="ledger-title" style="flex:1">${esc(group.label)}</span>
+            <span class="eyebrow" style="color:${color}">${t(`recovery_${label}`)}</span>
+          </span>
 
-        <span class="load-bar" style="display:block">
-          <span class="load-bar-fill" style="width:${pct}%;--bar-color:${color}"></span>
-        </span>
+          <span class="load-bar" style="display:block">
+            <span class="load-bar-fill" style="width:${pct}%;--bar-color:${color}"></span>
+          </span>
 
-        <span class="ledger-sub">
-          ${group.sets} ${t('of')} ${group.target.min}–${group.target.max} ${t('sets_week')}
+          <span class="ledger-sub">
+            ${group.sets} ${t('of')} ${group.target.min}–${group.target.max} ${t('sets_week')}
+          </span>
         </span>
-      </span>
-      <span class="figure figure--md" style="color:${color};flex:none;align-self:center">
-        ${pct}<span class="figure-unit">%</span>
-      </span>
-    </button>`;
+        <span class="figure figure--md" style="color:${color};flex:none;align-self:center">
+          ${pct}<span class="figure-unit">%</span>
+        </span>
+        <span style="color:var(--text-faint);flex:none;align-self:center;
+                     transition:transform var(--duration-fast) var(--ease-out);
+                     ${expanded ? 'transform:rotate(180deg)' : ''}">
+          ${icon('chevronDown', { size: 18 })}
+        </span>
+      </button>
+
+      ${expanded ? renderMuscleBreakdown(group) : ''}
+    </article>`;
 }
 
 function renderRecovery() {

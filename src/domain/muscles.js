@@ -176,14 +176,32 @@ export function volumeTarget(groupId) {
  * means the same thing for calves as for quads. Stimulus then decays with
  * the group's half-life.
  */
+/**
+ * Hours since a session, or null if it should not count towards fatigue.
+ *
+ * Sessions are dated, not timestamped, so we assume an evening session.
+ * That assumption used to discard anything with a negative age — which
+ * silently threw away *today's* session for the whole day until 18:00.
+ * Train at 09:00 and the app reported you completely fresh at 10:00,
+ * which is precisely when the answer matters most.
+ *
+ * A session dated today now counts as just finished; only sessions dated
+ * later than today are excluded, because those are planned rather than
+ * performed. Dates are compared in UTC, matching how they are written.
+ */
+function hoursSinceSession(session, now) {
+  const hours = (now - new Date(`${session.date}T18:00:00`).getTime()) / HOUR_MS;
+  if (hours > 24 * 14) return null; // beyond 2 weeks: gone
+  if (hours >= 0) return hours;
+  return session.date > new Date(now).toISOString().slice(0, 10) ? null : 0;
+}
+
 export function fatigueByGroup(sessions, now = Date.now()) {
   const fatigue = Object.fromEntries(MUSCLE_GROUPS.map((g) => [g.id, 0]));
 
   sessions.forEach((session) => {
-    // Sessions are dated, not timestamped; assume an evening session.
-    const when = new Date(`${session.date}T18:00:00`).getTime();
-    const hoursAgo = (now - when) / HOUR_MS;
-    if (hoursAgo < 0 || hoursAgo > 24 * 14) return; // beyond 2 weeks: gone
+    const hoursAgo = hoursSinceSession(session, now);
+    if (hoursAgo === null) return;
 
     Object.entries(sessionSetsByGroup(session)).forEach(([groupId, sets]) => {
       const halfLife = HALF_LIFE_HOURS[groupId] || 48;
@@ -208,6 +226,109 @@ export function fatigueByGroup(sessions, now = Date.now()) {
 export function readinessByGroup(sessions, now = Date.now()) {
   const fatigue = fatigueByGroup(sessions, now);
   return Object.fromEntries(Object.entries(fatigue).map(([id, f]) => [id, 1 - f]));
+}
+
+// ------------------------------------------------------- per-muscle detail
+
+/**
+ * The same fatigue model, one level down — keyed by individual muscle
+ * rather than by group.
+ *
+ * A group average hides the thing you usually want to know. "Arms 57%"
+ * can mean both heads are half-cooked, or that triceps are wrecked and
+ * biceps are untouched, and those imply completely different sessions.
+ *
+ * Deliberately identical to `fatigueByGroup` in half-life, per-session
+ * dose and saturation, so a group and its dominant muscle read in the same
+ * units and a breakdown can never contradict the headline it sits under.
+ * The only difference is that contributions are not summed across the
+ * muscles of a group.
+ *
+ * @returns {Object<string, number>} fatigue 0-1, keyed by lowercased name
+ */
+export function fatigueByMuscle(sessions, now = Date.now()) {
+  const fatigue = {};
+
+  sessions.forEach((session) => {
+    const hoursAgo = hoursSinceSession(session, now);
+    if (hoursAgo === null) return;
+
+    session.exercises.forEach((ex) => {
+      const setCount = ex.sets.length;
+      if (!setCount) return;
+
+      Object.entries(musclesFor(ex.name)).forEach(([muscle, score]) => {
+        const key = muscle.toLowerCase();
+        const groupId = groupOfMuscle.get(key);
+        if (!groupId) return;
+
+        const decay = Math.pow(0.5, hoursAgo / (HALF_LIFE_HOURS[groupId] || 48));
+        const perSessionDose = volumeTarget(groupId).max / 3;
+        fatigue[key] = (fatigue[key] || 0) + ((setCount * (score / 5)) / perSessionDose) * decay;
+      });
+    });
+  });
+
+  Object.keys(fatigue).forEach((key) => {
+    fatigue[key] = 1 - Math.exp(-fatigue[key]);
+  });
+  return fatigue;
+}
+
+/** Effective hard sets per individual muscle over the trailing `days`. */
+export function volumeByMuscle(sessions, days = 7) {
+  const cutoff = Date.now() - days * DAY_MS;
+  const totals = {};
+
+  sessions.forEach((session) => {
+    if (new Date(`${session.date}T12:00:00`).getTime() < cutoff) return;
+    session.exercises.forEach((ex) => {
+      const setCount = ex.sets.length;
+      if (!setCount) return;
+      Object.entries(musclesFor(ex.name)).forEach(([muscle, score]) => {
+        const key = muscle.toLowerCase();
+        totals[key] = (totals[key] || 0) + setCount * (score / 5);
+      });
+    });
+  });
+
+  return totals;
+}
+
+/**
+ * Muscle names the exercise database actually references. The group
+ * taxonomy lists a few finer distinctions than any exercise records, and
+ * showing those as permanently-100% rows would be noise.
+ */
+const referencedMuscles = new Set();
+EXERCISES.forEach((ex) =>
+  (ex.muscles || []).forEach((m) => referencedMuscles.add(m.name.toLowerCase())),
+);
+
+/**
+ * Per-muscle readiness for one group, most fatigued first — which is the
+ * order the question is asked in ("what exactly is tired?").
+ *
+ * @returns {Array<{name: string, readiness: number, sets: number}>}
+ */
+export function muscleBreakdown(sessions, groupId, now = Date.now()) {
+  const group = getGroup(groupId);
+  if (!group) return [];
+
+  const fatigue = fatigueByMuscle(sessions, now);
+  const volume = volumeByMuscle(sessions, 7);
+
+  return group.muscles
+    .filter((name) => referencedMuscles.has(name.toLowerCase()))
+    .map((name) => {
+      const key = name.toLowerCase();
+      return {
+        name,
+        readiness: 1 - (fatigue[key] || 0),
+        sets: Math.round((volume[key] || 0) * 10) / 10,
+      };
+    })
+    .sort((a, b) => a.readiness - b.readiness);
 }
 
 /**

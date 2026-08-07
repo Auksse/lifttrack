@@ -33,6 +33,7 @@ export default {
   schedule_link: 'Schedule a date',
   edit: 'Edit', use_as_template: 'Use as template', delete: 'Delete',
   save_as_template: 'Save as template', rename: 'Rename',
+  muscle_breakdown: 'Muscle breakdown', view_exercises: 'View exercises',
   edit_session: 'Edit workout', date: 'Date', session_focus: 'Focus',
   invalid_date: 'Pick a valid date', tmpl_renamed: 'Template renamed',
   session_saved: 'Workout saved', session_updated: 'Workout updated',

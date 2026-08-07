@@ -720,6 +720,9 @@ onAction('template:create', () => {
 // ---- muscles / stats / plan ----
 
 onAction('muscle:subtab', ({ sub }) => setState({ muscleSubtab: sub }));
+
+onAction('muscle:toggle', ({ group }) =>
+  setState({ expandedMuscleGroup: state.expandedMuscleGroup === group ? null : group }));
 onAction('muscle:open', ({ group }) =>
   setState({ muscleSubtab: 'library', libraryGroup: group }));
 
