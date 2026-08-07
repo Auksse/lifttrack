@@ -42,6 +42,7 @@ import { cleanUpLegacyServiceWorker, reloadOnWorkerActivation } from './legacy-c
 import { shareBackup, recordExport, backupStatus } from './data/backup.js';
 import { initViewport, viewportReport } from './ui/viewport.js';
 import { fitLines } from './ui/fit.js';
+import { installReorder } from './ui/reorder.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { suggestNext, getProfile } from './domain/progression.js';
 
@@ -593,8 +594,46 @@ onAction('settings:open', () => setState({ sheet: { type: 'settings' } }));
 
 onAction('exercise:browse', () => setState({ sheet: { type: 'library' }, libraryQuery: '' }));
 
-onAction('exercise:info', ({ name }) =>
-  setState({ sheet: { type: 'exercise-detail', props: { name } } }));
+// `ex` is present only when opened from the workout screen; it is what
+// lets the detail sheet offer a swap rather than just information.
+onAction('exercise:info', ({ name, ex }) =>
+  setState({
+    sheet: { type: 'exercise-detail', props: { name, ex: ex == null ? null : +ex } },
+  }));
+
+/**
+ * Replace an exercise mid-session with an alternative.
+ *
+ * If nothing has been ticked yet, this is a straight swap. If sets are
+ * already done, they stay attached to the original exercise and the
+ * alternative is inserted after it: renaming in place would file the sets
+ * you actually performed under an exercise you never touched.
+ */
+onAction('exercise:swap', ({ ex, name }) => {
+  const index = +ex;
+  const current = state.workout?.exercises[index];
+  if (!current) return;
+
+  const done = current.sets.filter((s) => s.done);
+
+  if (!done.length) {
+    state.workout.exercises[index] = {
+      name,
+      collapsed: current.collapsed,
+      sets: initialSetsFor(name, { count: current.sets.length }),
+    };
+  } else {
+    current.sets = done;
+    state.workout.exercises.splice(index + 1, 0, {
+      name,
+      sets: initialSetsFor(name, { count: 1 }),
+    });
+  }
+
+  persistDraft();
+  setState({ sheet: null });
+  toast(t('swapped_for', { name }), 'success');
+});
 
 onInput('library:search', (value) => {
   state.libraryQuery = value;
@@ -907,6 +946,15 @@ async function boot() {
 
   initLanguage();
   installDelegation();
+  installReorder({
+    onDrop: (from, to) => {
+      const [moved] = state.workout.exercises.splice(from, 1);
+      state.workout.exercises.splice(to, 0, moved);
+      persistDraft();
+      haptic('select');
+      invalidate();
+    },
+  });
   primeAudio();
 
   const users = loadUsers();

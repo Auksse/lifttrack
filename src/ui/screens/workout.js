@@ -158,8 +158,13 @@ function renderExercise(exercise, exIndex) {
    * taps, because delegation resolves to the nearest `[data-action]`.
    */
   return `
-    <article class="exercise-card ${complete ? 'is-complete' : ''} ${collapsed ? 'is-collapsed' : ''}">
+    <article class="exercise-card ${complete ? 'is-complete' : ''} ${collapsed ? 'is-collapsed' : ''}"
+             data-card-ex="${exIndex}">
       <header class="exercise-head">
+        <span class="exercise-grip" data-drag-handle data-ex="${exIndex}"
+              role="button" tabindex="0" aria-label="${t('reorder_exercise')}">
+          ${icon('drag', { size: 18 })}
+        </span>
         <button class="exercise-toggle" data-action="exercise:toggle" data-ex="${exIndex}"
                 aria-expanded="${!collapsed}"
                 aria-label="${collapsed ? t('expand_exercise') : t('collapse_exercise')}">
@@ -168,7 +173,7 @@ function renderExercise(exercise, exIndex) {
           <span class="exercise-caret">${icon(collapsed ? 'chevronRight' : 'chevronUp', { size: 18 })}</span>
         </button>
         <button class="icon-btn" data-action="exercise:info" data-name="${esc(exercise.name)}"
-                aria-label="${t('exercise_info')}">
+                data-ex="${exIndex}" aria-label="${t('exercise_info')}">
           ${icon('info', { size: 20 })}
         </button>
         <button class="icon-btn icon-btn--danger" data-action="exercise:remove" data-ex="${exIndex}"

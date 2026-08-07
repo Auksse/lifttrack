@@ -301,7 +301,8 @@ function renderLibrary() {
     <div id="muscle-library-results">${muscleLibraryResults()}</div>`;
 }
 
-function equipmentLabel(equipment) {
+/** Shared with the exercise-detail sheet's alternatives list. */
+export function equipmentLabel(equipment) {
   const key = { dumbbells: 'dbs', plateLoaded: 'plate', bodyweight: 'body' }[equipment] || equipment;
   return t(`eq_${key}`);
 }
