@@ -36,6 +36,7 @@ export default {
   save_as_template: 'Enregistrer comme modèle', rename: 'Renommer',
   muscle_breakdown: 'Détail par muscle', view_exercises: 'Voir les exercices',
   start_focus: 'Commencer {focus}',
+  colour: 'Couleur', colour_auto: 'Automatique',
   alternatives: 'Alternatives', swap: 'Remplacer', same_movement: 'même mouvement',
   alternatives_hint: "Travaille la même chose — utile si le matériel est pris.",
   swapped_for: 'Remplacé par {name}', reorder_exercise: "Déplacer l'exercice",

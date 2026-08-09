@@ -6,7 +6,7 @@ import { state } from '../../state/store.js';
 import { icon } from '../icons.js';
 import { esc } from '../actions.js';
 import { t, formatMonth } from '../../i18n/index.js';
-import { focusColor } from '../../domain/focus.js';
+import { focusColor, TEMPLATE_COLORS } from '../../domain/focus.js';
 import { sessionVolume } from '../../domain/stats.js';
 
 const DAY_KEYS = ['d_mo', 'd_tu', 'd_we', 'd_th', 'd_fr', 'd_sa', 'd_su'];
@@ -56,7 +56,7 @@ function renderCalendar() {
             .slice(0, 3)
             .map(
               (s) => `<span style="width:5px;height:5px;border-radius:50%;
-                                   background:${focusColor(s.focus)}"></span>`,
+                                   background:${focusColor(s.focus, state.templates)}"></span>`,
             )
             .join('')}
         </span>
@@ -107,7 +107,7 @@ function renderDaySessions() {
     <h2 class="section-label">${date}</h2>
     ${sessions
       .map((s) => {
-        const color = focusColor(s.focus);
+        const color = focusColor(s.focus, state.templates);
         return `
         <div class="card" style="margin-bottom:var(--space-2);border-left:3px solid ${color}">
           <div class="row gap-2">
@@ -131,7 +131,7 @@ function renderTemplates() {
     <h2 class="section-label">${t('templates')}</h2>
     ${templates
       .map((tpl) => {
-        const color = focusColor(tpl.focus || tpl.name);
+        const color = tpl.color || focusColor(tpl.focus || tpl.name);
         const expanded = state.expandedTemplateId === tpl.id;
         return `
         <article class="card card--flush" style="margin-bottom:var(--space-2)">
@@ -171,6 +171,26 @@ function renderTemplates() {
                      )
                      .join('')}
                  </div>
+                 <!-- Colour is part of editing a template, not a separate
+                      screen: it is how the template is recognised in the
+                      log, the calendar and the week strip. -->
+                 <div class="metric-label" style="margin-top:var(--space-4)">${t('colour')}</div>
+                 <div class="swatch-row">
+                   ${TEMPLATE_COLORS.map(
+                     (value) => `
+                     <button class="swatch ${tpl.color === value ? 'is-active' : ''}"
+                             data-action="template:color" data-id="${tpl.id}" data-color="${value}"
+                             style="--swatch:${value}"
+                             aria-label="${t('colour')}" aria-pressed="${tpl.color === value}"></button>`,
+                   ).join('')}
+                   <button class="swatch swatch--auto ${!tpl.color ? 'is-active' : ''}"
+                           data-action="template:color" data-id="${tpl.id}" data-color=""
+                           title="${t('colour_auto')}" aria-label="${t('colour_auto')}"
+                           aria-pressed="${!tpl.color}">
+                     ${icon('swap', { size: 14 })}
+                   </button>
+                 </div>
+
                  <div class="row gap-2" style="margin-top:var(--space-3);flex-wrap:wrap">
                    <button class="btn btn--sm btn--primary" data-action="template:use" data-id="${tpl.id}">
                      ${icon('bolt', { size: 15 })} ${t('start_workout')}

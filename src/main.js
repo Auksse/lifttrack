@@ -512,6 +512,24 @@ onAction('session:save-template', ({ id }) => {
   toast(t('tmpl_created'), 'success');
 });
 
+/**
+ * Set (or clear) a template's colour.
+ *
+ * An empty `color` means "no explicit choice", which puts the template
+ * back on the hashed fallback rather than storing that fallback as a
+ * value — so a template left on automatic keeps following the palette.
+ */
+onAction('template:color', ({ id, color }) => {
+  const tpl = state.templates.find((x) => x.id === id);
+  if (!tpl) return;
+
+  if (color) tpl.color = color;
+  else delete tpl.color;
+
+  saveTemplates(state.user.id, state.templates);
+  invalidate();
+});
+
 onAction('template:rename', ({ id }) => {
   const tpl = state.templates.find((x) => x.id === id);
   if (!tpl) return;
