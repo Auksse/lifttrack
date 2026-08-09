@@ -92,7 +92,7 @@ function renderActiveWorkout() {
 function renderNextUp() {
   if (state.workout) return '';
   const suggestion = suggestNextFocus(state.sessions);
-  const color = focusColor(suggestion.focus);
+  const color = focusColor(suggestion.focus, state.templates);
   const last = state.sessions.at(-1);
 
   /**
@@ -163,7 +163,7 @@ function renderWeekStrip() {
         <div class="week-day">
           <span class="week-day-label">${t(labels[i])}</span>
           <span class="week-day-cell ${d.session ? 'is-trained' : ''} ${d.isToday && !d.session ? 'is-today' : ''}"
-                ${d.session ? `style="--day-color:${focusColor(d.session.focus)}"` : ''}>
+                ${d.session ? `style="--day-color:${focusColor(d.session.focus, state.templates)}"` : ''}>
             ${d.session ? icon('check', { size: 14, stroke: 3 }) : d.day}
           </span>
         </div>`,
@@ -239,7 +239,7 @@ function renderReadinessRail() {
 }
 
 function renderSessionCard(session) {
-  const color = focusColor(session.focus);
+  const color = focusColor(session.focus, state.templates);
   const expanded = state.expandedSessionId === session.id;
   const volume = Math.round(sessionVolume(session));
   const hasPR = session.exercises.some((ex) => isPersonalRecord(state.sessions, session, ex.name));

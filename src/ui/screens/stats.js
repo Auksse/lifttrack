@@ -43,7 +43,7 @@ function volumeChart(sessions) {
           return `<rect x="${x.toFixed(2)}" y="${(H - h).toFixed(2)}"
                         width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
                         rx="${Math.min(1.2, barW / 2).toFixed(2)}"
-                        fill="${focusColor(session.focus)}" opacity="0.9"/>`;
+                        fill="${focusColor(session.focus, state.templates)}" opacity="0.9"/>`;
         })
         .join('')}
     </svg>`;
@@ -102,7 +102,7 @@ function renderSplit(sessions) {
   return ordered
     .map(([focus, count]) => {
       const pct = Math.round((count / sessions.length) * 100);
-      const color = focusColor(focus);
+      const color = focusColor(focus, state.templates);
       return `
         <div style="margin-bottom:var(--space-3)">
           <div class="row gap-2" style="margin-bottom:var(--space-1)">

@@ -42,7 +42,7 @@ function templatePicker() {
     `
     ${templates
       .map((tpl) => {
-        const color = focusColor(tpl.focus || tpl.name);
+        const color = tpl.color || focusColor(tpl.focus || tpl.name);
         return `
         <button class="card card--interactive" data-action="template:use" data-id="${tpl.id}"
                 style="display:flex;align-items:center;gap:var(--space-3);width:100%;

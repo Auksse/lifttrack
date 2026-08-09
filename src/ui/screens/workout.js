@@ -232,7 +232,7 @@ export function renderRestBar() {
 
 export function renderWorkoutScreen() {
   const w = state.workout;
-  const color = focusColor(w.focus);
+  const color = focusColor(w.focus, state.templates);
 
   const totalSets = w.exercises.reduce((n, e) => n + e.sets.length, 0);
   const doneSets = w.exercises.reduce((n, e) => n + e.sets.filter(isDone).length, 0);
