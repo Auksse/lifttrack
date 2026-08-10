@@ -133,7 +133,7 @@ export default {
   offline_ready: 'Prêt pour le mode hors ligne',
 
   // --- Focus names ---
-  f_Push: 'Poussée', f_Pull: 'Tirage', f_Legs: 'Jambes',
+  f_Push: 'Poussée', f_Pull: 'Tirage', f_Legs: 'Jambes', f_Mixed: 'Mixte',
   f_Upper: 'Haut du corps', f_Core: 'Tronc', f_Other: 'Autre',
 
   // --- Equipment / categories ---

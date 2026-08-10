@@ -745,17 +745,35 @@ function currentPlan() {
   });
 }
 
-onAction('plan:start', () => {
+/**
+ * Start a session built from what is behind.
+ *
+ * Filed under "Mixed" rather than the leading group's name: the plan
+ * deliberately spreads across everything in debt, so calling a deadlift,
+ * row, plank, squat and curl a "Core" session would misdescribe it in
+ * your own log. The focus is editable afterwards like any other.
+ */
+function startGeneratedSession() {
   const plan = currentPlan();
-  if (!plan.length) return;
+
+  // No plan means nothing is behind on volume. Falling through to the
+  // template picker is more useful than a button that does nothing.
+  if (!plan.length) {
+    setState({ sheet: { type: 'template-picker' } });
+    return;
+  }
+
   update((s) => {
-    s.workout = newWorkout('Other', plan.map((item) => item.name));
+    s.workout = newWorkout('Mixed', plan.map((item) => item.name));
     s.tab = 'workout';
     s.sheet = null;
   });
   persistDraft();
   haptic('select');
-});
+}
+
+onAction('plan:start', startGeneratedSession);
+onAction('plan:auto', startGeneratedSession);
 
 onAction('plan:save', () => {
   const plan = currentPlan();
