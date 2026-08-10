@@ -132,7 +132,7 @@ export default {
   offline_ready: 'Ready to work offline',
 
   // --- Focus names ---
-  f_Push: 'Push', f_Pull: 'Pull', f_Legs: 'Legs',
+  f_Push: 'Push', f_Pull: 'Pull', f_Legs: 'Legs', f_Mixed: 'Mixed',
   f_Upper: 'Upper', f_Core: 'Core', f_Other: 'Other',
 
   // --- Equipment / categories ---

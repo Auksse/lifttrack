@@ -123,14 +123,26 @@ function renderNextUp() {
 
       <h2 class="hero-title" data-fit-line data-fit-max="52" data-fit-min="14">${title}</h2>
 
-      <!-- The button names the session it will actually start. Now that the
-           headline names muscles rather than a split, "Start workout" alone
-           would not say what you were about to get. -->
-      <button class="btn btn--primary btn--block" data-action="workout:start"
-              data-focus="${esc(suggestion.focus)}" style="margin-top:var(--space-4)">
-        ${icon('bolt', { size: 17 })}
-        ${t('start_focus', { focus: esc(tFocus(suggestion.focus)) })}
-      </button>
+      ${neglected.length
+        ? /**
+           * Build a session for the muscles named directly above, rather
+           * than starting the rotation's split. Naming one thing and
+           * starting another was the mismatch that made this panel
+           * confusing; the button now delivers what the headline promises.
+           * Long-press territory is the Plan tab's builder, which shows the
+           * same session before committing to it.
+           */
+          `<button class="btn btn--primary btn--block" data-action="plan:auto"
+                   style="margin-top:var(--space-4)">
+             ${icon('bolt', { size: 17 })} ${t('start_workout')}
+           </button>`
+        : /* Nothing is behind, so the headline is the rotation's split and
+             the button starts exactly that. */
+          `<button class="btn btn--primary btn--block" data-action="workout:start"
+                   data-focus="${esc(suggestion.focus)}" style="margin-top:var(--space-4)">
+             ${icon('bolt', { size: 17 })}
+             ${t('start_focus', { focus: esc(tFocus(suggestion.focus)) })}
+           </button>`}
     </section>`;
 }
 
