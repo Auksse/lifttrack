@@ -118,35 +118,63 @@ export function musclesFor(exerciseName) {
  * "fractional set" approach — cruder than measuring tension, but it stops
  * a bench press from being counted as full triceps volume.
  */
-export function sessionSetsByGroup(session) {
+export function sessionSetsByMuscle(session) {
   const totals = {};
   session.exercises.forEach((ex) => {
-    const involvement = musclesFor(ex.name);
     const setCount = ex.sets.length;
     if (!setCount) return;
-
-    Object.entries(involvement).forEach(([muscle, score]) => {
-      const groupId = groupOfMuscle.get(muscle.toLowerCase());
-      if (!groupId) return;
-      totals[groupId] = (totals[groupId] || 0) + setCount * (score / 5);
+    Object.entries(musclesFor(ex.name)).forEach(([muscle, score]) => {
+      const key = muscle.toLowerCase();
+      if (!groupOfMuscle.has(key)) return;
+      totals[key] = (totals[key] || 0) + setCount * (score / 5);
     });
   });
   return totals;
 }
 
-/** Hard sets per group over the trailing `days`. */
-export function volumeByGroup(sessions, days = 7) {
-  const cutoff = Date.now() - days * DAY_MS;
-  const totals = Object.fromEntries(MUSCLE_GROUPS.map((g) => [g.id, 0]));
+/**
+ * Reduce per-muscle figures to one number per group by taking the hardest
+ * hit muscle, not the sum.
+ *
+ * Summing was wrong in a way that mattered. The 10-20 sets/week landmarks
+ * these numbers are shown against are defined *per muscle*, but a squat
+ * credits quads, glutes, hamstrings and adductors all at once — so one
+ * real set counted as 2.4 "leg sets". A normal 13-set leg day reported
+ * 24.6 of 10-20 sets/week: one session over the weekly maximum. Measured
+ * across the database the inflation ran 1.68x for legs and 1.49x for core
+ * against 0.78x for chest, so the groups were not even comparable with
+ * each other.
+ *
+ * The maximum keeps the figure on the same scale as the landmark, and
+ * makes a group's readiness identical to its most fatigued muscle — so
+ * the headline and the per-muscle breakdown beneath it agree by
+ * construction rather than by hope.
+ */
+function byGroupFromMuscles(perMuscle, { sparse = false } = {}) {
+  const totals = sparse ? {} : Object.fromEntries(MUSCLE_GROUPS.map((g) => [g.id, 0]));
 
-  sessions.forEach((session) => {
-    if (new Date(`${session.date}T12:00:00`).getTime() < cutoff) return;
-    Object.entries(sessionSetsByGroup(session)).forEach(([groupId, sets]) => {
-      totals[groupId] += sets;
+  MUSCLE_GROUPS.forEach((group) => {
+    let peak = 0;
+    group.muscles.forEach((name) => {
+      const value = perMuscle[name.toLowerCase()] || 0;
+      if (value > peak) peak = value;
     });
+    if (peak > 0 || !sparse) totals[group.id] = peak;
   });
 
   return totals;
+}
+
+/** Effective hard sets each group took in one session. */
+export function sessionSetsByGroup(session) {
+  return byGroupFromMuscles(sessionSetsByMuscle(session), { sparse: true });
+}
+
+/** Hard sets per group over the trailing `days`. */
+export function volumeByGroup(sessions, days = 7) {
+  // Reduce to groups only after totalling the window, not per session: a
+  // muscle worked twice in a week should show the week's total.
+  return byGroupFromMuscles(volumeByMuscle(sessions, days));
 }
 
 /**
@@ -197,29 +225,9 @@ function hoursSinceSession(session, now) {
 }
 
 export function fatigueByGroup(sessions, now = Date.now()) {
-  const fatigue = Object.fromEntries(MUSCLE_GROUPS.map((g) => [g.id, 0]));
-
-  sessions.forEach((session) => {
-    const hoursAgo = hoursSinceSession(session, now);
-    if (hoursAgo === null) return;
-
-    Object.entries(sessionSetsByGroup(session)).forEach(([groupId, sets]) => {
-      const halfLife = HALF_LIFE_HOURS[groupId] || 48;
-      const decay = Math.pow(0.5, hoursAgo / halfLife);
-
-      // A session hitting a third of the weekly optimum is one "full" dose.
-      const perSessionDose = volumeTarget(groupId).max / 3;
-      fatigue[groupId] += (sets / perSessionDose) * decay;
-    });
-  });
-
-  // Saturate rather than clip linearly: stacking three hard sessions should
-  // approach, not exceed, "completely fried".
-  Object.keys(fatigue).forEach((id) => {
-    fatigue[id] = 1 - Math.exp(-fatigue[id]);
-  });
-
-  return fatigue;
+  // A group is as tired as its most tired muscle — see byGroupFromMuscles
+  // for why this is a maximum and not a sum.
+  return byGroupFromMuscles(fatigueByMuscle(sessions, now));
 }
 
 /** Readiness is the inverse of fatigue: 0 = cooked, 1 = fresh. */
@@ -467,6 +475,152 @@ export function alternativesFor(name, limit = 6) {
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
+}
+
+// ------------------------------------------------------- session builder
+
+/** Equipment the database actually carries, in the order it is offered. */
+export const EQUIPMENT = [
+  'barbell', 'dumbbells', 'machine', 'plateLoaded', 'cable', 'bodyweight',
+];
+
+/**
+ * How much each muscle wants work right now, 0-1.
+ *
+ * Two factors, multiplied rather than added, because they gate each other:
+ * volume debt says a muscle is owed work, readiness says it can take it.
+ * A muscle that is both behind and fresh scores high; one that is behind
+ * but cooked scores near zero, which is correct — programming it today is
+ * how you end up training a muscle that cannot adapt.
+ */
+function muscleNeeds(sessions, now = Date.now()) {
+  const volume = volumeByMuscle(sessions, 7);
+  const fatigue = fatigueByMuscle(sessions, now);
+  const needs = {};
+
+  MUSCLE_GROUPS.forEach((group) => {
+    const target = volumeTarget(group.id).min;
+    group.muscles.forEach((name) => {
+      const key = name.toLowerCase();
+      if (!referencedMuscles.has(key)) return;
+      const debt = Math.max(0, (target - (volume[key] || 0)) / target);
+      needs[key] = debt * (1 - (fatigue[key] || 0));
+    });
+  });
+
+  return needs;
+}
+
+/**
+ * Build a session that covers what is actually behind.
+ *
+ * Greedy set-cover rather than a fixed split: pick the exercise that best
+ * serves the muscles currently most in need, credit the work it would do,
+ * then pick again against what is left. That is what makes it answer "my
+ * upper back has had nothing this week" with an exercise that trains upper
+ * back, instead of with whichever day the rotation happens to be on.
+ *
+ * One exercise per movement family, so a plan cannot be three variations
+ * of the same press.
+ *
+ * @param {object[]} sessions
+ * @param {{equipment?: string[], size?: number, setsPerExercise?: number}} options
+ * @returns {Array<{name, equipment, targets: string[], covers: number}>}
+ */
+export function buildSessionPlan(sessions, options = {}) {
+  const { equipment = [], size = 5, setsPerExercise = 3, now = Date.now() } = options;
+
+  const needs = muscleNeeds(sessions, now);
+  const allowed = new Set(equipment);
+
+  // An empty selection means "no preference" rather than "nothing allowed";
+  // a filter that excludes everything would return an empty plan and look
+  // broken rather than restrictive.
+  let pool = EXERCISES.filter((ex) => !allowed.size || allowed.has(ex.equipment));
+  if (!pool.length) pool = EXERCISES;
+
+  /**
+   * The muscle an exercise is chiefly for — its highest-scoring primary.
+   * Two exercises that lead on the same muscle are the same slot in a
+   * session, whatever their names say.
+   */
+  const leadMuscle = (ex) => {
+    let lead = null;
+    (ex.muscles || []).forEach((m) => {
+      if (m.role !== 'primary') return;
+      if (!lead || m.score > lead.score) lead = m;
+    });
+    return lead?.name.toLowerCase() ?? null;
+  };
+
+  const plan = [];
+  const usedFamilies = new Set();
+  const usedNames = new Set();
+  const usedLeads = new Set();
+
+  for (let pick = 0; pick < size; pick += 1) {
+    let best = null;
+    let bestScore = 0;
+
+    pool.forEach((ex) => {
+      if (usedNames.has(ex.name)) return;
+      if (ex.familyName && usedFamilies.has(ex.familyName)) return;
+
+      /**
+       * One exercise per lead muscle.
+       *
+       * Weekly debt alone kept returning a trap bar deadlift *and* a
+       * dumbbell deadlift: three sets clears only a third of a weekly
+       * target, so the second still scored well, and the family check
+       * misses it because those are different families. Weekly volume
+       * says do more of it; a single session says spread it out.
+       */
+      const lead = leadMuscle(ex);
+      if (lead && usedLeads.has(lead)) return;
+
+      let score = 0;
+      (ex.muscles || []).forEach((m) => {
+        const key = m.name.toLowerCase();
+        if (needs[key]) score += needs[key] * (m.score / 5);
+      });
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = ex;
+      }
+    });
+
+    // Nothing left that serves a muscle still in debt — a short plan is a
+    // more honest answer than padding it with work you do not need.
+    if (!best) break;
+
+    usedNames.add(best.name);
+    if (best.familyName) usedFamilies.add(best.familyName);
+    const bestLead = leadMuscle(best);
+    if (bestLead) usedLeads.add(bestLead);
+
+    // Credit the work this exercise would do, so the next pick moves on.
+    const targets = [];
+    (best.muscles || []).forEach((m) => {
+      const key = m.name.toLowerCase();
+      if (needs[key] === undefined) return;
+      const group = groupOfMuscle.get(key);
+      const target = volumeTarget(group).min;
+      const credited = (setsPerExercise * (m.score / 5)) / target;
+      if (m.role === 'primary' && needs[key] > 0) targets.push(m.name);
+
+      needs[key] = Math.max(0, needs[key] - credited);
+    });
+
+    plan.push({
+      name: best.name,
+      equipment: best.equipment,
+      targets,
+      covers: Math.round(bestScore * 100) / 100,
+    });
+  }
+
+  return plan;
 }
 
 /** A short human explanation for a group's current state. */

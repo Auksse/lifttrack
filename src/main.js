@@ -44,6 +44,7 @@ import { initViewport, viewportReport } from './ui/viewport.js';
 import { fitLines } from './ui/fit.js';
 import { installReorder } from './ui/reorder.js';
 import { isPersonalRecord } from './domain/stats.js';
+import { buildSessionPlan } from './domain/muscles.js';
 import { suggestNext, getProfile } from './domain/progression.js';
 
 const app = document.getElementById('app');
@@ -711,6 +712,66 @@ onAction('library:manual', () => {
   state.workout.exercises.push({ name: name.trim(), sets: [{ r: '', w: '', done: false }] });
   persistDraft();
   setState({ sheet: null });
+});
+
+// ---- generated session plan ----
+
+onAction('plan:open', () => setState({ sheet: { type: 'plan-builder' } }));
+
+onAction('plan:size', ({ size }) => setState({ planSize: +size }));
+
+/**
+ * Toggle an equipment preference. The empty value is "no preference",
+ * which clears the list rather than selecting everything — an explicit
+ * list of all six would silently stop including anything added later.
+ */
+onAction('plan:equipment', ({ value }) => {
+  const current = state.settings.equipment || [];
+  const equipment = !value
+    ? []
+    : current.includes(value)
+      ? current.filter((x) => x !== value)
+      : [...current, value];
+
+  const settings = { ...state.settings, equipment };
+  saveSettings(state.user.id, settings);
+  setState({ settings });
+});
+
+function currentPlan() {
+  return buildSessionPlan(state.sessions, {
+    equipment: state.settings.equipment || [],
+    size: state.planSize || 5,
+  });
+}
+
+onAction('plan:start', () => {
+  const plan = currentPlan();
+  if (!plan.length) return;
+  update((s) => {
+    s.workout = newWorkout('Other', plan.map((item) => item.name));
+    s.tab = 'workout';
+    s.sheet = null;
+  });
+  persistDraft();
+  haptic('select');
+});
+
+onAction('plan:save', () => {
+  const plan = currentPlan();
+  if (!plan.length) return;
+
+  const name = prompt(t('tmpl_name_ph'))?.trim();
+  if (!name) return;
+  if (state.templates.some((x) => x.name.toLowerCase() === name.toLowerCase())) {
+    toast(t('tmpl_exists'), 'error');
+    return;
+  }
+
+  const templates = [...state.templates, createTemplate(name, plan.map((item) => item.name))];
+  saveTemplates(state.user.id, templates);
+  setState({ templates, sheet: null });
+  toast(t('tmpl_created'), 'success');
 });
 
 // ---- templates ----
