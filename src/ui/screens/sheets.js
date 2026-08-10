@@ -11,7 +11,9 @@ import { esc } from '../actions.js';
 import { t, getLanguage, SUPPORTED_LANGUAGES } from '../../i18n/index.js';
 import { FR_INSTRUCTIONS } from '../../i18n/fr-instructions.js';
 import { focusColor } from '../../domain/focus.js';
-import { MUSCLE_GROUPS, findExercise, alternativesFor } from '../../domain/muscles.js';
+import {
+  MUSCLE_GROUPS, findExercise, alternativesFor, buildSessionPlan, EQUIPMENT,
+} from '../../domain/muscles.js';
 import { EXERCISES } from '../../data/exercise-db.js';
 import { viewportReport } from '../viewport.js';
 import { equipmentLabel } from './muscles.js';
@@ -65,6 +67,90 @@ function templatePicker() {
             style="margin-top:var(--space-3)">
       ${icon('plus', { size: 18 })} ${t('blank_workout')}
     </button>`,
+  );
+}
+
+// ---------------------------------------------------------- session builder
+
+/**
+ * A generated session, with the equipment filter that produced it.
+ *
+ * The preferences live in settings rather than in the sheet, because the
+ * answer to "what can I train on" is a property of your gym, not of this
+ * one visit. The plan itself is recomputed on every render so toggling a
+ * chip re-plans immediately.
+ */
+function planBuilder() {
+  const chosen = state.settings.equipment || [];
+  const size = state.planSize || 5;
+  const plan = buildSessionPlan(state.sessions, { equipment: chosen, size });
+
+  const chip = (value, label, active) => `
+    <button class="chip" data-action="plan:equipment" data-value="${value}"
+            aria-pressed="${active}"
+            style="--chip-color:${active ? 'var(--gold)' : 'var(--text-tertiary)'};flex:none">
+      ${esc(label)}
+    </button>`;
+
+  return shell(
+    t('build_session'),
+    `
+    <p style="font-size:var(--text-xs);color:var(--text-faint);margin:0 0 var(--space-3)">
+      ${t('build_session_hint')}
+    </p>
+
+    <div class="metric-label">${t('equipment')}</div>
+    <div class="chip-rail" style="margin-bottom:var(--space-4)">
+      ${chip('', t('all'), !chosen.length)}
+      ${EQUIPMENT.map((eq) => chip(eq, equipmentLabel(eq), chosen.includes(eq))).join('')}
+    </div>
+
+    <div class="metric-label">${t('exercises_lbl')}</div>
+    <div class="chip-rail" style="margin-bottom:var(--space-4)">
+      ${[3, 4, 5, 6, 7]
+        .map(
+          (n) => `
+        <button class="chip" data-action="plan:size" data-size="${n}"
+                aria-pressed="${n === size}"
+                style="--chip-color:${n === size ? 'var(--gold)' : 'var(--text-tertiary)'};flex:none">
+          ${n}
+        </button>`,
+        )
+        .join('')}
+    </div>
+
+    ${plan.length
+      ? plan
+          .map(
+            (item, i) => `
+        <div class="row gap-2" style="padding:var(--space-3) 0;border-bottom:1px solid var(--line-subtle)">
+          <span class="metric-label" style="min-width:18px">${i + 1}</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:var(--text-sm);font-weight:600;
+                         overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${esc(item.name)}
+            </span>
+            <span class="metric-label" style="display:block;margin-top:2px">
+              ${esc(item.targets.slice(0, 3).join(' · ') || equipmentLabel(item.equipment))}
+            </span>
+          </span>
+          <span class="metric-label" style="flex:none">${esc(equipmentLabel(item.equipment))}</span>
+        </div>`,
+          )
+          .join('')
+      : `<p class="empty-body" style="margin:var(--space-6) auto">${t('plan_nothing_due')}</p>`}
+
+    ${plan.length
+      ? `<div class="row gap-2" style="margin-top:var(--space-5);flex-wrap:wrap">
+           <button class="btn btn--sm btn--primary" style="flex:1" data-action="plan:start">
+             ${icon('bolt', { size: 15 })} ${t('start_workout')}
+           </button>
+           <button class="btn btn--sm btn--secondary" data-action="plan:save">
+             ${icon('plan', { size: 15 })} ${t('save_template')}
+           </button>
+         </div>`
+      : ''}`,
+    { modifier: 'sheet--tall' },
   );
 }
 
@@ -512,6 +598,7 @@ export function renderSheet() {
   if (!state.sheet) return '';
   switch (state.sheet.type) {
     case 'session-edit': return sessionEditSheet();
+    case 'plan-builder': return planBuilder();
     case 'template-picker': return templatePicker();
     case 'library': return exerciseLibrary();
     case 'exercise-detail': return exerciseDetail();

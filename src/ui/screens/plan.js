@@ -128,6 +128,11 @@ function renderTemplates() {
   const templates = state.templates || [];
 
   return `
+    <button class="btn btn--secondary btn--block" data-action="plan:open"
+            style="margin-bottom:var(--space-5)">
+      ${icon('bolt', { size: 17 })} ${t('build_session')}
+    </button>
+
     <h2 class="section-label">${t('templates')}</h2>
     ${templates
       .map((tpl) => {
