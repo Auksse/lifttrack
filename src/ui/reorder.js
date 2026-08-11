@@ -80,7 +80,12 @@ export function installReorder({ onDrop }) {
     if (shift && drag.scroller) drag.scroller.scrollTop += shift;
 
     drag.cards = cardsIn(drag.container);
-    drag.rects = drag.cards.map((el) => el.getBoundingClientRect());
+    // Plain objects, not DOMRects: auto-scroll shifts these as the list
+    // moves, and a DOMRect's derived `bottom` would not follow.
+    drag.rects = drag.cards.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom, height: r.height };
+    });
     drag.from = drag.cards.indexOf(drag.card);
     drag.to = drag.from;
     drag.height = drag.rects[drag.from].height;
@@ -105,16 +110,7 @@ export function installReorder({ onDrop }) {
 
     drag.card.style.transform = `translateY(${dy}px)`;
 
-    // Where the lifted card's midpoint now sits decides its index.
-    const midpoint = drag.rects[drag.from].top + drag.rects[drag.from].height / 2 + dy;
-    let target = drag.from;
-    drag.rects.forEach((rect, i) => {
-      if (i === drag.from) return;
-      const centre = rect.top + rect.height / 2;
-      if (dy > 0 && centre < midpoint) target = Math.max(target, i);
-      if (dy < 0 && centre > midpoint) target = Math.min(target, i);
-    });
-
+    const target = slotUnder(event.clientY);
     if (target !== drag.to) {
       drag.to = target;
       shiftOthers();
@@ -149,10 +145,39 @@ export function installReorder({ onDrop }) {
     const scrolled = drag.scroller.scrollTop - before;
 
     if (scrolled) {
-      drag.rects = drag.rects.map((r) => ({ ...r, top: r.top - scrolled }));
+      drag.rects = drag.rects.map((r) => ({
+        ...r,
+        top: r.top - scrolled,
+        bottom: r.bottom - scrolled,
+      }));
       drag.startY -= scrolled;
     }
     drag.raf = requestAnimationFrame(autoScroll);
+  }
+
+  /**
+   * The slot the finger is over.
+   *
+   * This replaces working out where the *lifted card's midpoint* had got
+   * to, which needed the card to travel more than half its own height
+   * past a neighbour's centre before anything happened — so a long drag
+   * could still register no change and the card sprang back. Reading the
+   * finger against the original slot grid means wherever you point is
+   * where it goes, and it clamps at both ends so overshooting the top or
+   * bottom of the list still lands.
+   */
+  function slotUnder(clientY) {
+    const { rects } = drag;
+    const last = rects.length - 1;
+
+    if (clientY <= rects[0].top) return 0;
+    if (clientY >= rects[last].bottom) return last;
+
+    for (let i = 0; i <= last; i += 1) {
+      if (clientY >= rects[i].top && clientY < rects[i].bottom) return i;
+    }
+    // Between two rows: hold the slot rather than flickering back.
+    return drag.to;
   }
 
   function shiftOthers() {
@@ -187,5 +212,15 @@ export function installReorder({ onDrop }) {
   // scrolling while a card is being dragged.
   document.addEventListener('pointermove', move, { passive: false });
   document.addEventListener('pointerup', end);
+  /**
+   * A cancelled pointer commits rather than reverts.
+   *
+   * iOS fires pointercancel when it decides the gesture belongs to
+   * something else — the browser reclaiming a scroll, a palm landing, an
+   * interruption. Treating that as "never happened" is why a long drag
+   * could end with the card back where it started: the move was
+   * understood, then thrown away. Keeping the last slot is closer to what
+   * the hand meant, and a wrong order is one drag to fix.
+   */
   document.addEventListener('pointercancel', end);
 }
