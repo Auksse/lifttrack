@@ -18,6 +18,12 @@ const ALIASES = {
   "Rear Delt Machine": ["Reverse Pec Deck", "Reverse Fly Machine", "Rear Delt Fly Machine"],
   "Vertical Knee Raise Machine": ["Captains Chair", "Captain's Chair", "Knee Raise Machine"],
   "Barbell Rollout": ["Barbell Ab Rollout"],
+  // Gym naming, as used by the person logging: "calf press" for the
+  // seated machine, "calf raise machine" for the standing one. Note the
+  // real discriminator is knee angle rather than seat — a leg-press calf
+  // press works knees-straight and is the standing pattern.
+  "Seated Calf Raise Machine": ["Calf Press", "Seated Calf Press"],
+  "Standing Calf Raise Machine": ["Calf Raise Machine"],
 };
 
 function getFree(id) {
