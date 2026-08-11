@@ -15,6 +15,7 @@ const freeDb = JSON.parse(fs.readFileSync(__dirname + '/exercises.json'));
  */
 const ALIASES = {
   "Fly Machine": ["Pec Deck", "Butterfly", "Chest Fly Machine"],
+  "Rear Delt Machine": ["Reverse Pec Deck", "Reverse Fly Machine", "Rear Delt Fly Machine"],
 };
 
 function getFree(id) {
@@ -114,7 +115,11 @@ const families = [
   {
     familyName: "Face Pull", category: "shoulders", repRangeCategory: "isolation_pump",
     bodyweight: null, dumbbells: null, barbell: null,
-    cable: "Cable Face Pull", machine: "Reverse Pec Deck", plateLoaded: null,
+    // No machine variant: the reverse pec deck is the same physical
+    // machine as the Rear Delt Fly family's "Rear Delt Machine", and both
+    // mapped to the same source record. It lives there, with "Reverse Pec
+    // Deck" as an alias.
+    cable: "Cable Face Pull", machine: null, plateLoaded: null,
     muscles: [
       { name: "Rear Delts", score: 5, role: "primary" },
       { name: "Mid/Lower Traps", score: 4, role: "secondary" },
@@ -643,7 +648,6 @@ const ID_MAP = {
   "Dumbbell Rear Delt Fly":             "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
   "Cable Rear Delt Fly":                "Cable_Rear_Delt_Fly",
   "Rear Delt Machine":                  "Reverse_Machine_Flyes",
-  "Reverse Pec Deck":                   "Reverse_Machine_Flyes",
   // Face Pull
   "Cable Face Pull":                     "Face_Pull",
   // Shrug

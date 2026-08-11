@@ -3,7 +3,7 @@
 // Auto-generated — do NOT edit manually.
 // Run: node data/gen-exercise-db.cjs > src/data/exercise-db.js
 // Merges LiftTrack exercise families with free-exercise-db enrichment.
-// 216 exercises total.
+// 215 exercises total.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -1899,7 +1899,11 @@ export const EXERCISES = [
   {
     "id": "Reverse_Machine_Flyes",
     "name": "Rear Delt Machine",
-    "aliases": [],
+    "aliases": [
+      "Reverse Pec Deck",
+      "Reverse Fly Machine",
+      "Rear Delt Fly Machine"
+    ],
     "familyName": "Rear Delt Fly",
     "category": "shoulders",
     "split": "Push",
@@ -2027,54 +2031,6 @@ export const EXERCISES = [
     "images": [
       "Face_Pull/0.jpg",
       "Face_Pull/1.jpg"
-    ]
-  },
-  {
-    "id": "Reverse_Machine_Flyes",
-    "name": "Reverse Pec Deck",
-    "aliases": [],
-    "familyName": "Face Pull",
-    "category": "shoulders",
-    "split": "Push",
-    "equipment": "machine",
-    "repRangeCategory": "isolation_pump",
-    "level": "beginner",
-    "mechanic": "isolation",
-    "force": "pull",
-    "sourceCategory": "strength",
-    "primaryMuscles": [
-      "Rear Delts"
-    ],
-    "secondaryMuscles": [
-      "Mid/Lower Traps",
-      "Rotator Cuff"
-    ],
-    "muscles": [
-      {
-        "name": "Rear Delts",
-        "score": 5,
-        "role": "primary"
-      },
-      {
-        "name": "Mid/Lower Traps",
-        "score": 4,
-        "role": "secondary"
-      },
-      {
-        "name": "Rotator Cuff",
-        "score": 3,
-        "role": "secondary"
-      }
-    ],
-    "instructions": [
-      "Adjust the handles so that they are fully to the rear. Make an appropriate weight selection and adjust the seat height so the handles are at shoulder level. Grasp the handles with your hands facing inwards. This will be your starting position.",
-      "In a semicircular motion, pull your hands out to your side and back, contracting your rear delts.",
-      "Keep your arms slightly bent throughout the movement, with all of the motion occurring at the shoulder joint.",
-      "Pause at the rear of the movement, and slowly return the weight to the starting position."
-    ],
-    "images": [
-      "Reverse_Machine_Flyes/0.jpg",
-      "Reverse_Machine_Flyes/1.jpg"
     ]
   },
   {
