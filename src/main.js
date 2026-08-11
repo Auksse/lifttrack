@@ -277,7 +277,8 @@ onInput('set:weight', (value, { ex, set }) => {
 });
 
 onAction('set:toggle', ({ ex, set }) => {
-  const target = state.workout.exercises[+ex].sets[+set];
+  const exercise = state.workout.exercises[+ex];
+  const target = exercise.sets[+set];
   target.done = !target.done;
 
   if (target.done) {
@@ -288,6 +289,20 @@ onAction('set:toggle', ({ ex, set }) => {
   } else {
     haptic('tap');
   }
+
+  /**
+   * Fold an exercise away once it is finished, and open it again if you
+   * untick something.
+   *
+   * Ticking the last set is the moment you are done with it, and a
+   * finished exercise occupying a screen of space pushes the one you are
+   * moving on to below the fold. Reversing on untick matters just as
+   * much: you only untick to fix something, and fixing it inside a
+   * collapsed card is impossible.
+   */
+  const complete = exercise.sets.length > 0 && exercise.sets.every((s) => s.done);
+  exercise.collapsed = complete;
+
   persistDraft();
   invalidate();
 });
@@ -543,7 +558,22 @@ onAction('template:rename', ({ id }) => {
     return;
   }
 
+  /**
+   * Carry the rename into `focus`, which is the field that actually
+   * travels.
+   *
+   * A template has a `name` you see in the Plan tab and a `focus` that
+   * gets stamped onto every session started from it — and renaming only
+   * touched the first. So a template created as "Other" and renamed kept
+   * starting sessions titled "Other", which is exactly what it looks like
+   * when the rename silently did half its job.
+   *
+   * Only when the two agreed: a focus deliberately set to something else
+   * is a separate choice and is left alone.
+   */
+  if (!tpl.focus || tpl.focus === tpl.name) tpl.focus = name;
   tpl.name = name;
+
   saveTemplates(state.user.id, state.templates);
   invalidate();
   toast(t('tmpl_renamed'), 'success');
