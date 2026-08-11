@@ -738,6 +738,11 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
    reorder never also toggles the card it landed on. */
 .is-reordering [data-action] { pointer-events: none; }
 
+/* For the duration of a drag every card shrinks to its header, so the
+   whole session fits on screen and a reorder is a short flick rather than
+   a long haul against the auto-scroll. See ui/reorder.js. */
+.is-reordering .exercise-body { display: none; }
+
 /* The ring + name + caret act as one collapse control. */
 .exercise-toggle {
   flex: 1;
