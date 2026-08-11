@@ -36,20 +36,17 @@ export function installReorder({ onDrop }) {
     const container = card?.parentElement;
     if (!card || !container) return;
 
-    const cards = cardsIn(container);
     drag = {
       handle,
       card,
       container,
       scroller: document.getElementById('content'),
-      cards,
-      from: cards.indexOf(card),
-      to: cards.indexOf(card),
+      cards: [],
+      from: -1,
+      to: -1,
       startY: event.clientY,
-      // Geometry is captured once: reading it during the drag would
-      // measure the transformed positions and feed back on itself.
-      rects: cards.map((el) => el.getBoundingClientRect()),
-      height: card.getBoundingClientRect().height,
+      rects: [],
+      height: 0,
       moved: false,
       raf: null,
       edge: 0,
@@ -57,17 +54,50 @@ export function installReorder({ onDrop }) {
     handle.setPointerCapture?.(event.pointerId);
   }
 
+  /**
+   * Commit to a drag: collapse the list, then measure.
+   *
+   * Expanded cards are tall — five exercises with their sets showing run
+   * well past a phone screen — so moving one a few places meant a long
+   * drag against the auto-scroll, which is tedious and imprecise. For the
+   * duration of the drag every card shrinks to its header, so the whole
+   * session usually fits on screen and a reorder is a short flick.
+   *
+   * Geometry is captured here rather than at pointerdown because it has
+   * to be measured *after* the collapse, and only once: reading it during
+   * the drag would measure the transformed positions and feed back on
+   * itself.
+   */
+  function beginDrag(event) {
+    const before = drag.card.getBoundingClientRect().top;
+    drag.container.classList.add('is-reordering');
+
+    // Collapsing removes height above the grabbed card, which would yank
+    // it out from under the finger. Scrolling by the same amount holds it
+    // still; at the top of the list there may be nothing left to give, and
+    // the residual jump is unavoidable.
+    const shift = drag.card.getBoundingClientRect().top - before;
+    if (shift && drag.scroller) drag.scroller.scrollTop += shift;
+
+    drag.cards = cardsIn(drag.container);
+    drag.rects = drag.cards.map((el) => el.getBoundingClientRect());
+    drag.from = drag.cards.indexOf(drag.card);
+    drag.to = drag.from;
+    drag.height = drag.rects[drag.from].height;
+    drag.startY = event.clientY;
+    drag.moved = true;
+    drag.card.classList.add('is-dragging');
+  }
+
   function move(event) {
     if (!drag) return;
 
-    const dy = event.clientY - drag.startY;
     if (!drag.moved) {
-      if (Math.abs(dy) < THRESHOLD) return;
-      drag.moved = true;
-      drag.card.classList.add('is-dragging');
-      // Suppress the click that would otherwise land on release.
-      drag.container.classList.add('is-reordering');
+      if (Math.abs(event.clientY - drag.startY) < THRESHOLD) return;
+      beginDrag(event);
     }
+
+    const dy = event.clientY - drag.startY;
 
     // The drag owns the gesture from here; without this the page scrolls
     // under the finger instead of the card following it.

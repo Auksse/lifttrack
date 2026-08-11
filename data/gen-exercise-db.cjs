@@ -1,9 +1,21 @@
 // ─── Exercise DB Generation Script ──────────────────────────────────────────
-// Run: node data/gen-exercise-db.js > data/lifttrack-exercise-db.js
+// Run: node data/gen-exercise-db.cjs > src/data/exercise-db.js
+// (.cjs because package.json sets "type": "module" and this script is CommonJS.)
 // Merges LiftTrack families + free-exercise-db enrichment.
 
 const fs = require('fs');
-const freeDb = JSON.parse(fs.readFileSync('data/exercises.json'));
+const freeDb = JSON.parse(fs.readFileSync(__dirname + '/exercises.json'));
+
+/**
+ * Extra names a record answers to.
+ *
+ * Search matches aliases, and so does the name lookup the recovery model
+ * uses — so an alias is not cosmetic: it is what keeps sessions logged
+ * under an old name attributed to the right muscles after a rename.
+ */
+const ALIASES = {
+  "Fly Machine": ["Pec Deck", "Butterfly", "Chest Fly Machine"],
+};
 
 function getFree(id) {
   return id ? (freeDb.find(e => e.id === id) || null) : null;
@@ -34,7 +46,7 @@ const families = [
   {
     familyName: "Chest Fly", category: "chest", repRangeCategory: "isolation_pump",
     bodyweight: null, dumbbells: "Dumbbell Fly", barbell: null,
-    cable: "Cable Fly", machine: "Pec Deck", plateLoaded: "Plate-Loaded Fly",
+    cable: "Cable Fly", machine: "Fly Machine", plateLoaded: "Plate-Loaded Fly",
     muscles: [
       { name: "Chest", score: 5, role: "primary" },
       { name: "Front Delts", score: 2, role: "secondary" }
@@ -607,7 +619,7 @@ const ID_MAP = {
   // Chest Fly
   "Dumbbell Fly":                        "Dumbbell_Flyes",
   "Cable Fly":                           "Flat_Bench_Cable_Flyes",
-  "Pec Deck":                            "Butterfly",
+  "Fly Machine":                         "Butterfly",
   // Chest Dip
   "Chest Dip":                           "Dips_-_Chest_Version",
   "Weighted Dip":                        "Parallel_Bar_Dip",
@@ -809,7 +821,7 @@ for (const fam of families) {
     rows.push({
       id,
       name,
-      aliases: [],
+      aliases: ALIASES[name] || [],
       familyName: fam.familyName,
       category: fam.category,
       split,
@@ -831,7 +843,8 @@ for (const fam of families) {
 // ─── Output JS file ───────────────────────────────────────────────────────────
 const header = `// ═══════════════════════════════════════════════════════════════════
 // LIFTTRACK UNIFIED EXERCISE DATABASE
-// Auto-generated — do NOT edit manually. Run: node data/gen-exercise-db.js
+// Auto-generated — do NOT edit manually.
+// Run: node data/gen-exercise-db.cjs > src/data/exercise-db.js
 // Merges LiftTrack exercise families with free-exercise-db enrichment.
 // ${rows.length} exercises total.
 // ═══════════════════════════════════════════════════════════════════
@@ -864,8 +877,8 @@ const header = `// ════════════════════�
  * }} LiftTrackExercise
  */
 
-/** @type {LiftTrackExercise[]} */
-window.LIFTTRACK_EXERCISE_DB = `;
+/** @type {import('./exercise-types.js').Exercise[]} */
+export const EXERCISES = `;
 
 process.stdout.write(header);
 process.stdout.write(JSON.stringify(rows, null, 2));
