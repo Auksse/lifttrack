@@ -6111,7 +6111,9 @@ export const EXERCISES = [
     "id": "Standing_Calf_Raise_Machine",
     "name": "Standing Calf Raise Machine",
     "aliases": [
-      "Calf Raise Machine"
+      "Calf Raise Machine",
+      "Calf Press",
+      "Leg Press Calf Raise"
     ],
     "familyName": "Standing Calf Raise",
     "category": "legs_glutes",
@@ -6336,10 +6338,7 @@ export const EXERCISES = [
   {
     "id": "Seated_Calf_Raise",
     "name": "Seated Calf Raise Machine",
-    "aliases": [
-      "Calf Press",
-      "Seated Calf Press"
-    ],
+    "aliases": [],
     "familyName": "Seated Calf Raise",
     "category": "legs_glutes",
     "split": "Legs",

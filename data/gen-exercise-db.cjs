@@ -18,12 +18,19 @@ const ALIASES = {
   "Rear Delt Machine": ["Reverse Pec Deck", "Reverse Fly Machine", "Rear Delt Fly Machine"],
   "Vertical Knee Raise Machine": ["Captains Chair", "Captain's Chair", "Knee Raise Machine"],
   "Barbell Rollout": ["Barbell Ab Rollout"],
-  // Gym naming, as used by the person logging: "calf press" for the
-  // seated machine, "calf raise machine" for the standing one. Note the
-  // real discriminator is knee angle rather than seat — a leg-press calf
-  // press works knees-straight and is the standing pattern.
-  "Seated Calf Raise Machine": ["Calf Press", "Seated Calf Press"],
-  "Standing Calf Raise Machine": ["Calf Raise Machine"],
+  /**
+   * Gym naming, as used by the person logging.
+   *
+   * The "calf press" here is the straight-legged kind, so it belongs to
+   * the standing pattern despite being done sitting down: with the knee
+   * extended the gastrocnemius is at a length where it can pull, and it
+   * leads. Only a knees-bent-to-90 machine hands the work to the soleus,
+   * and that one is findable by its own name.
+   *
+   * "Seated Calf Press" is deliberately absent: as a substring it would
+   * make "calf press" match the seated machine too.
+   */
+  "Standing Calf Raise Machine": ["Calf Raise Machine", "Calf Press", "Leg Press Calf Raise"],
 };
 
 function getFree(id) {
