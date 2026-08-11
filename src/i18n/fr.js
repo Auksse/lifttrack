@@ -41,6 +41,7 @@ export default {
   build_session_hint: 'Choisit des exercices pour les muscles les plus en retard cette semaine, et assez frais pour travailler.',
   plan_nothing_due: 'Aucun muscle en retard — repos, ou choisis un modèle.',
   alternatives: 'Alternatives', swap: 'Remplacer', same_movement: 'même mouvement',
+  swap_confirm: 'Remplacer {name} ? Les {n} série(s) terminée(s) seront supprimées.',
   alternatives_hint: "Travaille la même chose — utile si le matériel est pris.",
   swapped_for: 'Remplacé par {name}', reorder_exercise: "Déplacer l'exercice",
   edit_session: 'Modifier la séance', date: 'Date', session_focus: 'Type',

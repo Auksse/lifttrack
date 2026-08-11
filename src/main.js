@@ -663,21 +663,24 @@ onAction('exercise:swap', ({ ex, name }) => {
   const current = state.workout?.exercises[index];
   if (!current) return;
 
-  const done = current.sets.filter((s) => s.done);
+  /**
+   * A swap replaces. It used to keep the original alongside the
+   * alternative whenever any set had been ticked — the reasoning being
+   * that sets you actually performed should stay attached to the exercise
+   * you performed them on. Defensible, but not what "swap" means, and it
+   * silently left you with two exercises.
+   *
+   * Now it replaces in every case, and only asks first when that would
+   * discard completed work.
+   */
+  const done = current.sets.filter((s) => s.done).length;
+  if (done && !confirm(t('swap_confirm', { n: done, name: current.name }))) return;
 
-  if (!done.length) {
-    state.workout.exercises[index] = {
-      name,
-      collapsed: current.collapsed,
-      sets: initialSetsFor(name, { count: current.sets.length }),
-    };
-  } else {
-    current.sets = done;
-    state.workout.exercises.splice(index + 1, 0, {
-      name,
-      sets: initialSetsFor(name, { count: 1 }),
-    });
-  }
+  state.workout.exercises[index] = {
+    name,
+    collapsed: current.collapsed,
+    sets: initialSetsFor(name, { count: current.sets.length }),
+  };
 
   persistDraft();
   setState({ sheet: null });

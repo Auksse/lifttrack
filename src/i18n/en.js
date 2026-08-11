@@ -40,6 +40,7 @@ export default {
   build_session_hint: 'Picks exercises for the muscles furthest behind this week, and fresh enough to train.',
   plan_nothing_due: 'Nothing is behind on volume — take a rest day, or pick a template.',
   alternatives: 'Alternatives', swap: 'Swap', same_movement: 'same movement',
+  swap_confirm: 'Replace {name}? The {n} completed set(s) will be removed.',
   alternatives_hint: 'Trains the same thing — useful when the kit is taken.',
   swapped_for: 'Swapped for {name}', reorder_exercise: 'Reorder exercise',
   edit_session: 'Edit workout', date: 'Date', session_focus: 'Focus',

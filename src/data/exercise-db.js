@@ -3,7 +3,7 @@
 // Auto-generated — do NOT edit manually.
 // Run: node data/gen-exercise-db.cjs > src/data/exercise-db.js
 // Merges LiftTrack exercise families with free-exercise-db enrichment.
-// 215 exercises total.
+// 213 exercises total.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -7662,49 +7662,6 @@ export const EXERCISES = [
     "images": []
   },
   {
-    "id": "Knee_Hip_Raise_On_Parallel_Bars",
-    "name": "Vertical Knee Raise Machine",
-    "aliases": [],
-    "familyName": "Leg Raise",
-    "category": "core",
-    "split": "Core",
-    "equipment": "machine",
-    "repRangeCategory": "isolation_pump",
-    "level": "beginner",
-    "mechanic": "isolation",
-    "force": "pull",
-    "sourceCategory": "strength",
-    "primaryMuscles": [
-      "Abs"
-    ],
-    "secondaryMuscles": [
-      "Hip Flexors"
-    ],
-    "muscles": [
-      {
-        "name": "Abs",
-        "score": 4,
-        "role": "primary"
-      },
-      {
-        "name": "Hip Flexors",
-        "score": 4,
-        "role": "secondary"
-      }
-    ],
-    "instructions": [
-      "Position your body on the vertical leg raise bench so that your forearms are resting on the pads next to the torso and holding on to the handles. Your arms will be bent at a 90 degree angle.",
-      "The torso should be straight with the lower back pressed against the pad of the machine and the legs extended pointing towards the floor. This will be your starting position.",
-      "Now as you breathe out, lift your legs up as you keep them extended. Continue this movement until your legs are roughly parallel to the floor and then hold the contraction for a second. Tip: Do not use any momentum or swinging as you perform this exercise.",
-      "Slowly go back to the starting position as you breathe in.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "images": [
-      "Knee_Hip_Raise_On_Parallel_Bars/0.jpg",
-      "Knee_Hip_Raise_On_Parallel_Bars/1.jpg"
-    ]
-  },
-  {
     "id": "Side_Plank_Rotation",
     "name": "Side Plank Rotation",
     "aliases": [],
@@ -8077,60 +8034,6 @@ export const EXERCISES = [
     ],
     "instructions": [],
     "images": []
-  },
-  {
-    "id": "Barbell_Ab_Rollout",
-    "name": "Barbell Rollout",
-    "aliases": [],
-    "familyName": "Plank",
-    "category": "core",
-    "split": "Core",
-    "equipment": "barbell",
-    "repRangeCategory": "isolation_pump",
-    "level": "intermediate",
-    "mechanic": "compound",
-    "force": "pull",
-    "sourceCategory": "strength",
-    "primaryMuscles": [
-      "Deep Core"
-    ],
-    "secondaryMuscles": [
-      "Abs",
-      "Glutes",
-      "Serratus"
-    ],
-    "muscles": [
-      {
-        "name": "Deep Core",
-        "score": 5,
-        "role": "primary"
-      },
-      {
-        "name": "Abs",
-        "score": 4,
-        "role": "secondary"
-      },
-      {
-        "name": "Glutes",
-        "score": 2,
-        "role": "secondary"
-      },
-      {
-        "name": "Serratus",
-        "score": 2,
-        "role": "secondary"
-      }
-    ],
-    "instructions": [
-      "For this exercise you will need to get into a pushup position, but instead of having your hands of the floor, you will be grabbing on to an Olympic barbell (loaded with 5-10 lbs on each side) instead. This will be your starting position.",
-      "While keeping a slight arch on your back, lift your hips and roll the barbell towards your feet as you exhale. Tip: As you perform the movement, your glutes should be coming up, you should be keeping the abs tight and should maintain your back posture at all times. Also your arms should be staying perpendicular to the floor throughout the movement. If you don't, you will work out your shoulders and back more than the abs.",
-      "After a second contraction at the top, start to roll the barbell back forward to the starting position slowly as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "images": [
-      "Barbell_Ab_Rollout/0.jpg",
-      "Barbell_Ab_Rollout/1.jpg"
-    ]
   },
   {
     "id": "Cable_Iso_Hold",
@@ -8735,7 +8638,9 @@ export const EXERCISES = [
   {
     "id": "Barbell_Ab_Rollout",
     "name": "Barbell Rollout",
-    "aliases": [],
+    "aliases": [
+      "Barbell Ab Rollout"
+    ],
     "familyName": "Ab Wheel Rollout",
     "category": "core",
     "split": "Core",
@@ -8825,7 +8730,11 @@ export const EXERCISES = [
   {
     "id": "Knee_Hip_Raise_On_Parallel_Bars",
     "name": "Vertical Knee Raise Machine",
-    "aliases": [],
+    "aliases": [
+      "Captains Chair",
+      "Captain's Chair",
+      "Knee Raise Machine"
+    ],
     "familyName": "Hanging Knee Raise",
     "category": "core",
     "split": "Core",

@@ -16,6 +16,8 @@ const freeDb = JSON.parse(fs.readFileSync(__dirname + '/exercises.json'));
 const ALIASES = {
   "Fly Machine": ["Pec Deck", "Butterfly", "Chest Fly Machine"],
   "Rear Delt Machine": ["Reverse Pec Deck", "Reverse Fly Machine", "Rear Delt Fly Machine"],
+  "Vertical Knee Raise Machine": ["Captains Chair", "Captain's Chair", "Knee Raise Machine"],
+  "Barbell Rollout": ["Barbell Ab Rollout"],
 };
 
 function getFree(id) {
@@ -389,8 +391,11 @@ const families = [
   },
   {
     familyName: "Leg Raise", category: "core", repRangeCategory: "isolation_pump",
+    // No machine variant: the captain's chair is a *knee* raise and lives
+    // in the Hanging Knee Raise family. Both entries shared one source
+    // record and identical muscles.
     bodyweight: "Hanging Leg Raise", dumbbells: null, barbell: null,
-    cable: "Cable Reverse Crunch", machine: "Vertical Knee Raise Machine", plateLoaded: null,
+    cable: "Cable Reverse Crunch", machine: null, plateLoaded: null,
     muscles: [
       { name: "Abs", score: 4, role: "primary" },
       { name: "Hip Flexors", score: 4, role: "secondary" }
@@ -408,7 +413,10 @@ const families = [
   },
   {
     familyName: "Plank", category: "core", repRangeCategory: "isolation_pump",
-    bodyweight: "Plank", dumbbells: "Dumbbell Plank Drag", barbell: "Barbell Rollout",
+    // No barbell variant: "Barbell Rollout" is a rollout, not a plank, and
+    // lives in the Ab Wheel Rollout family — where it also carries the
+    // rollout muscle profile rather than the plank one.
+    bodyweight: "Plank", dumbbells: "Dumbbell Plank Drag", barbell: null,
     cable: "Cable Iso Hold", machine: null, plateLoaded: null,
     muscles: [
       { name: "Deep Core", score: 5, role: "primary" },
