@@ -87,6 +87,48 @@ export function isPersonalRecord(sessions, session, exerciseName) {
   return best > Math.max(...previous);
 }
 
+/** Total load moved by one exercise: reps × weight, summed over its sets. */
+export function exerciseVolume(exercise) {
+  return (exercise?.sets || []).reduce(
+    (total, s) => total + (Number(s.r) || 0) * Math.max(Number(s.w) || 0, 0),
+    0,
+  );
+}
+
+/**
+ * Did this exercise move more than the last time it was done?
+ *
+ * Compares against the most recent earlier session containing the same
+ * exercise, not against the all-time best — the question is "was today
+ * better than last time", which is a different and more encouraging
+ * measure than a personal record.
+ *
+ * Bodyweight work logs a weight of zero, which would make every session
+ * tie at zero volume. When both sides carry no load, total reps decide
+ * instead, so an extra push-up still counts as progress.
+ *
+ * Returns false the first time an exercise appears: there is nothing to
+ * have improved on.
+ */
+export function improvedOnLast(sessions, session, exerciseName) {
+  const current = session.exercises.find((e) => e.name === exerciseName);
+  if (!current?.sets?.length) return false;
+
+  const earlier = sessions
+    .filter((s) => s.date < session.date || (s.date === session.date && s.id !== session.id))
+    .filter((s) => s.exercises.some((e) => e.name === exerciseName));
+  if (!earlier.length) return false;
+
+  const previous = earlier[earlier.length - 1].exercises.find((e) => e.name === exerciseName);
+
+  const load = exerciseVolume(current);
+  const previousLoad = exerciseVolume(previous);
+  if (load > 0 || previousLoad > 0) return load > previousLoad;
+
+  const reps = (a) => (a?.sets || []).reduce((n, s) => n + (Number(s.r) || 0), 0);
+  return reps(current) > reps(previous);
+}
+
 export function countPersonalRecords(sessions) {
   let count = 0;
   sessions.forEach((session) => {

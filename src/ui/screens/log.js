@@ -9,7 +9,7 @@ import { t, tFocus, formatDate, formatMonth } from '../../i18n/index.js';
 import { focusColor } from '../../domain/focus.js';
 import {
   sessionVolume, totalVolume, sessionsThisWeek, currentStreak,
-  suggestNextFocus, groupByMonth, isPersonalRecord, daysSince, weekStart,
+  suggestNextFocus, groupByMonth, isPersonalRecord, improvedOnLast, daysSince, weekStart,
 } from '../../domain/stats.js';
 import { MUSCLE_GROUPS, readinessByGroup, undertrainedGroups } from '../../domain/muscles.js';
 
@@ -294,15 +294,42 @@ function renderSessionDetail(session) {
       <div style="padding-top:var(--space-3)">
         ${session.exercises
           .map((ex) => {
+            /**
+             * One badge, not two. A personal record already implies you
+             * beat last time, so showing both would be noise — the record
+             * wins and the arrow is for the sessions in between, where you
+             * moved more than last time without setting a best.
+             */
             const pr = isPersonalRecord(state.sessions, session, ex.name);
+            const up = !pr && improvedOnLast(state.sessions, session, ex.name);
+
+            /**
+             * The badge is a flex sibling of the name rather than sitting
+             * inside it. `.icon` is `display: block`, so an icon inline
+             * with the text dropped onto its own line under the name.
+             * Here the name truncates and the badge holds its place beside
+             * it on the same row.
+             */
+            const badge = pr
+              ? `<span style="flex:none;display:flex;color:var(--gold)"
+                       aria-label="${t('new_pr')}" title="${t('new_pr')}">
+                   ${icon('trophy', { size: 13, stroke: 2.2 })}
+                 </span>`
+              : up
+                ? `<span style="flex:none;display:flex;color:var(--positive)"
+                         aria-label="${t('improved')}" title="${t('improved')}">
+                     ${icon('arrowUp', { size: 13, stroke: 2.4 })}
+                   </span>`
+                : '';
+
             return `
               <div class="row gap-2" style="padding:var(--space-2) 0;border-bottom:1px solid var(--line-subtle)">
-                <span style="flex:1;min-width:0;font-size:var(--text-sm);font-weight:600;
-                             overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                  ${esc(ex.name)}
-                  ${pr ? `<span style="color:var(--gold);margin-left:4px">${icon('trophy', { size: 12, stroke: 2.2 })}</span>` : ''}
+                <span style="flex:1;min-width:0;display:flex;align-items:center;gap:5px">
+                  <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                               font-size:var(--text-sm);font-weight:600">${esc(ex.name)}</span>
+                  ${badge}
                 </span>
-                <span style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-tertiary)">
+                <span style="flex:none;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-tertiary)">
                   ${ex.sets.map((s) => `${s.r}×${s.w}`).join('  ')}
                 </span>
               </div>`;
