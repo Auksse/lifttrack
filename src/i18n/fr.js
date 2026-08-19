@@ -51,6 +51,11 @@ export default {
   add_at_least: 'Ajoute au moins un exercice',
   new_pr: 'RECORD', improved: 'Mieux que la dernière fois', first_log: 'Nouveau',
 
+  // --- Supersets & negatives ---
+  superset: 'Superset', link_superset: 'Lier en superset', unlink: 'Délier',
+  negative: 'Négatif', neg_short: 'NÉG',
+  negative_hint: 'Descente lente et contrôlée — compte comme plus fatigant.',
+
   // --- Templates ---
   choose_template: 'Choisir un modèle', templates: 'Modèles',
   blank_workout: 'Séance vierge', ex_lbl: 'ex',

@@ -30,6 +30,11 @@ export const state = {
   restDuration: 0,
 
   // --- transient UI ---
+  /**
+   * Index of an exercise card the next render should scroll into view.
+   * Set when a superset auto-advances; cleared by the render that uses it.
+   */
+  scrollToEx: null,
   expandedSessionId: null,
   /** Recovery group whose per-muscle breakdown is open, by group id. */
   expandedMuscleGroup: null,

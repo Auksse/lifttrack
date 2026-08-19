@@ -62,6 +62,10 @@
   --focus-legs: var(--plate-green);
   --focus-upper: #a78bfa;
 
+  /* Structure marks describe how a session was performed rather than what
+     was in it, so they sit outside the plate palette on purpose. */
+  --superset: #a78bfa;
+
   /* ---- Semantic ------------------------------------------------- */
   --positive: var(--plate-green);
   --negative: var(--plate-red);

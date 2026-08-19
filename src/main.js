@@ -47,6 +47,7 @@ import { isPersonalRecord } from './domain/stats.js';
 import { buildSessionPlan } from './domain/muscles.js';
 import { suggestNext, getProfile } from './domain/progression.js';
 import { unitOf } from './domain/units.js';
+import { supersetInfo, linkDown, unlinkAt, tidy } from './domain/supersets.js';
 
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -125,7 +126,7 @@ function render() {
   app.innerHTML = `
     <header class="screen-header">${screen.header}</header>
     <main class="content" id="content">
-      <div class="content-inner">${screen.body}</div>
+      <div class="content-inner" data-reorder-root>${screen.body}</div>
     </main>
     ${screen.footer || ''}
     ${state.tab === 'workout' ? '' : renderDock()}
@@ -134,6 +135,17 @@ function render() {
 
   const content = document.getElementById('content');
   if (content) content.scrollTop = scrollTop;
+
+  /**
+   * Auto-advance inside a superset. Scrolling can only happen once the new
+   * markup is in the document, which is here — the request is left on state
+   * by the handler and consumed on the next paint.
+   */
+  if (state.scrollToEx != null) {
+    const card = app.querySelector(`[data-card-ex="${state.scrollToEx}"]`);
+    state.scrollToEx = null;
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   // Must run after the markup is in the document: it measures.
   fitLines(app);
@@ -239,6 +251,11 @@ onAction('workout:save', async () => {
    * logged by typing and never used the checkmark, and silently discarding
    * their whole session would be far worse.
    */
+  // Reordering can leave a superset id on an exercise that no longer sits
+  // next to its partner. Harmless on screen — adjacency decides — but there
+  // is no reason to write it into a saved session.
+  tidy(w.exercises);
+
   const anyTicked = w.exercises.some((ex) => ex.sets.some((s) => s.done));
   const keep = anyTicked
     ? (s) => s.done && Number(s.r) > 0
@@ -248,8 +265,12 @@ onAction('workout:save', async () => {
     .map((ex) => ({
       name: ex.name,
       // Only when set: an absent unit means a raw number, which is how
-      // everything logged before units existed must keep reading.
+      // everything logged before units existed must keep reading. The same
+      // goes for the superset id and the negative flag — an exercise
+      // without them is an ordinary exercise, not a false one.
       ...(ex.u ? { u: ex.u } : {}),
+      ...(ex.ss ? { ss: ex.ss } : {}),
+      ...(ex.neg ? { neg: true } : {}),
       sets: ex.sets.filter(keep).map((s) => ({ r: Number(s.r), w: Number(s.w) || 0 })),
     }))
     .filter((ex) => ex.name && ex.sets.length);
@@ -299,11 +320,26 @@ onAction('set:toggle', ({ ex, set }) => {
   const target = exercise.sets[+set];
   target.done = !target.done;
 
+  /**
+   * A superset has no rest inside it — that is what makes it a superset.
+   * So ticking a set that is not in the last exercise of the group skips
+   * the timer and moves you on to the partner instead: it is opened if it
+   * was folded away, and scrolled to. Only the last exercise of the group
+   * starts the clock.
+   */
+  const ss = supersetInfo(state.workout.exercises)[+ex];
+  const partner = ss && !ss.last ? state.workout.exercises[+ex + 1] : null;
+
   if (target.done) {
     cue('setComplete');
-    // Auto-start the rest timer when a set is ticked — the whole reason
-    // you look at your phone between sets.
-    if (!state.restEndsAt) startRest(90);
+    if (partner) {
+      partner.collapsed = false;
+      state.scrollToEx = +ex + 1;
+    } else if (!state.restEndsAt) {
+      // Auto-start the rest timer when a set is ticked — the whole reason
+      // you look at your phone between sets.
+      startRest(90);
+    }
   } else {
     haptic('tap');
   }
@@ -379,7 +415,42 @@ onAction('set:remove', ({ ex, set }) => {
 
 onAction('exercise:remove', ({ ex }) => {
   state.workout.exercises.splice(+ex, 1);
+  // Taking one half of a pair away leaves a superset of one, which is not
+  // a superset.
+  tidy(state.workout.exercises);
   persistDraft();
+  invalidate();
+});
+
+// ---- supersets ----
+
+onAction('exercise:link', ({ ex }) => {
+  linkDown(state.workout.exercises, +ex);
+  persistDraft();
+  haptic('select');
+  invalidate();
+});
+
+onAction('superset:unlink', ({ ex }) => {
+  const info = supersetInfo(state.workout.exercises)[+ex];
+  if (!info) return;
+  // Dissolve the whole group rather than one member: with two exercises
+  // those are the same thing, and with three "unlink" reads as undoing the
+  // bracket you are looking at.
+  for (let i = info.end; i >= info.start; i -= 1) unlinkAt(state.workout.exercises, i);
+  persistDraft();
+  haptic('select');
+  invalidate();
+});
+
+/** Mark the exercise as done with a slow, controlled lowering phase. */
+onAction('exercise:negative', ({ ex }) => {
+  const exercise = state.workout.exercises[+ex];
+  if (!exercise) return;
+  if (exercise.neg) delete exercise.neg;
+  else exercise.neg = true;
+  persistDraft();
+  haptic('select');
   invalidate();
 });
 
@@ -466,6 +537,11 @@ onAction('session:edit', ({ id }) => {
       exercises: session.exercises.map((ex) => ({
         name: ex.name,
         u: ex.u,
+        // Carried through untouched: the edit sheet does not offer them,
+        // and dropping them here would quietly strip a session's supersets
+        // the first time you corrected its date.
+        ss: ex.ss,
+        neg: ex.neg,
         sets: ex.sets.map((set) => ({ r: String(set.r ?? ''), w: String(set.w ?? '') })),
       })),
     },
@@ -523,6 +599,8 @@ onAction('session-edit:save', async () => {
     .map((ex) => ({
       name: ex.name,
       ...(ex.u ? { u: ex.u } : {}),
+      ...(ex.ss ? { ss: ex.ss } : {}),
+      ...(ex.neg ? { neg: true } : {}),
       sets: ex.sets
         .filter((s) => Number(s.r) > 0)
         .map((s) => ({ r: Number(s.r), w: Number(s.w) || 0 })),
@@ -638,8 +716,13 @@ onAction('session:repeat', ({ id }) => {
       focus: source.focus,
       startedAt: Date.now(),
       templateFrom: source.date,
+      // Carries the structure, not just the movements: the unit each was
+      // logged in, the supersets, and which were done as negatives.
       exercises: source.exercises.map((ex) => ({
         name: ex.name,
+        ...(ex.u ? { u: ex.u } : {}),
+        ...(ex.ss ? { ss: ex.ss } : {}),
+        ...(ex.neg ? { neg: true } : {}),
         sets: ex.sets.map((set) => ({ r: String(set.r), w: String(set.w), done: false })),
       })),
     };
@@ -730,6 +813,9 @@ onAction('exercise:swap', ({ ex, name }) => {
     name,
     u: unitFor(name),
     collapsed: current.collapsed,
+    // The superset belongs to the slot in the order, so it survives a swap.
+    // The negative mark belongs to the movement, so it does not.
+    ...(current.ss ? { ss: current.ss } : {}),
     sets: initialSetsFor(name, { count: current.sets.length }),
   };
 

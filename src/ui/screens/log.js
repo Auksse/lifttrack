@@ -14,6 +14,7 @@ import {
 } from '../../domain/stats.js';
 import { MUSCLE_GROUPS, readinessByGroup, undertrainedGroups } from '../../domain/muscles.js';
 import { unitOf } from '../../domain/units.js';
+import { supersetInfo } from '../../domain/supersets.js';
 
 /**
  * Volume in tonnes, with the precision the magnitude can carry.
@@ -337,7 +338,7 @@ function formatVolume(kg) {
   return kg >= 1000 ? `${(kg / 1000).toFixed(1)}k` : String(Math.round(kg));
 }
 
-function renderSessionExercise(session, ex) {
+function renderSessionExercise(session, ex, ss) {
   /**
    * One badge, in order of what it tells you. A first log cannot be a
    * record or an improvement, and a record already implies you beat last
@@ -373,7 +374,13 @@ function renderSessionExercise(session, ex) {
     <div style="padding:var(--space-3) 0;border-bottom:1px solid var(--line-subtle)">
       <div style="display:flex;align-items:center;gap:var(--space-2)">
         <span style="flex:1;min-width:0;font-size:var(--text-sm);font-weight:600;
-                     overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ex.name)}</span>
+                     overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${ss ? `<span class="ss-label">${ss.label}</span>` : ''}${esc(ex.name)}${
+            ex.neg
+              ? `<span class="neg-badge neg-badge--inline"
+                       title="${t('negative_hint')}">${t('neg_short')}</span>`
+              : ''}
+        </span>
         ${badge}
       </div>
       <div style="display:flex;align-items:baseline;gap:var(--space-3);margin-top:4px">
@@ -391,12 +398,48 @@ function renderSessionExercise(session, ex) {
     </div>`;
 }
 
+/**
+ * The exercises of a saved session, with any supersets bracketed the same
+ * way they were while you logged them — so the order you actually performed
+ * them in survives into the history, not just the list of movements.
+ */
+function renderSessionExercises(session) {
+  const info = supersetInfo(session.exercises);
+  const out = [];
+  let i = 0;
+
+  while (i < session.exercises.length) {
+    const ss = info[i];
+
+    if (ss?.first) {
+      const rows = [];
+      for (let j = ss.start; j <= ss.end; j += 1) {
+        rows.push(renderSessionExercise(session, session.exercises[j], info[j]));
+      }
+      out.push(`
+        <div class="ss-run">
+          <span class="ss-run-spine" aria-hidden="true"></span>
+          <div class="ss-run-body">
+            <span class="ss-run-title">${icon('link', { size: 11 })} ${t('superset')} ${ss.group}</span>
+            ${rows.join('')}
+          </div>
+        </div>`);
+      i = ss.end + 1;
+    } else {
+      out.push(renderSessionExercise(session, session.exercises[i], info[i]));
+      i += 1;
+    }
+  }
+
+  return out.join('');
+}
+
 function renderSessionDetail(session) {
   return `
     <div style="padding:0 0 var(--space-4) var(--space-5);
                 border-bottom:1px solid var(--line-subtle);background:var(--surface-sunken)">
       <div style="padding-top:var(--space-3)">
-        ${session.exercises.map((ex) => renderSessionExercise(session, ex)).join('')}
+        ${renderSessionExercises(session)}
       </div>
 
       <div class="row gap-2" style="margin-top:var(--space-3);flex-wrap:wrap">
