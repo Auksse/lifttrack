@@ -50,6 +50,11 @@ export default {
   add_at_least: 'Add at least one exercise',
   new_pr: 'PR', improved: 'More than last time', first_log: 'New',
 
+  // --- Supersets & negatives ---
+  superset: 'Superset', link_superset: 'Link as superset', unlink: 'Unlink',
+  negative: 'Negative', neg_short: 'NEG',
+  negative_hint: 'Lowered slowly under control — counts as more fatiguing.',
+
   // --- Templates ---
   choose_template: 'Choose a template', templates: 'Templates',
   blank_workout: 'Blank workout', ex_lbl: 'ex',

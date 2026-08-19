@@ -770,13 +770,21 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
    a long haul against the auto-scroll. See ui/reorder.js. */
 .is-reordering .exercise-body { display: none; }
 
+/* Superset furniture steps out of the way too: the drag measures a stack
+   of card rectangles, and a group header or a link chip between them is a
+   band where the finger is over no card at all. */
+.is-reordering .ss-group-head,
+.is-reordering .ss-link { display: none; }
+.is-reordering .ss-group { padding-left: 0; }
+.is-reordering .ss-group::before { display: none; }
+
 /* The ring + name + caret act as one collapse control. */
 .exercise-toggle {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   text-align: left;
   /* Reclaims the header's left padding so the ring stays where it was
      before the header became a button. */
@@ -796,6 +804,30 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
    padding rather than relying on the body beneath it. */
 .exercise-card.is-collapsed .exercise-head { min-height: 52px; }
 
+/*
+ * Marks go on a strip above the name rather than beside it.
+ *
+ * The name column is only ~120px on a phone once the ring, caret and two
+ * buttons have taken their share. An A1 label sitting beside the name left
+ * ~85px, which broke "Dumbbell Flat Press" into one word per line; a NEG
+ * badge inline at the end added a fourth. On its own strip the marks cost
+ * one thin row and the name keeps the whole column.
+ */
+.exercise-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.exercise-marks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .exercise-name {
   flex: 1;
   min-width: 0;
@@ -804,6 +836,22 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   color: var(--text-primary);
   line-height: 1.25;
 }
+
+/*
+ * The header's two trailing buttons are shrunk from the 44px tap minimum
+ * to 36px, with the missing touch area restored underneath.
+ *
+ * They were taking 88px of a 309px header, leaving the exercise name about
+ * 85px — narrow enough that "Dumbbell Flat Press" broke onto three lines,
+ * one word each. Info and remove are both secondary to reading which
+ * exercise you are on.
+ */
+.exercise-head .icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+.exercise-head .icon-btn::after { content: ''; position: absolute; inset: -4px; }
 .exercise-body { padding: 0 var(--space-3) var(--space-3); }
 
 .exercise-progress { width: 30px; height: 30px; flex: none; position: relative; }
@@ -1047,3 +1095,204 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 .text-input::placeholder { color: var(--text-faint); }
 .text-input:focus { border-color: var(--gold); }
+
+/* ---- Supersets ------------------------------------------------------ */
+
+/*
+ * A superset is drawn as a bracket around cards that keep their own
+ * identity, rather than as one merged card. Each exercise still needs its
+ * own progression hint, unit toggle and collapse, and merging them would
+ * have cost all three.
+ */
+.ss-group {
+  position: relative;
+  padding-left: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+/* The spine is what actually says "these belong together". */
+.ss-group::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 26px;
+  bottom: var(--space-3);
+  width: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--superset) 55%, transparent);
+}
+
+.ss-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1) var(--space-2);
+}
+
+.ss-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  color: var(--superset);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+.ss-unlink {
+  position: relative;
+  flex: none;
+  padding: 0 var(--space-2);
+  height: 28px;
+  color: var(--text-tertiary);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+/* 28px tall, 44px of touch. */
+.ss-unlink::after { content: ''; position: absolute; inset: -8px -6px; }
+
+/*
+ * The A1 / A2 order marker.
+ *
+ * It sits beside the name rather than inside it. Inline, it consumed a
+ * whole line of an exercise-name column that is only ~105px wide on a
+ * phone, pushing every word of a three-word name onto its own row.
+ */
+.ss-label {
+  flex: none;
+  color: var(--superset);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Following a name rather than sitting on a strip of its own. */
+.neg-badge--inline { margin-left: 6px; }
+
+/* In the history the column is wide enough to keep the label inline. */
+.ss-run .ss-label {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--superset) 18%, transparent);
+  vertical-align: 1px;
+}
+
+/*
+ * The link control lives in the gap between two cards, which is where you
+ * look when you want to join them. It stays quiet until needed: a hairline
+ * with a small chip, not a button competing with "Add set".
+ */
+.ss-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  /* Eats the card's own bottom margin so the gap does not double. */
+  margin: calc(-1 * var(--space-2)) 0 var(--space-2);
+  padding: var(--space-2) 0;
+  color: var(--text-faint);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.ss-link:active { color: var(--superset); }
+
+.ss-link-line {
+  flex: 1;
+  height: 1px;
+  background: var(--line-subtle);
+}
+
+.ss-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* Same grouping, read back in the history. */
+.ss-run {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.ss-run-spine {
+  flex: none;
+  width: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--superset) 45%, transparent);
+}
+
+.ss-run-body { flex: 1; min-width: 0; }
+
+.ss-run-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--superset);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* The last row of a run already has the spine beside it — a rule under it
+   as well reads as a divider between groups that is not there. */
+.ss-run-body > div:last-child { border-bottom: 0 !important; }
+
+/* ---- Negatives (slow eccentrics) ------------------------------------ */
+
+/*
+ * Kept typographic rather than coloured. The badge sits next to the PR,
+ * NEW and improvement marks, which are the coloured ones, and it says how
+ * you trained rather than how well — a different kind of fact.
+ */
+.neg-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-default);
+  color: var(--text-tertiary);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  vertical-align: 1px;
+}
+
+.neg-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 0 var(--space-2);
+  height: 34px;
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+/* 34px tall, 44px of touch. */
+.neg-toggle::after { content: ''; position: absolute; inset: -5px 0; }
+
+.neg-toggle.is-active {
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-color: var(--line-strong);
+  color: var(--text-primary);
+}

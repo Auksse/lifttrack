@@ -46,6 +46,14 @@ const paths = {
   arrowRight: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
   drag: `<circle cx="9" cy="7" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="7" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="17" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="1.3" fill="currentColor" stroke="none"/>`,
   swap: `<path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/>`,
+
+  // Two links of a chain, for exercises joined into a superset.
+  link: `<path d="M10 14a4 4 0 0 1 0-5.6l2.2-2.2a4 4 0 0 1 5.6 5.6L16.6 13"/><path d="M14 10a4 4 0 0 1 0 5.6l-2.2 2.2a4 4 0 0 1-5.6-5.6L7.4 11"/>`,
+
+  // A weight coming down against resistance: the arrow descends, the two
+  // short bars are the brakes. Reads as "lower it slowly" at 15px, which
+  // an ordinary down-arrow does not.
+  slowDown: `<path d="M12 4v11M8 11.5l4 4 4-4"/><path d="M6.5 19h11"/>`,
   user: `<circle cx="12" cy="8.5" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0"/>`,
   download: `<path d="M12 4v10M7.5 10l4.5 4.5 4.5-4.5M4.5 19.5h15"/>`,
   upload: `<path d="M12 15.5v-10M7.5 9.5 12 5l4.5 4.5M4.5 19.5h15"/>`,

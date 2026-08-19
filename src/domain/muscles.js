@@ -224,6 +224,22 @@ function hoursSinceSession(session, now) {
   return session.date > new Date(now).toISOString().slice(0, 10) ? null : 0;
 }
 
+/**
+ * How much harder a slow-eccentric set is on the muscle than a normal one.
+ *
+ * Lowering a weight under control causes measurably more muscle damage and
+ * more prolonged soreness than lifting it, so an exercise done as negatives
+ * should leave you tired for longer. Like every other constant in this
+ * model the exact figure is a judgement, not a measurement — but unlike a
+ * guess about direction, this one is well established.
+ *
+ * It scales fatigue only. Volume is still volume: a set is a set, however
+ * slowly you lowered it.
+ */
+const NEGATIVE_FATIGUE = 1.3;
+
+const eccentricWeight = (ex) => (ex?.neg ? NEGATIVE_FATIGUE : 1);
+
 export function fatigueByGroup(sessions, now = Date.now()) {
   // A group is as tired as its most tired muscle — see byGroupFromMuscles
   // for why this is a maximum and not a sum.
@@ -262,7 +278,7 @@ export function fatigueByMuscle(sessions, now = Date.now()) {
     if (hoursAgo === null) return;
 
     session.exercises.forEach((ex) => {
-      const setCount = ex.sets.length;
+      const setCount = ex.sets.length * eccentricWeight(ex);
       if (!setCount) return;
 
       Object.entries(musclesFor(ex.name)).forEach(([muscle, score]) => {

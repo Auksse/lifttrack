@@ -19,6 +19,7 @@ import { suggestNext } from '../../domain/progression.js';
 import { t, formatDate } from '../../i18n/index.js';
 import { focusColor } from '../../domain/focus.js';
 import { UNITS, unitOf, toKg } from '../../domain/units.js';
+import { supersetInfo, canLinkDown } from '../../domain/supersets.js';
 
 /** Sets that count as "done" for progress purposes. */
 const isDone = (set) => !!set.done;
@@ -145,7 +146,7 @@ function renderSuggestion(exerciseName, exIndex, unit) {
     </div>`;
 }
 
-function renderExercise(exercise, exIndex) {
+function renderExercise(exercise, exIndex, ss) {
   const unit = unitOf(exercise, state.settings.units);
   const total = exercise.sets.length;
   const done = exercise.sets.filter(isDone).length;
@@ -170,7 +171,17 @@ function renderExercise(exercise, exIndex) {
                 aria-expanded="${!collapsed}"
                 aria-label="${collapsed ? t('expand_exercise') : t('collapse_exercise')}">
           ${progressRing(done, total)}
-          <h3 class="exercise-name">${esc(exercise.name || t('unnamed_exercise'))}</h3>
+          <span class="exercise-heading">
+            ${ss || exercise.neg
+              ? `<span class="exercise-marks">
+                   ${ss ? `<span class="ss-label">${ss.label}</span>` : ''}
+                   ${exercise.neg
+                     ? `<span class="neg-badge" title="${t('negative_hint')}">${t('neg_short')}</span>`
+                     : ''}
+                 </span>`
+              : ''}
+            <h3 class="exercise-name">${esc(exercise.name || t('unnamed_exercise'))}</h3>
+          </span>
           <span class="exercise-caret">${icon(collapsed ? 'chevronRight' : 'chevronUp', { size: 18 })}</span>
         </button>
         <button class="icon-btn" data-action="exercise:info" data-name="${esc(exercise.name)}"
@@ -197,6 +208,13 @@ function renderExercise(exercise, exIndex) {
                        data-action="set:add" data-ex="${exIndex}">
                  ${icon('plus', { size: 16 })} ${t('add_set')}
                </button>
+               <button class="neg-toggle ${exercise.neg ? 'is-active' : ''}"
+                       data-action="exercise:negative" data-ex="${exIndex}"
+                       aria-pressed="${!!exercise.neg}"
+                       title="${t('negative_hint')}"
+                       aria-label="${t('negative')}">
+                 ${icon('slowDown', { size: 15 })} ${t('neg_short')}
+               </button>
                <div class="unit-toggle" role="group" aria-label="${t('units')}">
                  ${UNITS.map((u) => `
                    <button class="${u === unit ? 'is-active' : ''}"
@@ -206,6 +224,60 @@ function renderExercise(exercise, exIndex) {
              </div>
            </div>`}
     </article>`;
+}
+
+/**
+ * The exercise list, with supersets bracketed.
+ *
+ * Cards stay separate — each keeps its own progression hint, unit toggle
+ * and collapse — and a bracket is drawn around the ones you perform back to
+ * back. Between any two cards that are *not* joined sits a thin link
+ * control, so pairing two exercises is one tap where you would look for
+ * it: in the gap between them.
+ */
+function renderExerciseList(exercises) {
+  const info = supersetInfo(exercises);
+  const out = [];
+  let i = 0;
+
+  while (i < exercises.length) {
+    const ss = info[i];
+
+    if (ss?.first) {
+      const members = [];
+      for (let j = ss.start; j <= ss.end; j += 1) {
+        members.push(renderExercise(exercises[j], j, info[j]));
+      }
+      out.push(`
+        <section class="ss-group">
+          <header class="ss-group-head">
+            <span class="ss-group-title">
+              ${icon('link', { size: 13 })} ${t('superset')} ${ss.group}
+            </span>
+            <button class="ss-unlink" data-action="superset:unlink" data-ex="${ss.start}">
+              ${t('unlink')}
+            </button>
+          </header>
+          ${members.join('')}
+        </section>`);
+      i = ss.end + 1;
+    } else {
+      out.push(renderExercise(exercises[i], i, info[i]));
+      i += 1;
+    }
+
+    if (i < exercises.length && canLinkDown(exercises, i - 1)) {
+      out.push(`
+        <button class="ss-link" data-action="exercise:link" data-ex="${i - 1}"
+                aria-label="${t('link_superset')}">
+          <span class="ss-link-line"></span>
+          <span class="ss-link-chip">${icon('link', { size: 13 })} ${t('link_superset')}</span>
+          <span class="ss-link-line"></span>
+        </button>`);
+    }
+  }
+
+  return out.join('');
 }
 
 /** Docked rest timer. Participates in layout — never overlaps content. */
@@ -281,7 +353,7 @@ export function renderWorkoutScreen() {
 
     body: `
       ${w.exercises.length
-        ? w.exercises.map(renderExercise).join('')
+        ? renderExerciseList(w.exercises)
         : `<div class="empty">
              <div class="empty-icon">${icon('muscles', { size: 30 })}</div>
              <h2 class="empty-title">${t('no_exercises_yet')}</h2>

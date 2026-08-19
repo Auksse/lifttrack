@@ -32,8 +32,18 @@ export function installReorder({ onDrop }) {
     const handle = event.target.closest('[data-drag-handle]');
     if (!handle) return;
 
+    /**
+     * The container is the whole list, not the card's parent.
+     *
+     * Supersets wrap their members in a bracket element, so a grouped
+     * card's parent holds only that group. Measuring from there gave
+     * indices relative to the group while `onDrop` splices the session's
+     * exercise array — dragging inside a superset reordered the wrong
+     * exercises. Reading every card in the list keeps position and index
+     * the same number, and lets a card be dragged into or out of a group.
+     */
     const card = handle.closest('[data-card-ex]');
-    const container = card?.parentElement;
+    const container = card?.closest('[data-reorder-root]') || card?.parentElement;
     if (!card || !container) return;
 
     drag = {
