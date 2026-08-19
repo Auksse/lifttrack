@@ -14,6 +14,10 @@
  *
  * An exercise with no unit recorded is read as a raw number, exactly as
  * before, so nothing already logged changes value.
+ *
+ * The toggle in the UI relabels rather than converts. The reason to touch
+ * it is almost always "the machine was in pounds and the app said kg" —
+ * the number is right, the unit is wrong — so 100 must stay 100.
  */
 
 export const UNITS = ['kg', 'lb'];
@@ -30,20 +34,4 @@ export function unitOf(exercise, fallback = 'kg') {
 export function toKg(weight, unit) {
   const value = Number(weight) || 0;
   return unit === 'lb' ? value * KG_PER_LB : value;
-}
-
-/** Convert kilograms back into a display unit. */
-export function fromKg(kg, unit) {
-  return unit === 'lb' ? kg / KG_PER_LB : kg;
-}
-
-/**
- * Convert a weight between units for re-entry, rounded to something a
- * plate stack can actually express — switching kg to lb and back should
- * not leave 47.99999 in the field.
- */
-export function convert(weight, from, to) {
-  if (from === to) return Number(weight) || 0;
-  const kg = toKg(weight, from);
-  return Math.round(fromKg(kg, to) * 2) / 2;
 }

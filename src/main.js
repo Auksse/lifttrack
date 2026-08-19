@@ -46,7 +46,7 @@ import { installReorder } from './ui/reorder.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { buildSessionPlan } from './domain/muscles.js';
 import { suggestNext, getProfile } from './domain/progression.js';
-import { unitOf, convert } from './domain/units.js';
+import { unitOf } from './domain/units.js';
 
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -326,22 +326,17 @@ onAction('set:toggle', ({ ex, set }) => {
 });
 
 /**
- * Switch an exercise between kg and lb, converting what is already in the
- * fields. Entering 45 kg and tapping LB should read 99, not 45 — the
- * weight on the machine did not change.
+ * Relabel an exercise as kg or lb. The numbers already typed stay exactly
+ * as they are — the toggle says what the plates on that machine were marked
+ * in, it does not restate the same load in other units. Someone who logged
+ * 100 on a pounds-only machine wants that row to read 100 lb, not 220.
  */
 onAction('exercise:unit', ({ ex, unit }) => {
   const exercise = state.workout?.exercises[+ex];
   if (!exercise) return;
-
-  const from = unitOf(exercise, state.settings.units);
-  if (from === unit) return;
+  if (unitOf(exercise, state.settings.units) === unit) return;
 
   exercise.u = unit;
-  exercise.sets.forEach((set) => {
-    if (set.w === '' || set.w == null) return;
-    set.w = String(convert(set.w, from, unit));
-  });
 
   persistDraft();
   haptic('select');
@@ -490,18 +485,15 @@ onInput('session-edit:weight', (value, { ex, set }) => {
     value.replace(/[^\d.,]/g, '').replace(',', '.');
 });
 
+// Same as exercise:unit — corrects the label on a session already saved,
+// which is the usual reason to touch it: the weights were right, the unit
+// was not.
 onAction('session-edit:unit', ({ ex, unit }) => {
   const exercise = state.sessionEdit?.exercises[+ex];
   if (!exercise) return;
-
-  const from = unitOf(exercise, state.settings.units);
-  if (from === unit) return;
+  if (unitOf(exercise, state.settings.units) === unit) return;
 
   exercise.u = unit;
-  exercise.sets.forEach((set) => {
-    if (set.w === '' || set.w == null) return;
-    set.w = String(convert(set.w, from, unit));
-  });
   invalidate();
 });
 
