@@ -191,7 +191,7 @@ function renderExercise(exercise, exIndex) {
 
              <!-- The unit belongs to the exercise, not the profile: one gym
                   can have imperial plates on one machine and metric on the
-                  next. Switching converts the weights already entered. -->
+                  next. Switching relabels — the numbers typed stay put. -->
              <div class="row gap-2" style="margin-top:var(--space-2)">
                <button class="btn btn--sm btn--ghost" style="flex:1"
                        data-action="set:add" data-ex="${exIndex}">
