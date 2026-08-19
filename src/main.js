@@ -46,6 +46,7 @@ import { installReorder } from './ui/reorder.js';
 import { isPersonalRecord } from './domain/stats.js';
 import { buildSessionPlan } from './domain/muscles.js';
 import { suggestNext, getProfile } from './domain/progression.js';
+import { unitOf, convert } from './domain/units.js';
 
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -166,13 +167,27 @@ function initialSetsFor(name, { count: forced } = {}) {
   return Array.from({ length: count }, () => ({ r: reps, w: weight, done: false }));
 }
 
+/**
+ * The unit an exercise should be entered in: whatever it was logged in
+ * last time, falling back to the profile default. Inheriting matters
+ * because the progression suggestion is computed from those same past
+ * numbers — defaulting to kg after a session logged in lb would suggest
+ * a weight less than half what you lifted.
+ */
+function unitFor(name) {
+  const previous = [...state.sessions]
+    .reverse()
+    .find((s) => s.exercises.some((e) => e.name === name));
+  return unitOf(previous?.exercises.find((e) => e.name === name), state.settings.units);
+}
+
 function newWorkout(focus, exercises = []) {
   return {
     date: new Date().toISOString().slice(0, 10),
     focus,
     startedAt: Date.now(),
     templateFrom: null,
-    exercises: exercises.map((name) => ({ name, sets: initialSetsFor(name) })),
+    exercises: exercises.map((name) => ({ name, u: unitFor(name), sets: initialSetsFor(name) })),
   };
 }
 
@@ -232,6 +247,9 @@ onAction('workout:save', async () => {
   const exercises = w.exercises
     .map((ex) => ({
       name: ex.name,
+      // Only when set: an absent unit means a raw number, which is how
+      // everything logged before units existed must keep reading.
+      ...(ex.u ? { u: ex.u } : {}),
       sets: ex.sets.filter(keep).map((s) => ({ r: Number(s.r), w: Number(s.w) || 0 })),
     }))
     .filter((ex) => ex.name && ex.sets.length);
@@ -304,6 +322,29 @@ onAction('set:toggle', ({ ex, set }) => {
   exercise.collapsed = complete;
 
   persistDraft();
+  invalidate();
+});
+
+/**
+ * Switch an exercise between kg and lb, converting what is already in the
+ * fields. Entering 45 kg and tapping LB should read 99, not 45 — the
+ * weight on the machine did not change.
+ */
+onAction('exercise:unit', ({ ex, unit }) => {
+  const exercise = state.workout?.exercises[+ex];
+  if (!exercise) return;
+
+  const from = unitOf(exercise, state.settings.units);
+  if (from === unit) return;
+
+  exercise.u = unit;
+  exercise.sets.forEach((set) => {
+    if (set.w === '' || set.w == null) return;
+    set.w = String(convert(set.w, from, unit));
+  });
+
+  persistDraft();
+  haptic('select');
   invalidate();
 });
 
@@ -429,6 +470,7 @@ onAction('session:edit', ({ id }) => {
       // Deep copy, and strings in the fields so typing behaves.
       exercises: session.exercises.map((ex) => ({
         name: ex.name,
+        u: ex.u,
         sets: ex.sets.map((set) => ({ r: String(set.r ?? ''), w: String(set.w ?? '') })),
       })),
     },
@@ -446,6 +488,21 @@ onInput('session-edit:reps', (value, { ex, set }) => {
 onInput('session-edit:weight', (value, { ex, set }) => {
   state.sessionEdit.exercises[+ex].sets[+set].w =
     value.replace(/[^\d.,]/g, '').replace(',', '.');
+});
+
+onAction('session-edit:unit', ({ ex, unit }) => {
+  const exercise = state.sessionEdit?.exercises[+ex];
+  if (!exercise) return;
+
+  const from = unitOf(exercise, state.settings.units);
+  if (from === unit) return;
+
+  exercise.u = unit;
+  exercise.sets.forEach((set) => {
+    if (set.w === '' || set.w == null) return;
+    set.w = String(convert(set.w, from, unit));
+  });
+  invalidate();
 });
 
 onAction('session-edit:remove-set', ({ ex, set }) => {
@@ -473,6 +530,7 @@ onAction('session-edit:save', async () => {
   const exercises = draft.exercises
     .map((ex) => ({
       name: ex.name,
+      ...(ex.u ? { u: ex.u } : {}),
       sets: ex.sets
         .filter((s) => Number(s.r) > 0)
         .map((s) => ({ r: Number(s.r), w: Number(s.w) || 0 })),
@@ -678,6 +736,7 @@ onAction('exercise:swap', ({ ex, name }) => {
 
   state.workout.exercises[index] = {
     name,
+    u: unitFor(name),
     collapsed: current.collapsed,
     sets: initialSetsFor(name, { count: current.sets.length }),
   };
@@ -731,7 +790,7 @@ onAction('library:add', ({ name }) => {
      * the extra rows were just empty boxes to scroll past — add sets as you
      * do them instead. The row still carries the progression target.
      */
-    state.workout.exercises.push({ name, sets: initialSetsFor(name, { count: 1 }) });
+    state.workout.exercises.push({ name, u: unitFor(name), sets: initialSetsFor(name, { count: 1 }) });
     setState({ sheet: null });
   }
   persistDraft();
@@ -742,7 +801,9 @@ onAction('library:manual', () => {
   const name = prompt(t('ex_name_ph'));
   if (!name?.trim()) return;
   if (!state.workout) return;
-  state.workout.exercises.push({ name: name.trim(), sets: [{ r: '', w: '', done: false }] });
+  state.workout.exercises.push({
+    name: name.trim(), u: unitFor(name.trim()), sets: [{ r: '', w: '', done: false }],
+  });
   persistDraft();
   setState({ sheet: null });
 });

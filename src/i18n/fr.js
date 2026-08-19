@@ -49,7 +49,7 @@ export default {
   session_saved: 'Séance enregistrée', session_updated: 'Séance mise à jour',
   deleted: 'Supprimé', delete_confirm: 'Supprimer cette séance ?',
   add_at_least: 'Ajoute au moins un exercice',
-  new_pr: 'RECORD', improved: 'Mieux que la dernière fois',
+  new_pr: 'RECORD', improved: 'Mieux que la dernière fois', first_log: 'Nouveau',
 
   // --- Templates ---
   choose_template: 'Choisir un modèle', templates: 'Modèles',

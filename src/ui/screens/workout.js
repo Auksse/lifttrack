@@ -18,6 +18,7 @@ import { esc } from '../actions.js';
 import { suggestNext } from '../../domain/progression.js';
 import { t, formatDate } from '../../i18n/index.js';
 import { focusColor } from '../../domain/focus.js';
+import { UNITS, unitOf, toKg } from '../../domain/units.js';
 
 /** Sets that count as "done" for progress purposes. */
 const isDone = (set) => !!set.done;
@@ -60,7 +61,7 @@ function progressRing(done, total) {
     </div>`;
 }
 
-function renderSetRow(exIndex, setIndex, set) {
+function renderSetRow(exIndex, setIndex, set, unit) {
   const done = isDone(set);
   return `
     <div class="set-row ${done ? 'is-done' : ''}">
@@ -86,7 +87,7 @@ function renderSetRow(exIndex, setIndex, set) {
                placeholder="—"
                aria-label="${t('weight')} ${setIndex + 1}"
                data-input="set:weight" data-ex="${exIndex}" data-set="${setIndex}">
-        <span class="set-unit">${state.settings.units}</span>
+        <span class="set-unit">${unit}</span>
       </div>
 
       <button class="set-check ${done ? 'is-done' : ''}"
@@ -112,7 +113,7 @@ function renderSetRow(exIndex, setIndex, set) {
  * what you managed *last* time — so that leads, and the target follows as
  * the smaller line.
  */
-function renderSuggestion(exerciseName, exIndex) {
+function renderSuggestion(exerciseName, exIndex, unit) {
   const previous = [...state.sessions]
     .reverse()
     .find((s) => s.exercises.some((e) => e.name === exerciseName));
@@ -122,7 +123,6 @@ function renderSuggestion(exerciseName, exIndex) {
   if (!lastSets.length) return '';
 
   const suggestion = suggestNext(exerciseName, lastSets);
-  const unit = state.settings.units;
   const lastSummary = lastSets.map((s) => `${s.r}×${s.w}`).join('  ');
 
   return `
@@ -146,6 +146,7 @@ function renderSuggestion(exerciseName, exIndex) {
 }
 
 function renderExercise(exercise, exIndex) {
+  const unit = unitOf(exercise, state.settings.units);
   const total = exercise.sets.length;
   const done = exercise.sets.filter(isDone).length;
   const complete = total > 0 && done === total;
@@ -185,12 +186,24 @@ function renderExercise(exercise, exIndex) {
       ${collapsed
         ? ''
         : `<div class="exercise-body">
-             ${renderSuggestion(exercise.name, exIndex)}
-             ${exercise.sets.map((set, i) => renderSetRow(exIndex, i, set)).join('')}
-             <button class="btn btn--sm btn--ghost btn--block" data-action="set:add" data-ex="${exIndex}"
-                     style="margin-top:var(--space-2)">
-               ${icon('plus', { size: 16 })} ${t('add_set')}
-             </button>
+             ${renderSuggestion(exercise.name, exIndex, unit)}
+             ${exercise.sets.map((set, i) => renderSetRow(exIndex, i, set, unit)).join('')}
+
+             <!-- The unit belongs to the exercise, not the profile: one gym
+                  can have imperial plates on one machine and metric on the
+                  next. Switching converts the weights already entered. -->
+             <div class="row gap-2" style="margin-top:var(--space-2)">
+               <button class="btn btn--sm btn--ghost" style="flex:1"
+                       data-action="set:add" data-ex="${exIndex}">
+                 ${icon('plus', { size: 16 })} ${t('add_set')}
+               </button>
+               <div class="unit-toggle" role="group" aria-label="${t('units')}">
+                 ${UNITS.map((u) => `
+                   <button class="${u === unit ? 'is-active' : ''}"
+                           data-action="exercise:unit" data-ex="${exIndex}" data-unit="${u}"
+                           aria-pressed="${u === unit}">${u.toUpperCase()}</button>`).join('')}
+               </div>
+             </div>
            </div>`}
     </article>`;
 }
@@ -245,7 +258,7 @@ export function renderWorkoutScreen() {
       total +
       e.sets
         .filter((set) => isDone(set) && isFilled(set))
-        .reduce((s, set) => s + Number(set.r) * Math.max(Number(set.w), 0), 0),
+        .reduce((s, set) => s + Number(set.r) * Math.max(toKg(set.w, unitOf(e, state.settings.units)), 0), 0),
     0,
   );
 
@@ -260,7 +273,7 @@ export function renderWorkoutScreen() {
         </h1>
         <div class="metric-label" style="margin-top:2px">
           <span id="workout-elapsed">${elapsed(w.startedAt)}</span> ·
-          ${doneSets}/${totalSets} ${t('sets')} · ${Math.round(volume)}${state.settings.units}
+          ${doneSets}/${totalSets} ${t('sets')} · ${Math.round(volume)}kg
         </div>
       </div>
       <button class="btn btn--sm btn--primary" data-action="workout:save">${t('finish')}</button>

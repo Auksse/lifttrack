@@ -11,6 +11,7 @@ import { esc } from '../actions.js';
 import { t, getLanguage, SUPPORTED_LANGUAGES } from '../../i18n/index.js';
 import { FR_INSTRUCTIONS } from '../../i18n/fr-instructions.js';
 import { focusColor } from '../../domain/focus.js';
+import { UNITS, unitOf } from '../../domain/units.js';
 import {
   MUSCLE_GROUPS, findExercise, alternativesFor, buildSessionPlan, EQUIPMENT,
 } from '../../domain/muscles.js';
@@ -526,6 +527,12 @@ function sessionEditSheet() {
                        overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
             ${esc(ex.name)}
           </span>
+          <div class="unit-toggle" role="group" aria-label="${t('units')}">
+            ${UNITS.map((u) => `
+              <button class="${u === unitOf(ex, state.settings.units) ? 'is-active' : ''}"
+                      data-action="session-edit:unit" data-ex="${exIndex}" data-unit="${u}"
+                      aria-pressed="${u === unitOf(ex, state.settings.units)}">${u.toUpperCase()}</button>`).join('')}
+          </div>
           <button class="icon-btn icon-btn--danger" data-action="session-edit:remove-exercise"
                   data-ex="${exIndex}" aria-label="${t('remove_exercise')}">
             ${icon('trash', { size: 17 })}
@@ -549,7 +556,7 @@ function sessionEditSheet() {
                      value="${esc(set.w ?? '')}" placeholder="—"
                      aria-label="${t('weight')} ${setIndex + 1}"
                      data-input="session-edit:weight" data-ex="${exIndex}" data-set="${setIndex}">
-              <span class="set-unit">${state.settings.units}</span>
+              <span class="set-unit">${unitOf(ex, state.settings.units)}</span>
             </div>
             <span></span>
             <button class="set-remove" data-action="session-edit:remove-set"

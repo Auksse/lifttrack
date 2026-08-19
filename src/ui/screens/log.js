@@ -9,9 +9,11 @@ import { t, tFocus, formatDate, formatMonth } from '../../i18n/index.js';
 import { focusColor } from '../../domain/focus.js';
 import {
   sessionVolume, totalVolume, sessionsThisWeek, currentStreak,
-  suggestNextFocus, groupByMonth, isPersonalRecord, improvedOnLast, daysSince, weekStart,
+  suggestNextFocus, groupByMonth, isPersonalRecord, improvedOnLast, isFirstLog,
+  exerciseVolume, daysSince, weekStart,
 } from '../../domain/stats.js';
 import { MUSCLE_GROUPS, readinessByGroup, undertrainedGroups } from '../../domain/muscles.js';
+import { unitOf } from '../../domain/units.js';
 
 /**
  * Volume in tonnes, with the precision the magnitude can carry.
@@ -287,54 +289,114 @@ function renderSessionCard(session) {
     </article>`;
 }
 
+/** Strip a trailing .0 — "52" reads better than "52.0". */
+function trimNumber(value) {
+  return Number.isInteger(value) ? String(value) : String(Math.round(value * 10) / 10);
+}
+
+/**
+ * The sets of one exercise, compressed.
+ *
+ * The old row printed every set verbatim — "7×52 7×52 7×52 7×52" — which
+ * is four repetitions of one fact, crammed right-aligned against the
+ * name and prone to overflowing. Identical consecutive sets now collapse
+ * into a count, and a weight shared by every set is stated once at the
+ * end with its unit, so the line reads the way you would say it out
+ * loud: "four sevens at 52 kilos".
+ */
+function summariseSets(sets, unit) {
+  if (!sets?.length) return '';
+
+  const groups = [];
+  sets.forEach((set) => {
+    const r = Number(set.r) || 0;
+    const w = Number(set.w) || 0;
+    const last = groups[groups.length - 1];
+    if (last && last.r === r && last.w === w) last.count += 1;
+    else groups.push({ r, w, count: 1 });
+  });
+
+  const reps = (g) => (g.count > 1 ? `${g.count}×${g.r}` : `${g.r}`);
+  const weights = [...new Set(groups.map((g) => g.w))];
+
+  // One weight throughout is the common case, and stating it once is what
+  // makes the line short.
+  if (weights.length === 1) {
+    const only = weights[0];
+    const repsPart = groups.map(reps).join(' · ');
+    return only > 0
+      ? `${repsPart} @ ${trimNumber(only)} ${unit}`
+      : `${repsPart} ${t('reps_short')}`;
+  }
+  return `${groups.map((g) => `${reps(g)} @ ${trimNumber(g.w)}`).join(' · ')} ${unit}`;
+}
+
+/** Volume is an aggregate, so it is kilograms — see domain/units.js. */
+function formatVolume(kg) {
+  if (kg <= 0) return '';
+  return kg >= 1000 ? `${(kg / 1000).toFixed(1)}k` : String(Math.round(kg));
+}
+
+function renderSessionExercise(session, ex) {
+  /**
+   * One badge, in order of what it tells you. A first log cannot be a
+   * record or an improvement, and a record already implies you beat last
+   * time — so the arrow is left for the sessions in between.
+   */
+  const isNew = isFirstLog(state.sessions, session, ex.name);
+  const pr = !isNew && isPersonalRecord(state.sessions, session, ex.name);
+  const up = !isNew && !pr && improvedOnLast(state.sessions, session, ex.name);
+
+  const badge = isNew
+    ? `<span class="new-badge">${t('first_log')}</span>`
+    : pr
+      ? `<span style="flex:none;display:flex;color:var(--gold)"
+               aria-label="${t('new_pr')}" title="${t('new_pr')}">
+           ${icon('trophy', { size: 13, stroke: 2.2 })}
+         </span>`
+      : up
+        ? `<span style="flex:none;display:flex;color:var(--positive)"
+                 aria-label="${t('improved')}" title="${t('improved')}">
+             ${icon('arrowUp', { size: 13, stroke: 2.4 })}
+           </span>`
+        : '';
+
+  const volume = formatVolume(exerciseVolume(ex));
+
+  /**
+   * Two lines, not one. The name and its badge own the first; the numbers
+   * get the second to themselves in mono, which is what makes a set list
+   * scannable instead of a right-aligned run squeezed beside a name that
+   * is already truncating.
+   */
+  return `
+    <div style="padding:var(--space-3) 0;border-bottom:1px solid var(--line-subtle)">
+      <div style="display:flex;align-items:center;gap:var(--space-2)">
+        <span style="flex:1;min-width:0;font-size:var(--text-sm);font-weight:600;
+                     overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ex.name)}</span>
+        ${badge}
+      </div>
+      <div style="display:flex;align-items:baseline;gap:var(--space-3);margin-top:4px">
+        <span style="flex:1;min-width:0;font-family:var(--font-mono);font-size:var(--text-xs);
+                     color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;
+                     white-space:nowrap">
+          ${esc(summariseSets(ex.sets, unitOf(ex, state.settings.units)))}
+        </span>
+        ${volume
+          ? `<span style="flex:none;font-family:var(--font-mono);font-size:var(--text-2xs);
+                          color:var(--text-faint)">${volume}<span
+                 style="margin-left:2px">kg</span></span>`
+          : ''}
+      </div>
+    </div>`;
+}
+
 function renderSessionDetail(session) {
   return `
     <div style="padding:0 0 var(--space-4) var(--space-5);
                 border-bottom:1px solid var(--line-subtle);background:var(--surface-sunken)">
       <div style="padding-top:var(--space-3)">
-        ${session.exercises
-          .map((ex) => {
-            /**
-             * One badge, not two. A personal record already implies you
-             * beat last time, so showing both would be noise — the record
-             * wins and the arrow is for the sessions in between, where you
-             * moved more than last time without setting a best.
-             */
-            const pr = isPersonalRecord(state.sessions, session, ex.name);
-            const up = !pr && improvedOnLast(state.sessions, session, ex.name);
-
-            /**
-             * The badge is a flex sibling of the name rather than sitting
-             * inside it. `.icon` is `display: block`, so an icon inline
-             * with the text dropped onto its own line under the name.
-             * Here the name truncates and the badge holds its place beside
-             * it on the same row.
-             */
-            const badge = pr
-              ? `<span style="flex:none;display:flex;color:var(--gold)"
-                       aria-label="${t('new_pr')}" title="${t('new_pr')}">
-                   ${icon('trophy', { size: 13, stroke: 2.2 })}
-                 </span>`
-              : up
-                ? `<span style="flex:none;display:flex;color:var(--positive)"
-                         aria-label="${t('improved')}" title="${t('improved')}">
-                     ${icon('arrowUp', { size: 13, stroke: 2.4 })}
-                   </span>`
-                : '';
-
-            return `
-              <div class="row gap-2" style="padding:var(--space-2) 0;border-bottom:1px solid var(--line-subtle)">
-                <span style="flex:1;min-width:0;display:flex;align-items:center;gap:5px">
-                  <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-                               font-size:var(--text-sm);font-weight:600">${esc(ex.name)}</span>
-                  ${badge}
-                </span>
-                <span style="flex:none;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-tertiary)">
-                  ${ex.sets.map((s) => `${s.r}×${s.w}`).join('  ')}
-                </span>
-              </div>`;
-          })
-          .join('')}
+        ${session.exercises.map((ex) => renderSessionExercise(session, ex)).join('')}
       </div>
 
       <div class="row gap-2" style="margin-top:var(--space-3);flex-wrap:wrap">
