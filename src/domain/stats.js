@@ -7,6 +7,7 @@
  */
 
 import { estimate1RM } from './progression.js';
+import { toKg, unitOf } from './units.js';
 
 const DAY_MS = 86_400_000;
 
@@ -23,7 +24,8 @@ export function daysSince(dateStr) {
  *  (negative) loads clamp to 0 rather than subtracting from volume. */
 export function sessionVolume(session) {
   return session.exercises.reduce(
-    (total, ex) => total + ex.sets.reduce((sum, set) => sum + Number(set.r || 0) * Math.max(Number(set.w || 0), 0), 0),
+    (total, ex) => total + ex.sets.reduce(
+      (sum, set) => sum + Number(set.r || 0) * Math.max(toKg(set.w, unitOf(ex)), 0), 0),
     0,
   );
 }
@@ -75,13 +77,13 @@ export function isPersonalRecord(sessions, session, exerciseName) {
   const exercise = session.exercises.find((e) => e.name === exerciseName);
   if (!exercise?.sets?.length) return false;
 
-  const best = Math.max(...exercise.sets.map((s) => Number(s.w) || 0));
+  const best = Math.max(...exercise.sets.map((s) => toKg(s.w, unitOf(exercise))));
   if (!(best > 0)) return false;
 
   const previous = sessions
     .filter((s) => s.date < session.date || (s.date === session.date && s.id !== session.id))
     .flatMap((s) => s.exercises.filter((e) => e.name === exerciseName))
-    .flatMap((e) => e.sets.map((s) => Number(s.w) || 0));
+    .flatMap((e) => e.sets.map((s) => toKg(s.w, unitOf(e))));
 
   if (!previous.length) return false;
   return best > Math.max(...previous);
@@ -90,7 +92,7 @@ export function isPersonalRecord(sessions, session, exerciseName) {
 /** Total load moved by one exercise: reps × weight, summed over its sets. */
 export function exerciseVolume(exercise) {
   return (exercise?.sets || []).reduce(
-    (total, s) => total + (Number(s.r) || 0) * Math.max(Number(s.w) || 0, 0),
+    (total, s) => total + (Number(s.r) || 0) * Math.max(toKg(s.w, unitOf(exercise)), 0),
     0,
   );
 }
@@ -129,6 +131,15 @@ export function improvedOnLast(sessions, session, exerciseName) {
   return reps(current) > reps(previous);
 }
 
+/** Has this exercise never appeared in an earlier session? */
+export function isFirstLog(sessions, session, exerciseName) {
+  return !sessions.some(
+    (s) =>
+      (s.date < session.date || (s.date === session.date && s.id !== session.id)) &&
+      s.exercises.some((e) => e.name === exerciseName),
+  );
+}
+
 export function countPersonalRecords(sessions) {
   let count = 0;
   sessions.forEach((session) => {
@@ -157,14 +168,17 @@ export function exerciseHistory(sessions, name) {
     .filter((s) => s.exercises.some((e) => e.name === name))
     .map((s) => {
       const ex = s.exercises.find((e) => e.name === name);
+      const unit = unitOf(ex);
       const valid = ex.sets.filter((set) => Number(set.w) > 0 && Number(set.r) > 0);
       return {
         date: s.date,
-        topWeight: Math.max(...ex.sets.map((set) => Number(set.w) || 0)),
+        topWeight: Math.max(...ex.sets.map((set) => toKg(set.w, unit))),
         volume: Math.round(
-          ex.sets.reduce((t, set) => t + Number(set.r || 0) * Math.max(Number(set.w || 0), 0), 0),
+          ex.sets.reduce((t, set) => t + Number(set.r || 0) * Math.max(toKg(set.w, unit), 0), 0),
         ),
-        best1RM: valid.length ? Math.max(...valid.map((set) => estimate1RM(set.w, set.r))) : 0,
+        best1RM: valid.length
+          ? Math.max(...valid.map((set) => estimate1RM(toKg(set.w, unit), set.r)))
+          : 0,
       };
     });
 }

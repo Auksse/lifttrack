@@ -48,7 +48,7 @@ export default {
   session_saved: 'Workout saved', session_updated: 'Workout updated',
   deleted: 'Deleted', delete_confirm: 'Delete this session?',
   add_at_least: 'Add at least one exercise',
-  new_pr: 'PR', improved: 'More than last time',
+  new_pr: 'PR', improved: 'More than last time', first_log: 'New',
 
   // --- Templates ---
   choose_template: 'Choose a template', templates: 'Templates',

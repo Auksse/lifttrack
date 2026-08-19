@@ -703,6 +703,33 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   color: var(--text-tertiary);
 }
 
+/* ---- Unit switch (kg / lb) ------------------------------------------
+   Per exercise rather than per profile: one gym can have imperial plates
+   on one machine and metric on the next. */
+
+.unit-toggle {
+  display: flex;
+  flex: none;
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.unit-toggle button {
+  position: relative;
+  min-width: 38px;
+  height: 34px;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-tertiary);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+/* 34px tall, 44px of touch. */
+.unit-toggle button::after { content: ''; position: absolute; inset: -5px 0; }
+.unit-toggle button.is-active { background: var(--gold); color: var(--gold-ink); }
+
 /* ---- Drag to reorder ------------------------------------------------ */
 
 .exercise-grip {
@@ -908,6 +935,21 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 }
 
 /* ---- PR badge --------------------------------------------------------- */
+
+/* Same pill as the PR badge, in the neutral-information colour: a first
+   log is a fact about the exercise, not an achievement. */
+.new-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--info) 45%, transparent);
+  color: var(--info);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
 
 .pr-badge {
   display: inline-flex;
