@@ -106,7 +106,7 @@ export default {
   m_chest: 'Pectoraux', m_upper_back: 'Haut du dos', m_lats: 'Dorsaux',
   m_lower_back: 'Lombaires', m_biceps: 'Biceps', m_triceps: 'Triceps',
   m_forearms: 'Avant-bras', m_abs: 'Abdominaux', m_obliques: 'Obliques',
-  m_quads: 'Quadriceps & adducteurs', m_glutes: 'Fessiers',
+  m_quads: 'Quadriceps', m_adductors: 'Adducteurs', m_glutes: 'Fessiers',
   m_hamstrings: 'Ischio-jambiers', m_calves: 'Mollets',
   target: 'Cible',
   sets_week: 'séries/sem', total_sets: 'Séries totales', groups_optimal: 'Dans la cible',
