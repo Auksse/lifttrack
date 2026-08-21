@@ -66,6 +66,10 @@
      was in it, so they sit outside the plate palette on purpose. */
   --superset: #a78bfa;
 
+  /* A muscle on the body map with no recent work behind it. Present enough
+     to show its shape, flat enough to read as "nothing happened here". */
+  --muscle-idle: #4a4844;
+
   /* ---- Semantic ------------------------------------------------- */
   --positive: var(--plate-green);
   --negative: var(--plate-red);

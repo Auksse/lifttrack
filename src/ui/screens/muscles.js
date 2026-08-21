@@ -54,19 +54,22 @@ function renderHeatMap() {
   const heatOf = (region) =>
     region.muscles.reduce((max, m) => Math.max(max, fatigue[m.toLowerCase()] || 0), 0);
 
+  /**
+   * Every muscle is drawn, in a flat idle grey, and the heat is a tint laid
+   * over it. The shapes are the chart — keep them all visible and colour is
+   * free to mean only one thing: how hard this was worked. Fading the
+   * untouched ones instead left holes in the figure and made a barely
+   * trained muscle indistinguishable from an untrained one.
+   *
+   * The tint reaches full strength a little before full fatigue, so a
+   * cooked muscle is unmistakably solid rather than merely dark.
+   */
   const styleFor = (region) => {
     const heat = heatOf(region);
     const label = t(`m_${region.id}`);
     return {
       fill: readinessColor(1 - heat),
-      /**
-       * A muscle you have not trained fades into the body rather than
-       * showing as a confident green. Tinting every region at a visible
-       * floor turned the untouched parts a uniform green and made the
-       * plain grey ones — head, hands, shins — look like holes in the
-       * figure. Nothing happened here should look like nothing.
-       */
-      opacity: 0.06 + heat * 0.8,
+      alpha: Math.min(1, heat * 1.15),
       title: `${label} — ${Math.round((1 - heat) * 100)}% ${t('recovered')}`,
     };
   };

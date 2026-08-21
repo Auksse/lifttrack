@@ -1336,35 +1336,53 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
 
 /* The body under the tint — present enough to read as a figure, quiet
    enough that an untrained muscle does not look like a highlighted one. */
+/*
+ * The body is an outline, not a filled shape. Filled, it competed with the
+ * muscles for attention and an untrained muscle had to be tinted just to
+ * prove it existed. Empty, the muscles are the only things with substance,
+ * which is what the chart is for.
+ */
 .bm-body {
-  fill: color-mix(in srgb, var(--text-primary) 16%, var(--surface-sunken));
-  stroke: var(--line-strong);
-  stroke-width: 1;
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-primary) 45%, transparent);
+  stroke-width: 2;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-/* No outline on the regions themselves. Stroking each one turned the
-   figure into a faceted diagram of its own construction — you read the
-   seams before the colour, which is the opposite of what a heat map is
-   for. */
-.bm-region {
-  stroke: none;
+/*
+ * Each muscle is stroked in the page colour, so neighbours are separated by
+ * a gap rather than by a seam. Drawn edge to edge they fused into one mass
+ * per limb; outlined in ink they read as a wiring diagram. A gap is what an
+ * anatomy chart actually uses.
+ */
+.bm-muscle {
+  fill: var(--muscle-idle);
+  stroke: var(--surface-base);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
   cursor: pointer;
+}
+
+/* The heat sits on the shapes unstroked, so it tints them without
+   softening the gaps the layer below just cut. */
+.bm-heat {
+  stroke: none;
+  pointer-events: none;
   transition: fill-opacity var(--duration-fast) var(--ease-out);
 }
 
-/* Hairlines over the fills — the linea alba, the sternal gap, the split
-   between the calf heads. Fills alone give you shapes; these are what make
-   the shapes read as muscle. */
+/* Cut in the page colour, so they split a muscle the way the gaps between
+   muscles do rather than drawing a line on top of one. */
 .bm-detail {
   fill: none;
-  stroke: var(--line-default);
-  stroke-width: 1.2;
+  stroke: var(--surface-base);
+  stroke-width: 2.2;
   stroke-linecap: round;
-  opacity: 0.75;
   pointer-events: none;
 }
-.bm-region:active { fill-opacity: 1 !important; }
+/* Press feedback lands on the shape layer, which owns the tap. */
+.bm-muscle:active { fill: var(--text-tertiary); }
 
 .bm-legend {
   display: flex;
