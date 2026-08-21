@@ -6,42 +6,46 @@
  * lit up and the legs have not been touched all week, which is the question
  * the recovery tab exists to answer.
  *
+ * HOW IT IS BUILT
+ *
+ * The body is an OUTLINE, not a fill. One continuous unclosed stroke per
+ * half traces head, neck, shoulder, the outside of the arm, the fist, back
+ * up the inside of the arm to the armpit notch, then down the flank, the
+ * leg and around the foot. Unclosed matters: closing it would draw a line
+ * straight up the centre of the figure. The clip below closes it
+ * implicitly, which is what is wanted there and not here.
+ *
+ * Muscles sit inside that outline as separate islands, each stroked in the
+ * page colour so a gap opens between neighbours. That gap is what makes a
+ * chart read as anatomy rather than as a tinted mannequin, and it is
+ * steadier than trying to leave real space between forty hand-drawn paths.
+ *
+ * Muscles are clipped to the outline, so a limb can be filled by a generous
+ * band and the body decides where it stops. Fitting each one by eye meant
+ * tracing it against a limb it shared no coordinate with, and any of them
+ * could drift a few units and hang off the edge.
+ *
  * PROPORTIONS
  *
- * A 200×600 grid holding a classical seven-and-a-half-head figure, so the
+ * A 200x600 grid holding a classical seven-and-a-half-head figure, so the
  * landmarks fall where they do on a person rather than where they were
- * convenient to draw. The viewBox is cropped to the figure's own bounds so
- * it fills its column instead of floating in a field of padding:
+ * convenient to draw:
  *
- *   head 0–80 · chin 80 · acromion 126 · nipple 168 · elbow 250 · navel 252
- *   wrist 312 · crotch 318 (half the total height) · fingertips 372
+ *   head 0-80 · chin 80 · acromion 126 · nipple 168 · elbow 252
+ *   wrist 315 · crotch 318 (half the total height) · fingertips 372
  *   knee 442 · ankle 566 · sole 592
  *
  *   shoulders two heads wide · waist ~1.1 heads · hips ~1.3 heads
- *   elbow at the navel, wrist at the crotch, fingertips at mid-thigh
+ *   elbow at the navel · wrist at the crotch · fingertips at mid-thigh
  *
- * CONSTRUCTION
+ * The arms are carried slightly away from the body. Hanging dead straight
+ * they merge with the flank all the way to the hip and the torso loses its
+ * silhouette; angled out, the armpit opens into a wedge at about the bottom
+ * of the ribcage, where a real one appears.
  *
- *  - Both views share the grid, so a shoulder sits at the same height in
- *    each and the pair reads as one body seen twice.
- *  - Everything except the head and neck is drawn as a LEFT HALF and
- *    emitted twice, the second copy mirrored about the centre line. Two
- *    hand-drawn halves would never have matched, and a torso that is
- *    subtly lopsided reads as wrong long before you can say why.
- *  - The regions are the body. An earlier version drew a silhouette and
- *    laid regions over it; the two drifted, leaving a deltoid hanging off
- *    the end of a shoulder. The silhouette now supplies only what no
- *    region covers — head, neck, hands, feet, shins on the front — and
- *    backs the rest.
- *  - Muscle outlines follow real ones: the pec fans from the sternum with
- *    its lower border sweeping up to the armpit; the deltoid caps the
- *    joint and points into the humerus; the trapezius is a kite from skull
- *    to T12; the lat is widest at the armpit and narrows to the spine; the
- *    gastrocnemius is two heads over a soleus that tapers to the Achilles.
- *  - A layer of hairlines on top carries what fills cannot: the linea alba
- *    and the tendinous intersections that make an abdomen read as an
- *    abdomen, the sternal gap between the pecs, the split between the calf
- *    heads. Cheap, and they do most of the work of looking anatomical.
+ * Everything except the head is drawn as a LEFT HALF and emitted twice, the
+ * second copy mirrored. Two hand-drawn halves would never have matched, and
+ * a subtly lopsided torso reads as wrong long before you can say why.
  */
 
 const CENTRE = 200;
@@ -49,48 +53,50 @@ const CENTRE = 200;
 /** Flip about the centre line — used for the second copy of every half. */
 const MIRROR = `translate(${CENTRE},0) scale(-1,1)`;
 
-/** Head and neck: symmetrical already, so drawn once. */
-const HEAD = [
-  '<ellipse cx="100" cy="42" rx="25" ry="40"/>',
-  '<path d="M87 70h26v38H87z"/>',
-];
-
 /**
- * The shape underneath the regions — left half only.
+ * The whole left half of the figure in one unclosed stroke.
  *
- * Limbs are single tapered paths rather than a piece per segment. Drawn
- * joint by joint they grew a seam at every elbow and read as a mannequin.
+ * The turn at the armpit — up the inside of the arm, then straight back
+ * down the flank — is the only tricky part. It is a cusp, not a corner:
+ * above it the arm and the ribs are one mass, below it they separate.
+ *
+ * It starts a few units PAST the centre line so the two halves overlap at
+ * the crown; ending them both exactly on it left a nick at the top of the
+ * head where the two round caps met.
  */
-const SILHOUETTE = [
-  // Torso and pelvis: clavicle out to the acromion, in at the waist, out
-  // over the hip, down to the crotch.
-  `M100 94 L86 100
-   C72 106 58 114 48 128
-   C43 148 42 166 45 184
-   C50 214 55 234 58 254
-   C56 272 52 284 52 296
-   C62 312 80 320 100 322 Z`,
-  // Arm: deltoid through to the wrist.
-  `M48 126
-   C29 137 21 158 21 182
-   C21 210 24 234 26 252
-   C28 282 30 300 32 312
-   L48 312
-   C48 300 48 282 49 252
-   C51 234 52 210 52 186
-   C52 160 52 140 48 126 Z`,
-  // Hand.
-  'M32 312h16l-1 58c-3 6-11 6-14 0z',
-  // Leg: hip to ankle in one taper.
-  `M52 296
-   C46 340 52 392 60 442
-   C56 486 64 530 70 566
-   L86 566
-   C88 530 92 486 89 442
-   C95 392 99 344 99 310 Z`,
-  // Foot.
-  'M70 566h16l6 26H60z',
-];
+const OUTLINE = `
+  M104 5
+  C86 5 72 19 72 39
+  C72 53 76 65 84 72
+  C86 78 87 86 86 94
+  C76 98 64 104 54 113
+  C50 116 47 120 45 125
+  C33 134 25 150 24 170
+  C23 190 24 208 25 224
+  C25 238 24 248 22 256
+  C19 276 16 294 15 310
+  C13 322 12 332 13 340
+  C9 347 8 357 11 365
+  C14 372 21 374 27 371
+  C33 373 37 368 37 360
+  C37 351 36 345 34 339
+  C35 325 37 309 39 293
+  C41 277 43 262 45 248
+  C46 232 47 216 47 203
+  C51 222 55 238 58 254
+  C56 272 53 284 53 296
+  C48 328 52 378 60 428
+  C57 462 62 502 67 534
+  C69 550 70 558 70 566
+  C66 574 60 581 58 586
+  C57 590 61 593 67 593
+  L92 593
+  C95 593 96 588 94 582
+  C92 576 90 572 89 566
+  C89 548 88 532 88 512
+  C89 484 92 458 91 434
+  C95 396 100 352 100 318
+`;
 
 /**
  * @typedef {object} Region
@@ -104,90 +110,88 @@ const SILHOUETTE = [
 /**
  * @type {Record<'front'|'back', Region[]>}
  *
- * Order is draw order, and it matters where muscles overlap. The deltoid
- * is listed last in each view because it lies over the top of the upper
- * arm; the erectors come after the lats for the same reason.
+ * Order is draw order, and it matters where muscles overlap. The deltoid is
+ * listed last in each view because it lies over the top of the upper arm;
+ * the erectors come after the lats for the same reason.
  */
 export const REGIONS = {
   front: [
     // Upper trapezius: the slope from neck to the point of the shoulder.
     { id: 'traps', group: 'back', muscles: ['Upper Traps'],
-      d: `M100 92 L87 99
-          C74 105 61 113 51 126
-          L59 137
-          C69 128 82 121 93 118
-          L100 116 Z` },
+      d: `M100 91 L88 96
+          C79 100 70 105 63 112
+          L69 123
+          C77 117 87 113 96 111
+          L100 110 Z` },
 
     // Pectoralis major: fans from the sternum and clavicle to the armpit.
     // Its inferior border is close to a straight line running UP and out —
     // curve it downward and the pair reads as one dome across the ribs.
     { id: 'chest', group: 'chest', muscles: ['Chest', 'Upper Chest', 'Lower Chest'],
-      d: `M96 120
-          C82 122 68 126 58 133
-          C53 145 52 160 55 172
-          C67 180 82 185 96 188 Z` },
+      d: `M96 115
+          C82 118 68 123 57 131
+          C52 142 51 157 54 169
+          C67 177 82 181 96 183 Z` },
 
+    // Limb muscles are generous bands; the clip gives them the limb's own
+    // outline, which is steadier than tracing a taper by hand.
     { id: 'biceps', group: 'arms', muscles: ['Biceps', 'Brachialis'],
-      d: `M48 198
-          C36 203 28 214 27 230
-          C27 242 31 251 36 257
-          L49 254
-          C49 241 49 222 49 210
-          C49 202 49 199 48 198 Z` },
+      d: `M48 200
+          C32 208 22 224 21 244
+          C21 254 23 262 26 268
+          L46 260
+          C45 244 46 222 48 208 Z` },
 
-    // Forearm flexors: the mass just below the elbow, tapering to a narrow
-    // wrist.
     { id: 'forearms', group: 'arms', muscles: ['Forearms', 'Brachioradialis'],
-      d: `M37 262
-          C31 271 29 284 30 298
-          C31 306 32 310 33 312
-          L47 312
-          C47 302 48 288 48 276
-          C48 268 48 263 48 260 Z` },
+      d: `M45 270
+          C33 280 24 296 19 314
+          C16 324 15 332 15 338
+          L36 332
+          C37 320 40 304 45 290 Z` },
 
     // Rectus abdominis runs across the midline, so it is drawn once.
     { id: 'abs', group: 'core', muscles: ['Abs', 'Deep Core'], solo: true,
-      d: `M81 196
+      d: `M81 198
           C79 224 79 252 81 274
           C85 292 92 306 100 314
           C108 306 115 292 119 274
-          C121 252 121 224 119 196
-          C111 193 89 193 81 196 Z` },
+          C121 252 121 224 119 198
+          C111 195 89 195 81 198 Z` },
 
     // External obliques: lower ribs down and forward to the iliac crest.
     // Kept narrow — widened out they became two ellipses flanking the abs
     // and the waist lost its taper.
     { id: 'obliques', group: 'core', muscles: ['Obliques', 'Serratus', 'Hip Flexors'],
-      d: `M79 204
-          C71 213 65 228 62 246
-          C61 264 64 280 69 292
-          C74 300 79 304 83 306
-          C79 292 77 250 79 204 Z` },
+      d: `M79 207
+          C73 216 69 230 67 248
+          C66 264 68 279 72 291
+          C76 299 80 303 83 305
+          C79 292 77 251 79 207 Z` },
 
     { id: 'quads', group: 'legs', muscles: ['Quads'],
-      d: `M88 322
-          C72 326 62 340 58 362
-          C55 388 57 415 63 441
-          C69 453 79 457 86 452
-          C88 429 89 395 89 363
-          C89 343 89 330 88 322 Z` },
+      d: `M88 324
+          C72 328 62 342 58 364
+          C55 390 57 417 63 443
+          C69 455 79 459 86 454
+          C88 431 89 397 89 365
+          C89 345 89 332 88 324 Z` },
 
     // Adductors: the inner thigh, from the groin to about mid-thigh.
     { id: 'adductors', group: 'legs', muscles: ['Adductors'],
-      d: `M99 318
-          C92 324 88 334 86 352
-          C85 370 87 388 91 400
-          C95 386 98 362 99 342 Z` },
+      d: `M99 320
+          C92 326 88 336 86 354
+          C85 372 87 390 91 402
+          C95 388 98 364 99 344 Z` },
 
     // Deltoid: caps the joint and points into the humerus a third of the
     // way down, which is what stops it reading as a shoulder pad. Drawn
     // last: it lies over the top of the biceps.
     { id: 'delts', group: 'shoulders', muscles: ['Front Delts', 'Side Delts', 'Rotator Cuff'],
-      d: `M52 128
-          C34 139 25 158 25 182
-          C25 193 26 201 28 208
-          L45 205
-          C46 184 48 158 52 138 Z` },
+      d: `M55 118
+          C34 128 21 148 20 176
+          C20 188 22 198 25 206
+          L47 199
+          C47 176 50 146 55 128 Z` },
   ],
 
   back: [
@@ -195,30 +199,30 @@ export const REGIONS = {
     // at the bottom of the ribcage.
     { id: 'traps', group: 'back', muscles: ['Upper Traps', 'Mid Traps', 'Mid/Lower Traps'],
       d: `M100 84
-          C88 88 74 98 60 114
-          L52 128
-          C66 140 76 156 82 176
+          C88 88 74 98 58 112
+          L50 126
+          C64 138 76 156 82 176
           C88 204 93 230 100 252 Z` },
 
     // Rhomboids, teres and mid back: the patch left over between the
     // trapezius edge, the deltoid and the top of the lat.
     { id: 'upper_back', group: 'back', muscles: ['Rhomboids', 'Upper Back', 'Mid Back'],
-      d: `M64 140
-          C56 150 51 163 49 179
-          C52 190 58 198 66 204
-          C72 194 77 178 79 163
-          C74 151 69 144 64 140 Z` },
+      d: `M63 139
+          C55 149 50 163 48 179
+          C51 190 57 198 65 204
+          C71 194 76 178 78 163
+          C73 150 68 143 63 139 Z` },
 
-    // Latissimus dorsi: widest at the armpit, narrowing into the spine.
-    // Its top edge sits BELOW the trapezius — run it higher and the kite
-    // that makes a back read as a back disappears underneath it.
+    // Latissimus dorsi: widest at the armpit, narrowing into the spine. Its
+    // top edge sits BELOW the trapezius — run it higher and the kite that
+    // makes a back read as a back disappears underneath it.
     { id: 'lats', group: 'back', muscles: ['Lats'],
-      d: `M53 202
-          C45 221 45 243 51 263
-          C59 279 73 289 88 294
-          C94 296 98 296 100 296
+      d: `M52 202
+          C44 221 44 243 50 263
+          C58 279 72 289 87 294
+          C93 296 97 296 100 296
           C94 279 88 257 84 235
-          C80 215 67 204 58 202 Z` },
+          C80 215 66 204 57 202 Z` },
 
     // Erector spinae: two columns either side of the lumbar spine, so one
     // path with two subpaths rather than a mirrored half.
@@ -227,36 +231,34 @@ export const REGIONS = {
           M111 256 C114 274 114 294 112 309 L103 311 C103 293 103 273 102 256 Z` },
 
     { id: 'triceps', group: 'arms', muscles: ['Triceps', 'Triceps Long Head', 'Other Triceps Heads'],
-      d: `M48 196
-          C36 202 28 213 27 229
-          C27 242 31 251 37 258
-          L49 254
-          C49 241 49 221 49 208
-          C49 200 49 197 48 196 Z` },
+      d: `M48 198
+          C32 206 22 222 21 242
+          C21 252 23 260 26 266
+          L46 258
+          C45 242 46 220 48 206 Z` },
 
     { id: 'forearms', group: 'arms', muscles: ['Forearms', 'Brachioradialis'],
-      d: `M37 262
-          C31 271 29 284 30 298
-          C31 306 32 310 33 312
-          L47 312
-          C47 302 48 288 48 276
-          C48 268 48 263 48 260 Z` },
+      d: `M45 270
+          C33 280 24 296 19 314
+          C16 324 15 332 15 338
+          L36 332
+          C37 320 40 304 45 290 Z` },
 
     // Gluteus maximus. The medial edge stops short of the centre line: run
     // the two halves together and the hips become one circle.
     { id: 'glutes', group: 'legs', muscles: ['Glutes'],
-      d: `M97 290
-          C84 290 71 296 64 308
-          C59 320 58 334 63 345
-          C71 354 84 357 95 355
-          C97 342 97 314 97 290 Z` },
+      d: `M97 292
+          C84 292 71 298 64 310
+          C59 322 58 336 63 347
+          C71 356 84 359 95 357
+          C97 344 97 316 97 292 Z` },
 
     { id: 'hamstrings', group: 'legs', muscles: ['Hamstrings'],
-      d: `M96 362
-          C82 362 70 370 64 386
-          C60 408 62 429 68 447
-          C76 455 88 455 94 449
-          C96 425 96 390 96 362 Z` },
+      d: `M96 364
+          C82 364 70 372 64 388
+          C60 410 62 431 68 449
+          C76 457 88 457 94 451
+          C96 427 96 392 96 364 Z` },
 
     // Gastrocnemius over a soleus that tapers into the Achilles.
     { id: 'calves', group: 'legs', muscles: ['Calves', 'Gastrocnemius', 'Soleus'],
@@ -270,92 +272,91 @@ export const REGIONS = {
 
     // Drawn last, over the top of the triceps.
     { id: 'rear_delts', group: 'shoulders', muscles: ['Rear Delts', 'Rotator Cuff'],
-      d: `M52 128
-          C34 139 25 158 25 182
-          C25 193 26 201 28 208
-          L45 205
-          C46 184 48 158 52 138 Z` },
+      d: `M55 118
+          C34 128 21 148 20 176
+          C20 188 22 198 25 206
+          L47 199
+          C47 176 50 146 55 128 Z` },
   ],
 };
 
 /**
- * Hairlines drawn over the fills. Left half unless noted; these are what
- * make an abdomen read as an abdomen rather than a shield.
+ * Lines cut through the fills in the page colour, splitting a muscle where
+ * a real one is split. The abdomen is why this layer exists: as one
+ * unbroken shield it reads as a breastplate, and four hairlines turn it
+ * into an abdomen.
  */
 const DETAIL = {
   front: [
-    'M100 118 V196',                                  // sternal gap
-    'M100 202 V312',                                  // linea alba
-    'M82 232 H118', 'M83 262 H117', 'M86 288 H114',   // ab intersections
-    'M98 116 C86 119 70 124 57 133',                  // clavicle
-    'M45 210 C47 200 49 190 51 180',                  // delt / biceps split
-    'M63 441 C71 448 82 449 88 444',                  // knee
+    'M100 200 V312',                                  // linea alba
+    'M83 232 H117', 'M84 260 H116', 'M87 286 H113',   // tendinous intersections
+    'M100 116 V190',                                  // sternum, between the pecs
   ],
   back: [
-    'M100 96 V300',                                   // spine
-    'M80 170 C70 178 62 190 56 202',                  // scapula edge
-    'M62 346 C74 356 88 358 97 355',                  // gluteal fold
-    'M80 464 V532',                                   // gastrocnemius heads
-    'M39 254 C43 245 46 232 47 218',                  // triceps horseshoe
+    'M100 88 V300',                                   // spine
+    'M80 466 V530',                                   // between the calf heads
   ],
 };
 
 /**
  * One view of the figure.
  *
+ * Muscles are drawn twice: once flat in the idle colour, then again in the
+ * heat colour at an opacity set by how hard the muscle was worked. The
+ * result composites grey → colour smoothly, which a single translucent
+ * fill cannot do here — the body has no fill of its own, so a half-opaque
+ * muscle would blend with the page and go dark rather than pale.
+ *
  * @param {'front'|'back'} view
- * @param {(region: Region) => {fill: string, opacity: number, title: string}} styleFor
+ * @param {(region: Region) => {fill: string, alpha: number, title: string}} styleFor
  *        Colour policy lives with the screen, not with the geometry.
  */
 export function renderBody(view, styleFor) {
-  const both = (markup) => markup + `<g transform="${MIRROR}">${markup}</g>`;
-
   /**
-   * Built as a flat list of shapes, each carrying its own mirror, rather
-   * than a mirrored group. `clipPath` ignores `<g>` children outright, so
-   * grouping the second half silently clipped away every muscle on the
-   * right-hand side of both figures.
+   * Both halves as a flat list of shapes, each carrying its own mirror,
+   * rather than a mirrored group. `clipPath` ignores `<g>` children
+   * outright, so grouping the second half silently clipped away every
+   * muscle on the right-hand side of both figures.
    */
-  const outline =
-    HEAD.join('') +
-    SILHOUETTE.map((d) => `<path d="${d}"/><path d="${d}" transform="${MIRROR}"/>`).join('');
-  const body = `<g class="bm-body">${outline}</g>`;
+  const halves = (d, inner = '', attrs = '') =>
+    `<path d="${d}" ${attrs}>${inner}</path>` +
+    `<path d="${d}" transform="${MIRROR}" ${attrs}>${inner}</path>`;
 
-  /**
-   * Regions are clipped to the silhouette rather than hand-fitted inside
-   * it. Containing them by eye meant every muscle had to be traced against
-   * a limb it did not share a single coordinate with, and any of them
-   * could drift a few units and hang off the edge of the body. Clipping
-   * makes that impossible by construction, and lets a muscle be drawn to
-   * its real outline and let the body decide where it stops.
-   */
+  const layer = (attrsFor, innerFor = () => '') =>
+    REGIONS[view]
+      .map((region) =>
+        region.solo
+          ? `<path d="${region.d}" ${attrsFor(region)}>${innerFor(region)}</path>`
+          : halves(region.d, innerFor(region), attrsFor(region)),
+      )
+      .join('');
+
+  // The shapes themselves: flat idle colour, stroked in the page colour so
+  // neighbours are separated by a gap. This layer owns the tap target.
+  const shapes = layer(
+    (region) => `class="bm-muscle" data-action="muscle:toggle" data-group="${region.group}"`,
+    (region) => `<title>${styleFor(region).title}</title>`,
+  );
+
+  // The heat on top, unstroked so it never softens the gaps below it.
+  const heat = layer((region) => {
+    const { fill, alpha } = styleFor(region);
+    return `class="bm-heat" fill="${fill}" fill-opacity="${alpha}"`;
+  });
+
   const clipId = `bm-clip-${view}`;
 
-  const regions = REGIONS[view]
-    .map((region) => {
-      const { fill, opacity, title } = styleFor(region);
-      const shape = (transform) => `
-        <path class="bm-region" d="${region.d}"
-              ${transform ? `transform="${transform}"` : ''}
-              fill="${fill}" fill-opacity="${opacity}"
-              data-action="muscle:toggle" data-group="${region.group}">
-          <title>${title}</title>
-        </path>`;
-      return region.solo ? shape() : shape() + shape(MIRROR);
-    })
-    .join('');
-
-  const detail = `
-    <g class="bm-detail">
-      ${both(DETAIL[view].map((d) => `<path d="${d}"/>`).join(''))}
-    </g>`;
-
   return `
-    <svg class="bm-svg" viewBox="18 -4 164 604" role="img"
+    <svg class="bm-svg" viewBox="4 -4 192 604" role="img"
          preserveAspectRatio="xMidYMid meet">
-      <defs><clipPath id="${clipId}">${outline}</clipPath></defs>
-      ${body}
-      <g clip-path="url(#${clipId})">${regions}</g>
-      ${detail}
+      <defs><clipPath id="${clipId}">${halves(OUTLINE)}</clipPath></defs>
+
+      <g clip-path="url(#${clipId})">
+        ${shapes}
+        ${heat}
+        <g class="bm-detail">${halves(DETAIL[view].join(' '))}</g>
+      </g>
+
+      <g class="bm-body">${halves(OUTLINE)}</g>
     </svg>`;
 }
