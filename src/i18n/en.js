@@ -100,6 +100,13 @@ export default {
   recovery_explainer:
     'Recovery is estimated from the sets you logged, weighted by how much each exercise involves the muscle, decaying over time. Larger muscle groups are given longer to recover.',
   of: 'of',
+  heat_map: 'Muscle map', view_front: 'Front', view_back: 'Back',
+  m_traps: 'Traps', m_delts: 'Delts', m_rear_delts: 'Rear delts',
+  m_chest: 'Chest', m_upper_back: 'Upper back', m_lats: 'Lats',
+  m_lower_back: 'Lower back', m_biceps: 'Biceps', m_triceps: 'Triceps',
+  m_forearms: 'Forearms', m_abs: 'Abs', m_obliques: 'Obliques',
+  m_quads: 'Quads & adductors', m_glutes: 'Glutes',
+  m_hamstrings: 'Hamstrings', m_calves: 'Calves',
   target: 'Target',
   sets_week: 'sets/wk', total_sets: 'Total sets', groups_optimal: 'In range',
   last_7_days: 'Last 7 days',
