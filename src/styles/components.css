@@ -1296,3 +1296,85 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   border-color: var(--line-strong);
   color: var(--text-primary);
 }
+
+/* ---- Muscle heat map ------------------------------------------------ */
+
+/*
+ * Two figures side by side. They share one coordinate grid, so equal
+ * widths put a shoulder at the same height in both — which is what lets
+ * you read them as one picture of a body rather than two drawings.
+ */
+.bm-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-items: end;
+  padding: var(--space-3) 0 0;
+}
+
+.bm-view { margin: 0; }
+
+.bm-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Tall and narrow: without a ceiling the pair eats the whole screen on a
+     wide device before the rows below get a look in. */
+  max-height: 42vh;
+  margin: 0 auto;
+}
+
+.bm-caption {
+  margin-top: var(--space-2);
+  text-align: center;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* The body under the tint — present enough to read as a figure, quiet
+   enough that an untrained muscle does not look like a highlighted one. */
+.bm-body {
+  fill: color-mix(in srgb, var(--text-primary) 16%, var(--surface-sunken));
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+/* No outline on the regions themselves. Stroking each one turned the
+   figure into a faceted diagram of its own construction — you read the
+   seams before the colour, which is the opposite of what a heat map is
+   for. */
+.bm-region {
+  stroke: none;
+  cursor: pointer;
+  transition: fill-opacity var(--duration-fast) var(--ease-out);
+}
+.bm-region:active { fill-opacity: 1 !important; }
+
+.bm-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.bm-ramp {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--plate-green) 20%, transparent),
+    var(--plate-green),
+    var(--plate-yellow),
+    var(--plate-red)
+  );
+}

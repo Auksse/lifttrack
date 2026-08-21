@@ -13,7 +13,9 @@ import { t } from '../../i18n/index.js';
 import {
   MUSCLE_GROUPS, recommendTraining, volumeByGroup, volumeStatus,
   volumeTarget, describeRecovery, findExercise, muscleBreakdown,
+  fatigueByMuscle,
 } from '../../domain/muscles.js';
+import { REGIONS, renderBody } from '../bodymap.js';
 import { EXERCISES } from '../../data/exercise-db.js';
 
 const SUBTABS = ['recovery', 'volume', 'library'];
@@ -30,6 +32,65 @@ function readinessColor(readiness) {
   if (readiness >= 0.45) return 'var(--plate-yellow)';
   if (readiness >= 0.2) return 'var(--plate-red)';
   return 'var(--plate-red)';
+}
+
+// ------------------------------------------------------------- heat map
+
+/**
+ * Front and back figures, tinted by how hard each area has been worked.
+ *
+ * Hue follows the same stepped ramp as every other recovery reading, so a
+ * red thigh and a "Cooked" label can never disagree. Opacity carries the
+ * magnitude: an untrained muscle is barely tinted rather than a confident
+ * green, because on a heat map "nothing has happened here" should look
+ * inert, not like a claim.
+ */
+function renderHeatMap() {
+  const fatigue = fatigueByMuscle(state.sessions);
+
+  // A region takes the highest fatigue among the muscles it covers, the
+  // same rule a group uses for its own — an average lets a fresh
+  // neighbour hide a cooked muscle.
+  const heatOf = (region) =>
+    region.muscles.reduce((max, m) => Math.max(max, fatigue[m.toLowerCase()] || 0), 0);
+
+  const styleFor = (region) => {
+    const heat = heatOf(region);
+    const label = t(`m_${region.id}`);
+    return {
+      fill: readinessColor(1 - heat),
+      /**
+       * A muscle you have not trained fades into the body rather than
+       * showing as a confident green. Tinting every region at a visible
+       * floor turned the untouched parts a uniform green and made the
+       * plain grey ones — head, hands, shins — look like holes in the
+       * figure. Nothing happened here should look like nothing.
+       */
+      opacity: 0.06 + heat * 0.8,
+      title: `${label} — ${Math.round((1 - heat) * 100)}% ${t('recovered')}`,
+    };
+  };
+
+  return `
+    <h2 class="section-label">${t('heat_map')}</h2>
+
+    <div class="bm-pair">
+      ${['front', 'back']
+        .map(
+          (view) => `
+            <figure class="bm-view">
+              ${renderBody(view, styleFor)}
+              <figcaption class="bm-caption">${t(`view_${view}`)}</figcaption>
+            </figure>`,
+        )
+        .join('')}
+    </div>
+
+    <div class="bm-legend">
+      <span>${t('recovery_fresh')}</span>
+      <span class="bm-ramp" aria-hidden="true"></span>
+      <span>${t('recovery_cooked')}</span>
+    </div>`;
 }
 
 // ------------------------------------------------------------ recovery view
@@ -139,6 +200,8 @@ function renderRecovery() {
            </div>
          </section>`
       : ''}
+
+    ${state.sessions.length ? renderHeatMap() : ''}
 
     <h2 class="section-label">${t('recovery_status')}</h2>
     ${groups.map(renderRecoveryRow).join('')}

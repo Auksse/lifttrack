@@ -101,6 +101,13 @@ export default {
   recovery_explainer:
     "La récupération est estimée à partir des séries enregistrées, pondérées par l'implication de chaque muscle dans l'exercice, puis décroît avec le temps. Les grands groupes musculaires disposent de plus de temps pour récupérer.",
   of: 'sur',
+  heat_map: 'Carte musculaire', view_front: 'Face', view_back: 'Dos',
+  m_traps: 'Trapèzes', m_delts: 'Deltoïdes', m_rear_delts: 'Deltoïdes postérieurs',
+  m_chest: 'Pectoraux', m_upper_back: 'Haut du dos', m_lats: 'Dorsaux',
+  m_lower_back: 'Lombaires', m_biceps: 'Biceps', m_triceps: 'Triceps',
+  m_forearms: 'Avant-bras', m_abs: 'Abdominaux', m_obliques: 'Obliques',
+  m_quads: 'Quadriceps & adducteurs', m_glutes: 'Fessiers',
+  m_hamstrings: 'Ischio-jambiers', m_calves: 'Mollets',
   target: 'Cible',
   sets_week: 'séries/sem', total_sets: 'Séries totales', groups_optimal: 'Dans la cible',
   last_7_days: '7 derniers jours',
