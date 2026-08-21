@@ -105,7 +105,7 @@ export default {
   m_chest: 'Chest', m_upper_back: 'Upper back', m_lats: 'Lats',
   m_lower_back: 'Lower back', m_biceps: 'Biceps', m_triceps: 'Triceps',
   m_forearms: 'Forearms', m_abs: 'Abs', m_obliques: 'Obliques',
-  m_quads: 'Quads & adductors', m_glutes: 'Glutes',
+  m_quads: 'Quads', m_adductors: 'Adductors', m_glutes: 'Glutes',
   m_hamstrings: 'Hamstrings', m_calves: 'Calves',
   target: 'Target',
   sets_week: 'sets/wk', total_sets: 'Total sets', groups_optimal: 'In range',

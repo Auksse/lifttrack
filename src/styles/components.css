@@ -1352,6 +1352,18 @@ button.chip::after { content: ''; position: absolute; inset: -9px -4px; }
   cursor: pointer;
   transition: fill-opacity var(--duration-fast) var(--ease-out);
 }
+
+/* Hairlines over the fills — the linea alba, the sternal gap, the split
+   between the calf heads. Fills alone give you shapes; these are what make
+   the shapes read as muscle. */
+.bm-detail {
+  fill: none;
+  stroke: var(--line-default);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.75;
+  pointer-events: none;
+}
 .bm-region:active { fill-opacity: 1 !important; }
 
 .bm-legend {
